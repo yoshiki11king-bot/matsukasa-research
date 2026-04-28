@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { formatD3ChartData } from "@/lib/d3-chart";
-import type { ContentBlock } from "@/lib/types";
+import { D3ChartBlock } from "@/components/d3-chart-block";
+import { formatD3ChartData, normalizeD3ChartInput, parseD3ChartJSON } from "@/lib/d3-chart";
+import type { ContentBlock, D3ChartDatum } from "@/lib/types";
 
 type EditorBlock =
   | {
@@ -41,6 +42,8 @@ type EditorBlock =
       yKey: string;
       yLabel: string;
       height: number;
+      csvText: string;
+      csvError: string;
       dataJson: string;
     };
 
@@ -96,6 +99,8 @@ function toEditorBlock(block: ContentBlock): EditorBlock {
       yKey: block.yKey,
       yLabel: block.yLabel ?? "",
       height: block.height ?? 320,
+      csvText: formatChartDataAsDelimited(block.data),
+      csvError: "",
       dataJson: formatD3ChartData(block.data),
     };
   }
@@ -149,6 +154,8 @@ function createBlock(type: EditorBlock["type"]): EditorBlock {
       yKey: "value",
       yLabel: "",
       height: 320,
+      csvText: "label\tvalue\nA\t24\nB\t38\nC\t31",
+      csvError: "",
       dataJson: formatD3ChartData([
         { label: "A", value: 24 },
         { label: "B", value: 38 },
@@ -179,6 +186,490 @@ function blockLabel(type: EditorBlock["type"]) {
     case "d3Chart":
       return "D3チャート";
   }
+}
+
+type D3EditorBlock = Extract<EditorBlock, { type: "d3Chart" }>;
+
+type ParsedTable =
+  | {
+      ok: true;
+      headers: string[];
+      data: D3ChartDatum[];
+    }
+  | {
+      ok: false;
+      error: string;
+    };
+
+function detectDelimiter(value: string) {
+  const firstLine = value.split(/\r?\n/).find((line) => line.trim()) ?? "";
+  const tabCount = (firstLine.match(/\t/g) ?? []).length;
+  const commaCount = (firstLine.match(/,/g) ?? []).length;
+  return tabCount > commaCount ? "\t" : ",";
+}
+
+function parseDelimitedRows(value: string, delimiter: string) {
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let field = "";
+  let inQuotes = false;
+
+  for (let index = 0; index < value.length; index += 1) {
+    const char = value[index];
+    const next = value[index + 1];
+
+    if (inQuotes) {
+      if (char === '"' && next === '"') {
+        field += '"';
+        index += 1;
+      } else if (char === '"') {
+        inQuotes = false;
+      } else {
+        field += char;
+      }
+
+      continue;
+    }
+
+    if (char === '"') {
+      inQuotes = true;
+      continue;
+    }
+
+    if (char === delimiter) {
+      row.push(field);
+      field = "";
+      continue;
+    }
+
+    if (char === "\n") {
+      row.push(field);
+      rows.push(row);
+      row = [];
+      field = "";
+      continue;
+    }
+
+    if (char !== "\r") {
+      field += char;
+    }
+  }
+
+  row.push(field);
+  rows.push(row);
+
+  return rows.filter((item) => item.some((cell) => cell.trim()));
+}
+
+function normalizeHeader(value: string, index: number, seen: Map<string, number>) {
+  const base = value.trim() || `列${index + 1}`;
+  const count = seen.get(base) ?? 0;
+  seen.set(base, count + 1);
+  return count === 0 ? base : `${base}_${count + 1}`;
+}
+
+function parseChartCell(value: string) {
+  const trimmed = value.trim();
+
+  if (!trimmed) {
+    return "";
+  }
+
+  const numeric = trimmed.replace(/,/g, "").replace(/%$/, "");
+
+  if (/^-?\d+(\.\d+)?$/.test(numeric)) {
+    return Number(numeric);
+  }
+
+  return trimmed;
+}
+
+function parseTableText(value: string): ParsedTable {
+  const trimmed = value.trim();
+
+  if (!trimmed) {
+    return {
+      ok: false,
+      error: "CSVまたは表を貼り付けてください。",
+    };
+  }
+
+  const rows = parseDelimitedRows(trimmed, detectDelimiter(trimmed));
+
+  if (rows.length < 2) {
+    return {
+      ok: false,
+      error: "1行目に列名、2行目以降にデータを入れてください。",
+    };
+  }
+
+  const seen = new Map<string, number>();
+  const headers = rows[0].map((cell, index) => normalizeHeader(cell, index, seen));
+  const data = rows.slice(1).flatMap((row) => {
+    const item = Object.fromEntries(
+      headers.map((header, index) => [header, parseChartCell(row[index] ?? "")]),
+    ) as D3ChartDatum;
+
+    return Object.values(item).some((cell) => cell !== "") ? [item] : [];
+  });
+
+  if (data.length === 0) {
+    return {
+      ok: false,
+      error: "データ行が見つかりません。",
+    };
+  }
+
+  return {
+    ok: true,
+    headers,
+    data,
+  };
+}
+
+function collectColumns(data: D3ChartDatum[]) {
+  const columns: string[] = [];
+
+  for (const row of data) {
+    for (const key of Object.keys(row)) {
+      if (!columns.includes(key)) {
+        columns.push(key);
+      }
+    }
+  }
+
+  return columns;
+}
+
+function isNumericColumn(data: D3ChartDatum[], key: string) {
+  return data.some((row) => typeof row[key] === "number");
+}
+
+function inferChartKeys(data: D3ChartDatum[]) {
+  const columns = collectColumns(data);
+  const xKey = columns.find((key) => !isNumericColumn(data, key)) ?? columns[0] ?? "label";
+  const yKey = columns.find((key) => key !== xKey && isNumericColumn(data, key)) ?? columns[1] ?? "value";
+
+  return { xKey, yKey };
+}
+
+function rowsFromDataJson(value: string) {
+  const parsed = parseD3ChartJSON(value);
+
+  if (!parsed.ok) {
+    return {
+      ok: false as const,
+      error: parsed.error,
+    };
+  }
+
+  if (Array.isArray(parsed.data)) {
+    return {
+      ok: true as const,
+      data: parsed.data,
+    };
+  }
+
+  if (Array.isArray(parsed.data.data)) {
+    return {
+      ok: true as const,
+      data: parsed.data.data,
+    };
+  }
+
+  return {
+    ok: false as const,
+    error: "データは配列形式で入力してください。",
+  };
+}
+
+function formatChartDataAsDelimited(data: D3ChartDatum[]) {
+  if (data.length === 0) {
+    return "";
+  }
+
+  const columns = collectColumns(data);
+  const lines = data.map((row) => columns.map((column) => String(row[column] ?? "")).join("\t"));
+  return [columns.join("\t"), ...lines].join("\n");
+}
+
+function buildChartPreview(block: D3EditorBlock) {
+  const rows = rowsFromDataJson(block.dataJson);
+
+  if (!rows.ok) {
+    return {
+      ok: false as const,
+      error: rows.error,
+      columns: [] as string[],
+    };
+  }
+
+  const preview = normalizeD3ChartInput({
+    title: block.title,
+    description: block.description,
+    chartType: block.chartType,
+    xKey: block.xKey,
+    yKey: block.yKey,
+    yLabel: block.yLabel,
+    height: block.height,
+    data: rows.data,
+  });
+
+  if (!preview) {
+    return {
+      ok: false as const,
+      error: "チャート名、Xキー、Yキー、データを確認してください。",
+      columns: collectColumns(rows.data),
+    };
+  }
+
+  return {
+    ok: true as const,
+    block: preview,
+    columns: collectColumns(rows.data),
+    rowCount: rows.data.length,
+  };
+}
+
+type ChartBuilderFieldsProps = {
+  block: D3EditorBlock;
+  index: number;
+  updateBlock: (id: string, updater: (block: EditorBlock) => EditorBlock) => void;
+};
+
+function ChartBuilderFields({ block, index, updateBlock }: ChartBuilderFieldsProps) {
+  const preview = buildChartPreview(block);
+  const columns = preview.columns;
+  const columnListId = `chart-columns-${block.id}`;
+
+  const setChartBlock = (updater: (block: D3EditorBlock) => D3EditorBlock) => {
+    updateBlock(block.id, (current) => (current.type === "d3Chart" ? updater(current) : current));
+  };
+
+  const importTable = () => {
+    const parsed = parseTableText(block.csvText);
+
+    if (!parsed.ok) {
+      setChartBlock((current) => ({ ...current, csvError: parsed.error }));
+      return;
+    }
+
+    const { xKey, yKey } = inferChartKeys(parsed.data);
+
+    setChartBlock((current) => ({
+      ...current,
+      xKey,
+      yKey,
+      csvError: "",
+      dataJson: formatD3ChartData(parsed.data),
+    }));
+  };
+
+  const formatJson = () => {
+    const rows = rowsFromDataJson(block.dataJson);
+
+    if (!rows.ok) {
+      return;
+    }
+
+    setChartBlock((current) => ({
+      ...current,
+      csvText: formatChartDataAsDelimited(rows.data),
+      csvError: "",
+      dataJson: formatD3ChartData(rows.data),
+    }));
+  };
+
+  const insertSample = () => {
+    const sample = [
+      { 年代: "20代", 回答率: 42 },
+      { 年代: "30代", 回答率: 51 },
+      { 年代: "40代", 回答率: 47 },
+      { 年代: "50代", 回答率: 39 },
+    ];
+
+    setChartBlock((current) => ({
+      ...current,
+      title: current.title || "年代別の回答率",
+      chartType: "bar",
+      xKey: "年代",
+      yKey: "回答率",
+      yLabel: "%",
+      csvText: formatChartDataAsDelimited(sample),
+      csvError: "",
+      dataJson: formatD3ChartData(sample),
+    }));
+  };
+
+  return (
+    <div className="space-y-5">
+      <div className="rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface-subtle)] px-4 py-4">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="space-y-1">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[color:var(--color-muted)]">
+              Matsukasa Chart Builder
+            </p>
+            <h3 className="text-base font-semibold text-[color:var(--color-primary)]">表からチャートを作る</h3>
+            <p className="text-sm leading-7 text-[color:var(--color-secondary-ink)]">
+              スプレッドシートを貼り付けると、JSON とキー候補を自動で整えます。保存時は従来の D3 ブロックとして記事に入ります。
+            </p>
+          </div>
+          <button type="button" className="ui-button ui-button-secondary h-10 px-4 text-sm" onClick={insertSample}>
+            サンプルを入れる
+          </button>
+        </div>
+
+        <label className="mt-4 block space-y-2 text-sm text-[color:var(--color-text)]">
+          <span className="font-medium">CSV / 表を貼り付け</span>
+          <textarea
+            rows={6}
+            value={block.csvText}
+            onChange={(event) => setChartBlock((current) => ({ ...current, csvText: event.target.value, csvError: "" }))}
+            placeholder={"年代\t回答率\n20代\t42\n30代\t51"}
+            className="w-full rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-4 py-3 font-mono text-sm outline-none transition focus:border-[color:var(--color-accent-ink)] focus:shadow-[0_0_0_4px_var(--color-focus-ring)]"
+          />
+          {block.csvError ? (
+            <span className="text-xs text-[color:var(--color-accent-ink)]">{block.csvError}</span>
+          ) : null}
+        </label>
+
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <button type="button" className="ui-button ui-button-primary h-10 px-4 text-sm" onClick={importTable}>
+            表をチャートに反映
+          </button>
+          <button type="button" className="ui-button ui-button-secondary h-10 px-4 text-sm" onClick={formatJson}>
+            JSONを整形
+          </button>
+          {preview.ok ? (
+            <span className="text-xs text-[color:var(--color-muted)]">
+              {preview.rowCount}行 / 列: {columns.join("、") || "未検出"}
+            </span>
+          ) : (
+            <span className="text-xs text-[color:var(--color-accent-ink)]">{preview.error}</span>
+          )}
+        </div>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <label className="space-y-2 text-sm text-[color:var(--color-text)]">
+          <span className="font-medium">チャート名</span>
+          <input
+            type="text"
+            name={`contentBlocks[${index}][title]`}
+            value={block.title}
+            onChange={(event) => setChartBlock((current) => ({ ...current, title: event.target.value }))}
+            className="h-11 w-full rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-4 outline-none transition focus:border-[color:var(--color-accent-ink)] focus:shadow-[0_0_0_4px_var(--color-focus-ring)]"
+          />
+        </label>
+        <label className="space-y-2 text-sm text-[color:var(--color-text)]">
+          <span className="font-medium">チャート種別</span>
+          <select
+            name={`contentBlocks[${index}][chartType]`}
+            value={block.chartType}
+            onChange={(event) =>
+              setChartBlock((current) => ({ ...current, chartType: event.target.value === "line" ? "line" : "bar" }))
+            }
+            className="h-11 w-full rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-4 outline-none transition focus:border-[color:var(--color-accent-ink)] focus:shadow-[0_0_0_4px_var(--color-focus-ring)]"
+          >
+            <option value="bar">棒グラフ</option>
+            <option value="line">折れ線グラフ</option>
+          </select>
+        </label>
+      </div>
+
+      <label className="block space-y-2 text-sm text-[color:var(--color-text)]">
+        <span className="font-medium">補足・注記・出典</span>
+        <textarea
+          name={`contentBlocks[${index}][description]`}
+          rows={3}
+          value={block.description}
+          onChange={(event) => setChartBlock((current) => ({ ...current, description: event.target.value }))}
+          placeholder="出典、調査対象、注記など"
+          className="w-full rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-4 py-3 outline-none transition focus:border-[color:var(--color-accent-ink)] focus:shadow-[0_0_0_4px_var(--color-focus-ring)]"
+        />
+      </label>
+
+      <datalist id={columnListId}>
+        {columns.map((column) => (
+          <option key={column} value={column} />
+        ))}
+      </datalist>
+
+      <div className="grid gap-4 lg:grid-cols-4">
+        <label className="space-y-2 text-sm text-[color:var(--color-text)]">
+          <span className="font-medium">Xキー</span>
+          <input
+            type="text"
+            list={columnListId}
+            name={`contentBlocks[${index}][xKey]`}
+            value={block.xKey}
+            onChange={(event) => setChartBlock((current) => ({ ...current, xKey: event.target.value }))}
+            className="h-11 w-full rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-4 outline-none transition focus:border-[color:var(--color-accent-ink)] focus:shadow-[0_0_0_4px_var(--color-focus-ring)]"
+          />
+        </label>
+        <label className="space-y-2 text-sm text-[color:var(--color-text)]">
+          <span className="font-medium">Yキー</span>
+          <input
+            type="text"
+            list={columnListId}
+            name={`contentBlocks[${index}][yKey]`}
+            value={block.yKey}
+            onChange={(event) => setChartBlock((current) => ({ ...current, yKey: event.target.value }))}
+            className="h-11 w-full rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-4 outline-none transition focus:border-[color:var(--color-accent-ink)] focus:shadow-[0_0_0_4px_var(--color-focus-ring)]"
+          />
+        </label>
+        <label className="space-y-2 text-sm text-[color:var(--color-text)]">
+          <span className="font-medium">Y軸ラベル</span>
+          <input
+            type="text"
+            name={`contentBlocks[${index}][yLabel]`}
+            value={block.yLabel}
+            onChange={(event) => setChartBlock((current) => ({ ...current, yLabel: event.target.value }))}
+            className="h-11 w-full rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-4 outline-none transition focus:border-[color:var(--color-accent-ink)] focus:shadow-[0_0_0_4px_var(--color-focus-ring)]"
+          />
+        </label>
+        <label className="space-y-2 text-sm text-[color:var(--color-text)]">
+          <span className="font-medium">高さ</span>
+          <input
+            type="number"
+            name={`contentBlocks[${index}][height]`}
+            min={220}
+            max={520}
+            value={block.height}
+            onChange={(event) => setChartBlock((current) => ({ ...current, height: Number(event.target.value) || 320 }))}
+            className="h-11 w-full rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-4 outline-none transition focus:border-[color:var(--color-accent-ink)] focus:shadow-[0_0_0_4px_var(--color-focus-ring)]"
+          />
+        </label>
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(360px,0.9fr)]">
+        <label className="block space-y-2 text-sm text-[color:var(--color-text)]">
+          <span className="font-medium">データ JSON</span>
+          <p className="text-xs leading-6 text-[color:var(--color-muted)]">
+            表を反映すると自動で入ります。細かく直したい場合だけ編集してください。
+          </p>
+          <textarea
+            name={`contentBlocks[${index}][dataJson]`}
+            rows={13}
+            value={block.dataJson}
+            onChange={(event) => setChartBlock((current) => ({ ...current, dataJson: event.target.value }))}
+            className="w-full rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-4 py-3 font-mono text-sm outline-none transition focus:border-[color:var(--color-accent-ink)] focus:shadow-[0_0_0_4px_var(--color-focus-ring)]"
+          />
+        </label>
+
+        <div className="space-y-2">
+          <p className="text-sm font-medium text-[color:var(--color-text)]">ライブプレビュー</p>
+          {preview.ok ? (
+            <D3ChartBlock block={preview.block} />
+          ) : (
+            <div className="rounded-lg border border-dashed border-[color:var(--color-border)] bg-[color:var(--color-surface-subtle)] px-4 py-5 text-sm leading-7 text-[color:var(--color-secondary-ink)]">
+              {preview.error}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function fieldId(type: EditorBlock["type"]) {
@@ -257,7 +748,7 @@ export function AdminContentBlocksEditor({
           </div>
         </div>
         <p className="text-xs leading-6 text-[color:var(--color-muted)]">
-          画像は URL でもアップロードでも登録できます。D3 チャートは JSON データを入れると本文内でアニメーション表示されます。
+          画像は URL でもアップロードでも登録できます。チャートは表や CSV から作成し、本文内で D3 アニメーション表示できます。
         </p>
       </div>
 
@@ -487,138 +978,7 @@ export function AdminContentBlocksEditor({
             ) : null}
 
             {block.type === "d3Chart" ? (
-              <div className="space-y-4">
-                <div className="grid gap-4 lg:grid-cols-2">
-                  <label className="space-y-2 text-sm text-[color:var(--color-text)]">
-                    <span className="font-medium">チャート名</span>
-                    <input
-                      type="text"
-                      name={`contentBlocks[${index}][title]`}
-                      value={block.title}
-                      onChange={(event) =>
-                        updateBlock(block.id, (current) =>
-                          current.type === "d3Chart" ? { ...current, title: event.target.value } : current,
-                        )
-                      }
-                      className="h-11 w-full rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-4 outline-none transition focus:border-[color:var(--color-accent-ink)] focus:shadow-[0_0_0_4px_var(--color-focus-ring)]"
-                    />
-                  </label>
-                  <label className="space-y-2 text-sm text-[color:var(--color-text)]">
-                    <span className="font-medium">チャート種別</span>
-                    <select
-                      name={`contentBlocks[${index}][chartType]`}
-                      value={block.chartType}
-                      onChange={(event) =>
-                        updateBlock(block.id, (current) =>
-                          current.type === "d3Chart"
-                            ? { ...current, chartType: event.target.value === "line" ? "line" : "bar" }
-                            : current,
-                        )
-                      }
-                      className="h-11 w-full rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-4 outline-none transition focus:border-[color:var(--color-accent-ink)] focus:shadow-[0_0_0_4px_var(--color-focus-ring)]"
-                    >
-                      <option value="bar">棒グラフ</option>
-                      <option value="line">折れ線グラフ</option>
-                    </select>
-                  </label>
-                </div>
-
-                <label className="block space-y-2 text-sm text-[color:var(--color-text)]">
-                  <span className="font-medium">補足</span>
-                  <textarea
-                    name={`contentBlocks[${index}][description]`}
-                    rows={3}
-                    value={block.description}
-                    onChange={(event) =>
-                      updateBlock(block.id, (current) =>
-                        current.type === "d3Chart" ? { ...current, description: event.target.value } : current,
-                      )
-                    }
-                    className="w-full rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-4 py-3 outline-none transition focus:border-[color:var(--color-accent-ink)] focus:shadow-[0_0_0_4px_var(--color-focus-ring)]"
-                  />
-                </label>
-
-                <div className="grid gap-4 lg:grid-cols-4">
-                  <label className="space-y-2 text-sm text-[color:var(--color-text)]">
-                    <span className="font-medium">Xキー</span>
-                    <input
-                      type="text"
-                      name={`contentBlocks[${index}][xKey]`}
-                      value={block.xKey}
-                      onChange={(event) =>
-                        updateBlock(block.id, (current) =>
-                          current.type === "d3Chart" ? { ...current, xKey: event.target.value } : current,
-                        )
-                      }
-                      className="h-11 w-full rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-4 outline-none transition focus:border-[color:var(--color-accent-ink)] focus:shadow-[0_0_0_4px_var(--color-focus-ring)]"
-                    />
-                  </label>
-                  <label className="space-y-2 text-sm text-[color:var(--color-text)]">
-                    <span className="font-medium">Yキー</span>
-                    <input
-                      type="text"
-                      name={`contentBlocks[${index}][yKey]`}
-                      value={block.yKey}
-                      onChange={(event) =>
-                        updateBlock(block.id, (current) =>
-                          current.type === "d3Chart" ? { ...current, yKey: event.target.value } : current,
-                        )
-                      }
-                      className="h-11 w-full rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-4 outline-none transition focus:border-[color:var(--color-accent-ink)] focus:shadow-[0_0_0_4px_var(--color-focus-ring)]"
-                    />
-                  </label>
-                  <label className="space-y-2 text-sm text-[color:var(--color-text)]">
-                    <span className="font-medium">Y軸ラベル</span>
-                    <input
-                      type="text"
-                      name={`contentBlocks[${index}][yLabel]`}
-                      value={block.yLabel}
-                      onChange={(event) =>
-                        updateBlock(block.id, (current) =>
-                          current.type === "d3Chart" ? { ...current, yLabel: event.target.value } : current,
-                        )
-                      }
-                      className="h-11 w-full rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-4 outline-none transition focus:border-[color:var(--color-accent-ink)] focus:shadow-[0_0_0_4px_var(--color-focus-ring)]"
-                    />
-                  </label>
-                  <label className="space-y-2 text-sm text-[color:var(--color-text)]">
-                    <span className="font-medium">高さ</span>
-                    <input
-                      type="number"
-                      name={`contentBlocks[${index}][height]`}
-                      min={220}
-                      max={520}
-                      value={block.height}
-                      onChange={(event) =>
-                        updateBlock(block.id, (current) =>
-                          current.type === "d3Chart"
-                            ? { ...current, height: Number(event.target.value) || 320 }
-                            : current,
-                        )
-                      }
-                      className="h-11 w-full rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-4 outline-none transition focus:border-[color:var(--color-accent-ink)] focus:shadow-[0_0_0_4px_var(--color-focus-ring)]"
-                    />
-                  </label>
-                </div>
-
-                <label className="block space-y-2 text-sm text-[color:var(--color-text)]">
-                  <span className="font-medium">データ JSON</span>
-                  <p className="text-xs leading-6 text-[color:var(--color-muted)]">
-                    配列形式で入れてください。例: [{`{ "label": "20代", "value": 42 }`}, ...]
-                  </p>
-                  <textarea
-                    name={`contentBlocks[${index}][dataJson]`}
-                    rows={10}
-                    value={block.dataJson}
-                    onChange={(event) =>
-                      updateBlock(block.id, (current) =>
-                        current.type === "d3Chart" ? { ...current, dataJson: event.target.value } : current,
-                      )
-                    }
-                    className="w-full rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-4 py-3 font-mono text-sm outline-none transition focus:border-[color:var(--color-accent-ink)] focus:shadow-[0_0_0_4px_var(--color-focus-ring)]"
-                  />
-                </label>
-              </div>
+              <ChartBuilderFields block={block} index={index} updateBlock={updateBlock} />
             ) : null}
           </div>
         ))}

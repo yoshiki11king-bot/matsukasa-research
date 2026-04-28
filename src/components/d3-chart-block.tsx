@@ -9,7 +9,10 @@ type D3ChartBlockProps = {
 };
 
 function toNumber(value: string | number) {
-  const resolved = typeof value === "number" ? value : Number(value);
+  const resolved =
+    typeof value === "number"
+      ? value
+      : Number(value.trim().replace(/,/g, "").replace(/%$/, ""));
   return Number.isFinite(resolved) ? resolved : 0;
 }
 
