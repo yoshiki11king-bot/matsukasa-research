@@ -11,6 +11,7 @@ export async function SiteFooter() {
     { href: "/reports", label: "報告書" },
     { href: "/methodologies", label: "方法論" },
     { href: "/tools-datasets", label: "ツールとデータセット" },
+    { href: "/projects/rudbeckia", label: "Project: Rudbeckia" },
     { href: "/researchers", label: "研究員" },
     { href: "/finance", label: "財務情報" },
     { href: "/careers", label: "採用" },
@@ -119,6 +120,9 @@ export async function SiteFooter() {
             </Link>
             <Link href="/tools-datasets" className="ui-signal-link transition hover:text-[color:var(--color-primary)]">
               ツールとデータセット
+            </Link>
+            <Link href="/projects/rudbeckia" className="ui-signal-link transition hover:text-[color:var(--color-primary)]">
+              Project: Rudbeckia
             </Link>
             <Link href="/finance" className="ui-signal-link transition hover:text-[color:var(--color-primary)]">
               財務情報

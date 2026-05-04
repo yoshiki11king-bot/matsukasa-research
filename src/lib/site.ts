@@ -1,6 +1,7 @@
 export const siteConfig = {
   name: "松笠研究所",
   englishName: "Matsukasa Research Center",
+  url: "https://matsukasa-research.org",
   description:
     "統計調査を主軸に、日本社会をより正確に理解するための知見を蓄積・公開する独立系シンクタンク。",
   mission:
@@ -60,5 +61,5 @@ export function getSiteUrl() {
     return `https://${vercelUrl}`.replace(/\/+$/, "");
   }
 
-  return "http://localhost:3000";
+  return siteConfig.url;
 }

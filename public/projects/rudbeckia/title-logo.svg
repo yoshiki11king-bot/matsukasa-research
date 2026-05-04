@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 360" role="img" aria-labelledby="title desc">
+  <title id="title">Project: Rudbeckia</title>
+  <desc id="desc">Nonpartisan research for the public good</desc>
+  <rect width="1200" height="360" fill="#fffdf8"/>
+  <g fill="#111111">
+    <text x="58" y="116" font-family="Times New Roman, Georgia, serif" font-size="76" letter-spacing="-2">
+      Project:
+    </text>
+    <text x="335" y="116" font-family="Times New Roman, Georgia, serif" font-size="92" letter-spacing="9">
+      RUDBECKIA
+    </text>
+  </g>
+  <g stroke="#c8912b" stroke-width="4" stroke-linecap="round">
+    <line x1="58" y1="192" x2="515" y2="192"/>
+    <line x1="685" y1="192" x2="1142" y2="192"/>
+  </g>
+  <g transform="translate(600 192)" fill="#c8912b">
+    <circle r="10"/>
+    <g>
+      <ellipse cx="0" cy="-33" rx="12" ry="29"/>
+      <ellipse cx="0" cy="33" rx="12" ry="29"/>
+      <ellipse cx="-33" cy="0" rx="29" ry="12"/>
+      <ellipse cx="33" cy="0" rx="29" ry="12"/>
+      <ellipse cx="24" cy="-24" rx="11" ry="27" transform="rotate(45 24 -24)"/>
+      <ellipse cx="-24" cy="24" rx="11" ry="27" transform="rotate(45 -24 24)"/>
+      <ellipse cx="-24" cy="-24" rx="11" ry="27" transform="rotate(-45 -24 -24)"/>
+      <ellipse cx="24" cy="24" rx="11" ry="27" transform="rotate(-45 24 24)"/>
+    </g>
+    <circle r="14" fill="#fffdf8"/>
+    <circle r="7"/>
+  </g>
+  <text
+    x="600"
+    y="283"
+    text-anchor="middle"
+    font-family="Arial, Helvetica, sans-serif"
+    font-size="26"
+    font-weight="700"
+    letter-spacing="9"
+    textLength="1040"
+    lengthAdjust="spacingAndGlyphs"
+    fill="#202020"
+  >
+    NONPARTISAN RESEARCH FOR THE PUBLIC GOOD
+  </text>
+</svg>
