@@ -144,9 +144,9 @@ export function HeaderImageCarousel() {
   }
 
   return (
-    <section className="border-b border-[rgba(249,115,22,0.12)] bg-[rgba(255,255,255,0.74)] backdrop-blur">
+    <section className="border-b border-[color:var(--color-border)] bg-white/80 backdrop-blur">
       <div className="mx-auto w-full max-w-[1480px] px-5 py-4 lg:px-8 lg:py-5">
-        <div className="ui-carousel-frame ui-scan-frame relative h-[170px] overflow-hidden rounded-lg border border-[rgba(249,115,22,0.18)] bg-[color:var(--color-surface-subtle)] sm:h-[210px] lg:h-[250px]">
+        <div className="ui-carousel-frame ui-scan-frame relative h-[170px] overflow-hidden rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface-subtle)] sm:h-[210px] lg:h-[250px]">
           <button
             type="button"
             onClick={goPrevious}
@@ -186,7 +186,7 @@ export function HeaderImageCarousel() {
                   className="object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-[rgba(15,23,42,0.68)] via-[rgba(15,23,42,0.28)] to-[rgba(15,23,42,0.08)]" />
-                <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(249,115,22,0.18)_0%,transparent_30%,rgba(14,165,233,0.12)_100%)] mix-blend-screen" />
+                <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0.1)_0%,transparent_34%,rgba(255,255,255,0.08)_100%)] mix-blend-screen" />
                 <div className="absolute inset-x-0 bottom-0 p-5 text-white sm:p-6 lg:p-7">
                   <div className="max-w-[520px] space-y-2">
                     <p className="text-xs font-semibold tracking-[0.14em] text-white/78">{slide.eyebrow}</p>

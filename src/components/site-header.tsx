@@ -13,7 +13,7 @@ export function SiteHeader({ variant = "default" }: SiteHeaderProps) {
   const switchLabel = isRudbeckia ? "松笠研究所へ切り替える" : "Project: Rudbeckia へ切り替える";
 
   return (
-    <header className="ui-site-settle sticky top-0 z-40 border-b border-[rgba(249,115,22,0.14)] bg-[color:var(--color-surface-elevated)] [background-image:linear-gradient(180deg,rgba(255,255,255,0.94)_0%,rgba(255,247,237,0.82)_100%)] shadow-[0_10px_34px_rgba(15,23,42,0.04)] backdrop-blur-xl">
+    <header className="ui-site-settle sticky top-0 z-40 border-b border-[color:var(--color-border)] bg-[color:var(--color-surface-elevated)] [background-image:linear-gradient(180deg,#ffffff_0%,#ffffff_100%)] shadow-[0_10px_34px_rgba(15,23,42,0.04)] backdrop-blur-xl">
       <div className="mx-auto flex w-full max-w-[1480px] flex-wrap items-center justify-between gap-4 px-5 py-4 lg:px-8">
         <div className="flex min-w-0 items-center gap-2 sm:gap-3">
           <Link

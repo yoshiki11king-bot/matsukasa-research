@@ -13,7 +13,7 @@ export function LatestPostsStrip({ posts }: LatestPostsStripProps) {
   }
 
   return (
-    <section className="ui-tech-panel overflow-hidden rounded-[1.9rem] border border-[rgba(249,115,22,0.14)] bg-[linear-gradient(180deg,rgba(255,255,255,0.94)_0%,rgba(255,247,237,0.76)_100%)] shadow-[var(--shadow-soft)]">
+    <section className="ui-tech-panel overflow-hidden rounded-[1.9rem] border border-[color:var(--color-border)] bg-[linear-gradient(180deg,#ffffff_0%,#ffffff_100%)] shadow-[var(--shadow-soft)]">
       <div className="flex flex-wrap items-end justify-between gap-4 px-5 py-5 sm:px-6 sm:py-6">
         <div className="space-y-2">
           <p className="text-[0.72rem] font-semibold tracking-[0.18em] text-[color:var(--color-muted)]">RECENT PICKS</p>

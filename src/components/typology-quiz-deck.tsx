@@ -172,7 +172,7 @@ export function TypologyQuizDeck() {
 
               {isComplete ? (
                 <div className="space-y-5" aria-live="polite">
-                  <div className="rounded-lg border border-[rgba(249,115,22,0.28)] bg-[rgba(255,247,237,0.74)] px-5 py-5">
+                  <div className="rounded-lg border border-[color:var(--color-border)] bg-white px-5 py-5">
                     <p className="text-xs font-semibold tracking-[0.14em] text-[color:var(--color-accent-ink)]">
                       RESULT
                     </p>
@@ -212,7 +212,7 @@ export function TypologyQuizDeck() {
                           key={question.id}
                           type="button"
                           onClick={() => reviewQuestion(questionIndex)}
-                          className="rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-3 py-2 text-left text-xs leading-6 text-[color:var(--color-secondary-ink)] transition hover:border-[color:var(--color-accent)] hover:bg-[rgba(255,247,237,0.82)]"
+                          className="rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-3 py-2 text-left text-xs leading-6 text-[color:var(--color-secondary-ink)] transition hover:border-[color:var(--color-accent)] hover:bg-white"
                         >
                           <span className="font-semibold text-[color:var(--color-primary)]">
                             Q{questionIndex + 1}
@@ -246,7 +246,7 @@ export function TypologyQuizDeck() {
                           onClick={() => selectOption(currentQuestion.id, option.id)}
                           className={`rounded-lg border px-4 py-3 text-left text-sm leading-7 transition ${
                             isSelected
-                              ? "border-[color:var(--color-accent)] bg-[rgba(255,247,237,0.92)] text-[color:var(--color-primary)]"
+                              ? "border-[color:var(--color-accent)] bg-white text-[color:var(--color-primary)]"
                               : "border-[color:var(--color-border)] bg-[color:var(--color-surface)] text-[color:var(--color-text)] hover:border-[color:var(--color-accent)] hover:bg-white"
                           }`}
                         >

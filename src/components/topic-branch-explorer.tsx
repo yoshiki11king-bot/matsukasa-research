@@ -98,7 +98,7 @@ export function TopicBranchExplorer({ query, selectedTopics, topics }: TopicBran
         </div>
       </div>
 
-      <div className="ui-tech-panel overflow-hidden rounded-[2.25rem] border border-[color:rgba(249,115,22,0.16)] bg-[linear-gradient(180deg,rgba(255,255,255,0.96)_0%,rgba(255,247,237,0.82)_100%)] shadow-[var(--shadow-soft)]">
+      <div className="ui-tech-panel overflow-hidden rounded-[2.25rem] border border-[color:var(--color-border)] bg-[linear-gradient(180deg,#ffffff_0%,#ffffff_100%)] shadow-[var(--shadow-soft)]">
         <div className="grid gap-0 xl:grid-cols-[minmax(0,1.52fr)_390px]">
           <div className="space-y-5 px-4 py-5 md:hidden">
             <div className="rounded-[1.6rem] border border-[rgba(15,23,42,0.08)] bg-[rgba(255,255,255,0.84)] px-4 py-4 shadow-[var(--shadow-card)]">
@@ -115,7 +115,7 @@ export function TopicBranchExplorer({ query, selectedTopics, topics }: TopicBran
                       setActiveArticleBranchId(articleBranches[0].id);
                     }
                   }}
-                  className="rounded-full border border-[rgba(249,115,22,0.22)] bg-[rgba(255,247,237,0.86)] px-3 py-1 text-xs font-medium text-[color:var(--color-warm-ink)] transition hover:text-[color:var(--color-primary)]"
+                  className="rounded-full border border-[color:var(--color-border)] bg-white px-3 py-1 text-xs font-medium text-[color:var(--color-warm-ink)] transition hover:text-[color:var(--color-primary)]"
                 >
                   記事から始める
                 </button>
@@ -139,7 +139,7 @@ export function TopicBranchExplorer({ query, selectedTopics, topics }: TopicBran
                     }}
                     className={`ui-explorer-float rounded-[1.45rem] border px-4 py-4 text-left text-white transition ${
                       active || highlightedBySelection
-                        ? "border-[rgba(255,229,213,0.95)] bg-[linear-gradient(180deg,#fb923c_0%,#ea580c_100%)] shadow-[0_16px_32px_rgba(249,115,22,0.22)]"
+                        ? "border-[color:var(--color-border)] bg-[linear-gradient(180deg,#ffffff_0%,#ffffff_100%)] !text-[color:var(--color-primary)] shadow-[0_16px_32px_rgba(15,23,42,0.1)]"
                         : "border-[rgba(147,197,253,0.5)] bg-[linear-gradient(180deg,#1d64c2_0%,#164a94_100%)] shadow-[0_12px_24px_rgba(15,23,42,0.16)]"
                     }`}
                     style={floatingStyle(index, 6.4)}
@@ -168,7 +168,7 @@ export function TopicBranchExplorer({ query, selectedTopics, topics }: TopicBran
                         onClick={() => setActiveArticleBranchId(branch.id)}
                         className={`ui-explorer-reveal rounded-[1.3rem] border px-4 py-4 text-left text-white transition ${
                           active || selected
-                            ? "border-[rgba(255,229,213,0.95)] bg-[linear-gradient(180deg,#fb923c_0%,#ea580c_100%)] shadow-[0_16px_32px_rgba(249,115,22,0.2)]"
+                            ? "border-[color:var(--color-border)] bg-[linear-gradient(180deg,#ffffff_0%,#ffffff_100%)] !text-[color:var(--color-primary)] shadow-[0_16px_32px_rgba(15,23,42,0.1)]"
                             : "border-[rgba(147,197,253,0.36)] bg-[linear-gradient(180deg,rgba(96,133,227,0.94)_0%,rgba(61,105,202,0.84)_100%)] shadow-[0_10px_20px_rgba(30,64,175,0.12)]"
                         }`}
                         style={revealStyle(index)}
@@ -189,7 +189,7 @@ export function TopicBranchExplorer({ query, selectedTopics, topics }: TopicBran
                           href={getTopicHref(topic.name)}
                           className={`ui-explorer-reveal rounded-[1.2rem] border px-4 py-4 text-center text-sm font-medium transition ${
                             active
-                              ? "border-[rgba(255,229,213,0.95)] bg-[linear-gradient(180deg,#fb923c_0%,#ea580c_100%)] text-white shadow-[0_14px_28px_rgba(249,115,22,0.2)]"
+                              ? "border-[color:var(--color-border)] bg-[linear-gradient(180deg,#ffffff_0%,#ffffff_100%)] text-[color:var(--color-primary)] shadow-[0_14px_28px_rgba(15,23,42,0.1)]"
                               : "border-[rgba(147,197,253,0.3)] bg-[linear-gradient(180deg,rgba(107,134,232,0.94)_0%,rgba(127,154,241,0.78)_100%)] text-white shadow-[0_10px_20px_rgba(30,64,175,0.12)]"
                           }`}
                           style={revealStyle(index)}
@@ -224,10 +224,10 @@ export function TopicBranchExplorer({ query, selectedTopics, topics }: TopicBran
           </div>
 
           <div className="relative hidden min-h-[650px] overflow-hidden px-6 py-7 md:block xl:min-h-[690px]">
-            <div className="absolute inset-6 rounded-[2rem] border border-[rgba(249,115,22,0.1)] bg-[radial-gradient(circle_at_52%_48%,rgba(255,247,237,0.98)_0%,rgba(255,255,255,0.9)_42%,rgba(238,246,255,0.86)_100%)]" />
+            <div className="absolute inset-6 rounded-[2rem] border border-[color:var(--color-border)] bg-[radial-gradient(circle_at_52%_48%,#ffffff_0%,#ffffff_46%,rgba(248,250,252,0.9)_100%)]" />
             <div className="absolute inset-8 rounded-[1.9rem] border border-[rgba(15,23,42,0.06)] bg-[linear-gradient(135deg,rgba(255,255,255,0.62),rgba(255,255,255,0.18))]" />
             <div className="pointer-events-none absolute inset-8 rounded-[1.9rem] bg-[repeating-linear-gradient(90deg,rgba(15,23,42,0.026)_0_1px,transparent_1px_44px),repeating-linear-gradient(0deg,rgba(15,23,42,0.022)_0_1px,transparent_1px_44px)]" />
-            <div className="pointer-events-none absolute inset-x-8 top-[42%] h-px bg-[linear-gradient(90deg,transparent,rgba(249,115,22,0.24),rgba(14,165,233,0.16),transparent)]" />
+            <div className="pointer-events-none absolute inset-x-8 top-[42%] h-px bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.94),transparent)]" />
 
             <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
               {primaryNodes.map((node) => (
@@ -332,7 +332,7 @@ export function TopicBranchExplorer({ query, selectedTopics, topics }: TopicBran
                 }}
                 className={`ui-map-node ui-terminal-node ui-terminal-node-core ui-explorer-float ui-explorer-glow relative flex h-[122px] w-[252px] items-center justify-center overflow-hidden rounded-[1.9rem] border px-8 text-center text-white shadow-[0_18px_38px_rgba(15,23,42,0.22)] ${
                   hasSelectedBranches
-                    ? "ui-terminal-node-active border-[rgba(255,229,213,0.95)] bg-[linear-gradient(180deg,#fb923c_0%,#ea580c_100%)] shadow-[0_20px_40px_rgba(249,115,22,0.24)]"
+                    ? "ui-terminal-node-active border-[color:var(--color-border)] bg-[linear-gradient(180deg,#ffffff_0%,#ffffff_100%)] !text-[color:var(--color-primary)] shadow-[0_20px_40px_rgba(15,23,42,0.12)]"
                     : "border-[rgba(147,197,253,0.6)] bg-[linear-gradient(180deg,#0f58b8_0%,#164e9a_100%)]"
                 }`}
                 aria-pressed={activePrimary.id === "articles"}
@@ -360,7 +360,7 @@ export function TopicBranchExplorer({ query, selectedTopics, topics }: TopicBran
                     }}
                     className={`ui-map-node ui-terminal-node ui-explorer-float relative flex h-[86px] w-[166px] items-center justify-center overflow-hidden rounded-[1.5rem] border px-5 text-center text-white transition duration-200 ${
                       active || highlightedBySelection
-                        ? "ui-terminal-node-active ui-explorer-glow border-[rgba(255,229,213,0.95)] bg-[linear-gradient(180deg,#fb923c_0%,#ea580c_100%)] shadow-[0_18px_38px_rgba(249,115,22,0.26)]"
+                        ? "ui-terminal-node-active ui-explorer-glow border-[color:var(--color-border)] bg-[linear-gradient(180deg,#ffffff_0%,#ffffff_100%)] !text-[color:var(--color-primary)] shadow-[0_18px_38px_rgba(15,23,42,0.12)]"
                         : "border-[rgba(147,197,253,0.5)] bg-[linear-gradient(180deg,#1d64c2_0%,#164a94_100%)] shadow-[0_14px_30px_rgba(15,23,42,0.18)] hover:scale-[1.02]"
                     }`}
                     style={floatingStyle(index)}
@@ -413,7 +413,7 @@ export function TopicBranchExplorer({ query, selectedTopics, topics }: TopicBran
                         onClick={() => setActiveArticleBranchId(branch.id)}
                         className={`ui-map-node ui-terminal-node ui-explorer-float ui-explorer-reveal relative flex h-[76px] w-[146px] items-center justify-center overflow-hidden rounded-[1.35rem] border px-4 text-center text-white transition duration-200 ${
                           active || selected
-                            ? "ui-terminal-node-active border-[rgba(255,229,213,0.95)] bg-[linear-gradient(180deg,#fb923c_0%,#ea580c_100%)] shadow-[0_16px_34px_rgba(249,115,22,0.24)]"
+                            ? "ui-terminal-node-active border-[color:var(--color-border)] bg-[linear-gradient(180deg,#ffffff_0%,#ffffff_100%)] !text-[color:var(--color-primary)] shadow-[0_16px_34px_rgba(15,23,42,0.12)]"
                             : "border-[rgba(147,197,253,0.42)] bg-[linear-gradient(180deg,#3d7ddf_0%,#255db5_100%)] shadow-[0_12px_24px_rgba(30,64,175,0.16)] hover:scale-[1.02]"
                         }`}
                         style={{
@@ -445,7 +445,7 @@ export function TopicBranchExplorer({ query, selectedTopics, topics }: TopicBran
                         href={getTopicHref(topic.name)}
                         className={`ui-map-node ui-terminal-node ui-terminal-node-soft ui-explorer-float ui-explorer-reveal flex h-[50px] w-[100px] items-center justify-center rounded-[1rem] border px-3 text-center text-[0.76rem] font-medium leading-[1.3] transition duration-200 hover:scale-[1.03] ${
                           active
-                            ? "ui-terminal-node-active border-[rgba(255,229,213,0.95)] bg-[linear-gradient(180deg,#fb923c_0%,#ea580c_100%)] text-white shadow-[0_14px_28px_rgba(249,115,22,0.22)]"
+                            ? "ui-terminal-node-active border-[color:var(--color-border)] bg-[linear-gradient(180deg,#ffffff_0%,#ffffff_100%)] text-[color:var(--color-primary)] shadow-[0_14px_28px_rgba(15,23,42,0.12)]"
                             : "border-[rgba(147,197,253,0.46)] bg-[linear-gradient(180deg,#dbeafe_0%,#bfdbfe_100%)] text-[color:var(--color-primary)] shadow-[0_10px_20px_rgba(30,64,175,0.12)]"
                         }`}
                         style={{

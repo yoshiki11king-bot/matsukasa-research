@@ -54,7 +54,7 @@ export function ArticleSearchPanel({ query, selectedTopics, allTopics }: Article
                 href={buildTopicToggleHref(query, selectedTopics, topic.name)}
                 className={`inline-flex min-h-10 items-center rounded-full border px-4 py-2 text-sm transition ${
                   active
-                    ? "border-[rgba(255,229,213,0.96)] bg-[linear-gradient(180deg,#fb923c_0%,#ea580c_100%)] text-white shadow-[0_12px_22px_rgba(249,115,22,0.18)]"
+                    ? "border-[color:var(--color-border)] bg-[linear-gradient(180deg,#ffffff_0%,#ffffff_100%)] text-[color:var(--color-primary)] shadow-[0_12px_22px_rgba(15,23,42,0.08)]"
                     : "border-[color:var(--color-border)] bg-[color:var(--color-surface-soft)] text-[color:var(--color-text)] hover:border-[color:var(--color-border-stronger)] hover:text-[color:var(--color-primary)]"
                 }`}
               >
