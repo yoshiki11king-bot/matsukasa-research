@@ -6,7 +6,7 @@ import { getSidebarSnapshot } from "@/lib/microcms";
 import { buildPageMetadata } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
 
-export const revalidate = 60;
+export const revalidate = 3600;
 
 export const metadata: Metadata = buildPageMetadata({
   title: "採用",

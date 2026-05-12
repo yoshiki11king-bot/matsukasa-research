@@ -19,7 +19,7 @@ import {
 import { buildPageMetadata, getAbsoluteUrl } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
 
-export const revalidate = 60;
+export const revalidate = 3600;
 
 type PostPageProps = {
   params: Promise<{

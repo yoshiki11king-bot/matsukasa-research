@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { HomeEntryLinks } from "@/components/home-entry-links";
 import { HomeLatestResources } from "@/components/home-latest-resources";
 import { LaunchGate } from "@/components/LaunchGate";
 import { LatestPostsStrip } from "@/components/latest-posts-strip";
 import { PublicShell } from "@/components/public-shell";
 import { StatusBanner } from "@/components/status-banner";
-import { TopicBranchExplorer } from "@/components/topic-branch-explorer";
 import { buildLegacyArticlesSearch, pickFeaturedPosts } from "@/lib/home-page";
 import {
   cmsStatus,
@@ -14,12 +12,11 @@ import {
   getPostsPage,
   getReports,
   getSidebarSnapshot,
-  getTopics,
 } from "@/lib/microcms";
 import { buildPageMetadata } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
 
-export const revalidate = 60;
+export const revalidate = 3600;
 
 export const metadata: Metadata = buildPageMetadata({
   description: siteConfig.description,
@@ -43,12 +40,11 @@ export default async function HomePage({ searchParams }: RootPageProps) {
     redirect(`/articles?${legacyArticlesSearch}`);
   }
 
-  const [sidebar, postsPage, reports, methodologies, topics] = await Promise.all([
+  const [sidebar, postsPage, reports, methodologies] = await Promise.all([
     getSidebarSnapshot(),
     getPostsPage({ page: 1, limit: 12 }),
     getReports(),
     getMethodologies(),
-    getTopics(),
   ]);
 
   const featuredPosts = pickFeaturedPosts(postsPage.contents, 5);
@@ -69,12 +65,6 @@ export default async function HomePage({ searchParams }: RootPageProps) {
           <LatestPostsStrip posts={featuredPosts} />
 
           {!cmsStatus.configured ? <StatusBanner kind="demo" /> : null}
-
-          <TopicBranchExplorer topics={topics} query="" selectedTopics={[]} />
-
-          <section className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
-            <HomeEntryLinks />
-          </section>
 
           <HomeLatestResources
             latestArticle={latestArticle}

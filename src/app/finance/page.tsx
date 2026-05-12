@@ -16,7 +16,7 @@ export const metadata: Metadata = buildPageMetadata({
   keywords: ["財務情報", "決算資料", "透明性"],
 });
 
-export const revalidate = 60;
+export const revalidate = 3600;
 
 const financePageContent = {
   title: "財務情報の公開",

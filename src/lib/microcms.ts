@@ -42,6 +42,11 @@ import type {
 
 const serviceDomain = process.env.MICROCMS_SERVICE_DOMAIN;
 const apiKey = process.env.MICROCMS_API_KEY;
+export const PUBLIC_MICROCMS_REVALIDATE_SECONDS = 60 * 60;
+
+type PublicCollectionOptions = {
+  revalidateSeconds?: number;
+};
 
 const endpointMap = {
   posts: process.env.MICROCMS_POSTS_ENDPOINT ?? process.env.MICROCMS_ENDPOINT ?? "posts",
@@ -727,7 +732,10 @@ function withDemoMeta<T extends { publishedDate?: string; updatedDate?: string }
   };
 }
 
-async function getAllCollectionItems<K extends AdminCollectionKey>(collection: K) {
+async function getAllCollectionItems<K extends AdminCollectionKey>(
+  collection: K,
+  options?: PublicCollectionOptions,
+) {
   if (!serviceDomain || !apiKey) {
     return getDemoCollection(collection);
   }
@@ -756,7 +764,10 @@ async function getAllCollectionItems<K extends AdminCollectionKey>(collection: K
                       : "-publishedDate,-createdAt",
           },
           cache: "force-cache",
-          nextConfig: { revalidate: 300, tags: [publicTagMap[collection]] },
+          nextConfig: {
+            revalidate: options?.revalidateSeconds ?? PUBLIC_MICROCMS_REVALIDATE_SECONDS,
+            tags: [publicTagMap[collection]],
+          },
         },
       );
 
@@ -824,10 +835,13 @@ export const cmsStatus = {
   configured: Boolean(serviceDomain && apiKey),
 };
 
-export async function getPostsPage(params: PostListParams = {}): Promise<PostsPage> {
+export async function getPostsPage(
+  params: PostListParams = {},
+  options?: PublicCollectionOptions,
+): Promise<PostsPage> {
   const page = params.page ?? 1;
   const limit = params.limit ?? 8;
-  const allPosts = await getAllCollectionItems("posts");
+  const allPosts = await getAllCollectionItems("posts", options);
   const filtered = allPosts.filter((post) => matchQuery(post, params.q) && matchTopics(post, params.topics));
   const offset = (page - 1) * limit;
 
@@ -841,8 +855,8 @@ export async function getPostsPage(params: PostListParams = {}): Promise<PostsPa
   };
 }
 
-export async function getAllPostSlugs() {
-  const posts = await getAllCollectionItems("posts");
+export async function getAllPostSlugs(options?: PublicCollectionOptions) {
+  const posts = await getAllCollectionItems("posts", options);
   return posts.map((post) => post.slug);
 }
 
@@ -861,8 +875,8 @@ export async function getPostsByMethodology(slug: string) {
   return posts.filter((post) => post.methodologySlugs.includes(slug));
 }
 
-export async function getResearchers() {
-  return getAllCollectionItems("researchers");
+export async function getResearchers(options?: PublicCollectionOptions) {
+  return getAllCollectionItems("researchers", options);
 }
 
 export async function getResearcherBySlug(slug: string) {
@@ -870,8 +884,8 @@ export async function getResearcherBySlug(slug: string) {
   return researchers.find((researcher) => researcher.slug === slug) ?? null;
 }
 
-export async function getMethodologies() {
-  return getAllCollectionItems("methodologies");
+export async function getMethodologies(options?: PublicCollectionOptions) {
+  return getAllCollectionItems("methodologies", options);
 }
 
 export async function getMethodologyBySlug(slug: string) {
@@ -879,8 +893,8 @@ export async function getMethodologyBySlug(slug: string) {
   return methodologies.find((entry) => entry.slug === slug) ?? null;
 }
 
-export async function getReports() {
-  return getAllCollectionItems("reports");
+export async function getReports(options?: PublicCollectionOptions) {
+  return getAllCollectionItems("reports", options);
 }
 
 export async function getReportBySlug(slug: string) {
@@ -920,12 +934,12 @@ export async function getFinancialStatements() {
   return getAllCollectionItems("financialStatements");
 }
 
-export async function getTopics() {
+export async function getTopics(options?: PublicCollectionOptions) {
   const [posts, researchers, methodologies, reports] = await Promise.all([
-    getAllCollectionItems("posts"),
-    getAllCollectionItems("researchers"),
-    getAllCollectionItems("methodologies"),
-    getAllCollectionItems("reports"),
+    getAllCollectionItems("posts", options),
+    getAllCollectionItems("researchers", options),
+    getAllCollectionItems("methodologies", options),
+    getAllCollectionItems("reports", options),
   ]);
 
   const map = new Map(demoTopics.map((topic) => [topic.name, topic.description]));

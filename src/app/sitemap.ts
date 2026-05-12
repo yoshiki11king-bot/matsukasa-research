@@ -10,15 +10,18 @@ import {
 import { getSiteUrl } from "@/lib/site";
 import { getTopicHref } from "@/lib/topic-pages";
 
+export const revalidate = 86400;
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = getSiteUrl();
+  const cacheOptions = { revalidateSeconds: revalidate };
   const [postsPage, postSlugs, researchers, methodologies, reports, topics] = await Promise.all([
-    getPostsPage({ page: 1, limit: 100 }),
-    getAllPostSlugs(),
-    getResearchers(),
-    getMethodologies(),
-    getReports(),
-    getTopics(),
+    getPostsPage({ page: 1, limit: 100 }, cacheOptions),
+    getAllPostSlugs(cacheOptions),
+    getResearchers(cacheOptions),
+    getMethodologies(cacheOptions),
+    getReports(cacheOptions),
+    getTopics(cacheOptions),
   ]);
 
   const latestPostDate = postsPage.contents

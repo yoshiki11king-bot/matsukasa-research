@@ -5,7 +5,7 @@ import { RudbeckiaIntro } from "@/components/rudbeckia-intro";
 import { buildPageMetadata } from "@/lib/seo";
 import { getSiteUrl } from "@/lib/site";
 
-export const revalidate = 60;
+export const revalidate = 3600;
 
 export const metadata: Metadata = buildPageMetadata({
   title: "Project: Rudbeckia",
@@ -14,12 +14,6 @@ export const metadata: Metadata = buildPageMetadata({
   path: "/projects/rudbeckia",
   keywords: ["Project Rudbeckia", "Rudbeckia", "社会調査", "統計", "可視化", "若者発", "松笠研究所"],
 });
-
-const pageNav = [
-  ["参加する", "#join"],
-  ["調査を見る", "#survey"],
-  ["進行を見る", "#roadmap"],
-];
 
 const routeCards = [
   ["01", "答える", "調査に協力", "#survey"],
@@ -43,62 +37,10 @@ const roadmap = [
   ["04", "研究所へ"],
 ];
 
-const participationModes = ["答える", "広める", "設計する", "読む"];
-
 const rudbeckiaPageUrl = `${getSiteUrl()}/projects/rudbeckia`;
 const teacherSurveyShareHref = `mailto:?subject=${encodeURIComponent(
   "Project Rudbeckiaの教員調査",
 )}&body=${encodeURIComponent(rudbeckiaPageUrl)}`;
-
-function CivicMap() {
-  return (
-    <figure className="rudbeckia-civic-map" aria-label="Project Rudbeckia の調査ネットワークを示す抽象図">
-      <svg viewBox="0 0 760 520" role="img" aria-hidden="true">
-        <defs>
-          <linearGradient id="rudbeckia-axis" x1="0" x2="1" y1="0" y2="1">
-            <stop stopColor="#69D2E7" />
-            <stop offset="0.52" stopColor="#F4C430" />
-            <stop offset="1" stopColor="#FF6B9A" />
-          </linearGradient>
-          <radialGradient id="rudbeckia-core" cx="46%" cy="42%" r="62%">
-            <stop offset="0" stopColor="#F9E27B" />
-            <stop offset="0.55" stopColor="#F4C430" />
-            <stop offset="1" stopColor="#173B2F" />
-          </radialGradient>
-        </defs>
-        <g className="rudbeckia-map-radar">
-          <circle cx="380" cy="260" r="185" />
-          <circle cx="380" cy="260" r="122" />
-          <circle cx="380" cy="260" r="64" />
-        </g>
-        <g className="rudbeckia-map-axis">
-          <path d="M380 260 158 104" />
-          <path d="M380 260 604 112" />
-          <path d="M380 260 642 332" />
-          <path d="M380 260 478 456" />
-          <path d="M380 260 186 424" />
-          <path d="M158 104 86 276 186 424" />
-          <path d="M604 112 642 332 478 456" />
-        </g>
-        <g className="rudbeckia-map-points">
-          <circle cx="380" cy="260" r="50" className="core" />
-          <circle cx="380" cy="260" r="18" className="core-dot" />
-          <circle cx="158" cy="104" r="28" />
-          <circle cx="604" cy="112" r="35" />
-          <circle cx="642" cy="332" r="25" />
-          <circle cx="478" cy="456" r="32" />
-          <circle cx="186" cy="424" r="30" />
-          <circle cx="86" cy="276" r="22" />
-        </g>
-        <g className="rudbeckia-map-frames">
-          <rect x="548" y="204" width="86" height="86" transform="rotate(12 591 247)" />
-          <path d="M180 315 222 258 266 320Z" />
-          <path d="M96 96h92l-46 48Z" />
-        </g>
-      </svg>
-    </figure>
-  );
-}
 
 export default function RudbeckiaProjectPage() {
   return (
@@ -127,14 +69,6 @@ export default function RudbeckiaProjectPage() {
       <main>
         <section id="project" className="rudbeckia-hero">
           <div className="rudbeckia-hero-copy">
-            <nav aria-label="Project Rudbeckia ページ内ナビゲーション" className="rudbeckia-local-nav">
-              {pageNav.map(([label, href]) => (
-                <Link key={label} href={href}>
-                  {label}
-                </Link>
-              ))}
-            </nav>
-            <p className="rudbeckia-kicker">Civic Geometry / Founding Phase</p>
             <h1>
               まだ数えられていない社会を、
               <span>見に行こう。</span>
@@ -149,21 +83,6 @@ export default function RudbeckiaProjectPage() {
               >
                 仲間になる
               </Link>
-              <Link href="#survey" className="rudbeckia-button rudbeckia-button-secondary">
-                第1回調査を見る
-              </Link>
-            </div>
-            <ul className="rudbeckia-participation-list" aria-label="参加方法">
-              {participationModes.map((mode) => (
-                <li key={mode}>{mode}</li>
-              ))}
-            </ul>
-          </div>
-          <div className="rudbeckia-hero-visual">
-            <CivicMap />
-            <div className="rudbeckia-visual-caption">
-              <span>RDBK-01</span>
-              <span>Public Research Grid</span>
             </div>
           </div>
         </section>

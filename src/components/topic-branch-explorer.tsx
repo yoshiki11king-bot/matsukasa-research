@@ -83,21 +83,7 @@ export function TopicBranchExplorer({ query, selectedTopics, topics }: TopicBran
       : activePrimary.description;
 
   return (
-    <section className="space-y-6">
-      <div className="space-y-3">
-        <div className="flex items-center gap-3">
-          <p className="text-[0.72rem] font-semibold tracking-[0.18em] text-[color:var(--color-muted)]">
-            EXPLORER
-          </p>
-          <span className="ui-accent-rule h-px w-28" />
-        </div>
-        <div className="max-w-4xl space-y-3">
-          <h1 className="text-[2.1rem] font-semibold tracking-tight text-[color:var(--color-primary)] lg:text-[2.8rem]">
-            松笠研究所をたどる
-          </h1>
-        </div>
-      </div>
-
+    <section>
       <div className="ui-tech-panel overflow-hidden rounded-[2.25rem] border border-[color:var(--color-border)] bg-[linear-gradient(180deg,#ffffff_0%,#ffffff_100%)] shadow-[var(--shadow-soft)]">
         <div className="grid gap-0 xl:grid-cols-[minmax(0,1.52fr)_390px]">
           <div className="space-y-5 px-4 py-5 md:hidden">

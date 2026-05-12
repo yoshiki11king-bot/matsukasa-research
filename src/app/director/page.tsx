@@ -15,7 +15,7 @@ export const metadata: Metadata = buildPageMetadata({
   keywords: ["所長", "運営責任", "公開姿勢"],
 });
 
-export const revalidate = 60;
+export const revalidate = 3600;
 
 export default async function DirectorPage() {
   const [page, sidebar] = await Promise.all([getCurrentDirectorPage(), getSidebarSnapshot()]);

@@ -8,7 +8,7 @@ import { buildArticlesHref, getPopularityScore, parseSelectedTopics } from "@/li
 import { cmsStatus, getPostsPage, getSidebarSnapshot, getTopics } from "@/lib/microcms";
 import { buildPageMetadata } from "@/lib/seo";
 
-export const revalidate = 60;
+export const revalidate = 3600;
 
 export const metadata: Metadata = buildPageMetadata({
   title: "記事",

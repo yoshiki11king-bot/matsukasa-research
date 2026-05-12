@@ -5,7 +5,7 @@ import { SectionHeading } from "@/components/section-heading";
 import { getSidebarSnapshot } from "@/lib/microcms";
 import { buildPageMetadata } from "@/lib/seo";
 
-export const revalidate = 60;
+export const revalidate = 3600;
 
 export const metadata: Metadata = buildPageMetadata({
   title: "憲章",

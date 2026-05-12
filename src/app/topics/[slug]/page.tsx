@@ -22,7 +22,7 @@ import {
   topicPageDefinitions,
 } from "@/lib/topic-pages";
 
-export const revalidate = 60;
+export const revalidate = 3600;
 
 type TopicPageProps = {
   params: Promise<{
