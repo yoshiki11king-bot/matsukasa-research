@@ -40,23 +40,24 @@ export function PublicShell({
   const layoutClassName = getPublicShellLayoutClassName(showSidebar, Boolean(rightRail));
 
   return (
-    <div className="public-surface ui-page-flow ui-future-shell min-h-screen bg-[color:var(--color-background)]">
-      <SiteHeader />
-      <HeaderImageCarousel />
-      <main className="ui-site-settle mx-auto w-full max-w-[1480px] px-5 py-8 lg:px-8 lg:py-10">
-        <div className="ui-accent-rule mb-8 h-px w-full" />
-        <div className={layoutClassName}>
-          {showSidebar ? (
-            <PublicSidebar
-              researchers={researchers.slice(0, 3)}
-              methodologies={methodologies.slice(0, 3)}
-              reports={reports.slice(0, 2)}
-            />
-          ) : null}
-          <div className="ui-content-flow min-w-0">{children}</div>
-          {rightRail ? <aside className="space-y-6 xl:sticky xl:top-6">{rightRail}</aside> : null}
-        </div>
-      </main>
+    <div className="public-surface min-h-screen bg-[color:var(--color-background)]">
+      <div className="public-dark-area ui-future-shell">
+        <SiteHeader />
+        <HeaderImageCarousel />
+        <main className="ui-site-settle mx-auto w-full max-w-[1320px] px-5 py-9 lg:px-8 lg:py-12">
+          <div className={layoutClassName}>
+            {showSidebar ? (
+              <PublicSidebar
+                researchers={researchers.slice(0, 3)}
+                methodologies={methodologies.slice(0, 3)}
+                reports={reports.slice(0, 2)}
+              />
+            ) : null}
+            <div className="ui-content-flow min-w-0">{children}</div>
+            {rightRail ? <aside className="space-y-6 xl:sticky xl:top-6">{rightRail}</aside> : null}
+          </div>
+        </main>
+      </div>
       <SiteFooter />
     </div>
   );

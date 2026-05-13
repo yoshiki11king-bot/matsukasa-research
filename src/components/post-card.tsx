@@ -11,10 +11,10 @@ export function PostCard({ post }: PostCardProps) {
   const visibleTopics = post.topics.slice(0, 3);
 
   return (
-    <article className="group h-full rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] shadow-[var(--shadow-card)] transition duration-200 hover:-translate-y-0.5 hover:border-[color:var(--color-border-stronger)]">
+    <article className="group h-full border-b border-[color:var(--color-border)] pb-6 transition duration-200 hover:border-[color:var(--color-border-stronger)]">
       <Link href={`/posts/${post.slug}`} className="flex h-full flex-col">
         {post.coverImage ? (
-          <div className="relative aspect-[16/10] overflow-hidden rounded-t-xl border-b border-[color:var(--color-border)] bg-[color:var(--color-surface-muted)]">
+          <div className="relative aspect-[16/10] overflow-hidden bg-[color:var(--color-surface-muted)]">
             <Image
               src={post.coverImage.url}
               alt={post.coverImage.alt || post.title}
@@ -24,25 +24,27 @@ export function PostCard({ post }: PostCardProps) {
             />
           </div>
         ) : (
-          <div className="rounded-t-xl border-b border-[color:var(--color-border)] bg-[color:var(--color-surface-subtle)] px-4 py-8 text-sm text-[color:var(--color-muted)]">
+          <div className="border border-[color:var(--color-border)] bg-[color:var(--color-surface-subtle)] px-4 py-8 text-sm text-[color:var(--color-muted)]">
             画像なし
           </div>
         )}
 
-        <div className="flex flex-1 flex-col gap-4 px-5 py-5">
-          <div className="flex flex-wrap items-center gap-2 text-xs text-[color:var(--color-muted)]">
-            <span className="rounded-full bg-[color:var(--color-surface-subtle)] px-3 py-1 font-medium text-[color:var(--color-primary)]">
+        <div className="flex flex-1 flex-col gap-4 py-5">
+          <div className="flex flex-wrap items-center gap-2 text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-[color:var(--color-muted)]">
+            <span className="font-semibold text-[color:var(--color-primary)]">
               {post.format}
             </span>
-            <span>更新 {formatDate(post.publishedDate)}</span>
+            <span>|</span>
+            <span>{formatDate(post.publishedDate)}</span>
+            <span>|</span>
             <span>{estimateReadingTime(post.body)}分</span>
           </div>
 
           <div className="space-y-2">
-            <h2 className="text-[1.06rem] font-semibold leading-8 tracking-tight text-[color:var(--color-primary)] transition group-hover:text-[color:var(--color-accent-ink)]">
+            <h2 className="font-editorial text-[1.45rem] font-semibold leading-9 tracking-tight text-[color:var(--color-primary)] transition group-hover:text-[color:var(--color-accent-ink)]">
               {post.title}
             </h2>
-            <p className="max-h-[6.4rem] overflow-hidden text-sm leading-7 text-[color:var(--color-text)]">
+            <p className="max-h-[6.4rem] overflow-hidden text-sm leading-7 text-[color:var(--color-secondary-ink)]">
               {post.excerpt}
             </p>
           </div>
@@ -51,13 +53,13 @@ export function PostCard({ post }: PostCardProps) {
             {visibleTopics.map((topic) => (
               <span
                 key={topic}
-                className="rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface-soft)] px-3 py-1 text-[color:var(--color-text)]"
+                className="border border-[color:var(--color-border)] px-2.5 py-1 text-[color:var(--color-text)]"
               >
                 {topic}
               </span>
             ))}
             {post.topics.length > visibleTopics.length ? (
-              <span className="rounded-full border border-[color:var(--color-border)] bg-[color:var(--color-surface-soft)] px-3 py-1 text-[color:var(--color-muted)]">
+              <span className="border border-[color:var(--color-border)] px-2.5 py-1 text-[color:var(--color-muted)]">
                 +{post.topics.length - visibleTopics.length}
               </span>
             ) : null}

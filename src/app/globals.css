@@ -494,30 +494,64 @@ img {
   overflow: clip;
 }
 
-.public-surface::before {
+.public-dark-area {
+  --color-text: #334155;
+  --color-primary: #0f172a;
+  --color-primary-hover: #020617;
+  --color-primary-contrast: #ffffff;
+  --color-secondary-ink: #475569;
+  --color-muted: #64748b;
+  --color-accent: #f97316;
+  --color-accent-ink: #ea580c;
+  --color-accent-hover: #c2410c;
+  --color-accent-contrast: #ffffff;
+  --color-surface: #ffffff;
+  --color-surface-elevated: #ffffff;
+  --color-surface-muted: #f8fafc;
+  --color-surface-subtle: #f1f5f9;
+  --color-surface-soft: rgba(255, 255, 255, 0.92);
+  --color-border: rgba(15, 23, 42, 0.12);
+  --color-border-strong: rgba(15, 23, 42, 0.18);
+  --color-border-stronger: rgba(15, 23, 42, 0.28);
+  --color-focus-ring: rgba(249, 115, 22, 0.22);
+  --color-accent-soft: rgba(249, 115, 22, 0.12);
+  --gradient-accent-rule: linear-gradient(90deg, transparent 0%, rgba(15, 23, 42, 0.35) 50%, transparent 100%);
+  --gradient-signal-rule: linear-gradient(90deg, transparent 0%, rgba(15, 23, 42, 0.18) 50%, transparent 100%);
+  --shadow-soft: none;
+  --shadow-card: none;
+  --shadow-tech: none;
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  min-height: 100vh;
+  background:
+    linear-gradient(180deg, #ffffff 0%, #ffffff 58%, #f8fafc 100%);
+  color: var(--color-text);
+}
+
+.public-dark-area::before {
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.92)),
     repeating-linear-gradient(90deg, rgba(15, 23, 42, 0.035) 0 1px, transparent 1px 56px),
     repeating-linear-gradient(0deg, rgba(15, 23, 42, 0.028) 0 1px, transparent 1px 56px);
   content: "";
-  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.36) 62%, transparent);
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.36) 62%, transparent);
   animation: data-grid-drift 28s ease-in-out infinite;
 }
 
-.public-surface::after {
+.public-dark-area::after {
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
   background:
-    linear-gradient(115deg, transparent 0 44%, rgba(255, 255, 255, 0) 48%, rgba(255, 255, 255, 0) 51%, transparent 56%),
-    linear-gradient(180deg, transparent 0%, rgba(255, 255, 255, 0.52) 54%, rgba(255, 255, 255, 0.88) 100%);
+    radial-gradient(circle at 70% 12%, rgba(249, 115, 22, 0.07), transparent 18%),
+    linear-gradient(180deg, transparent 0%, rgba(248, 250, 252, 0.72) 100%);
   content: "";
-  opacity: 0.72;
+  opacity: 0.82;
 }
 
 .ui-future-shell {
@@ -534,6 +568,58 @@ img {
   content: "";
   opacity: 0.72;
   animation: accent-drift 10s ease-in-out infinite;
+}
+
+.public-dark-area .ui-site-settle {
+  animation-duration: 260ms;
+}
+
+.public-dark-area .ui-button-primary {
+  background: #f26b21;
+  color: #ffffff;
+  box-shadow: none;
+}
+
+.public-dark-area .ui-button-primary:hover,
+.public-dark-area .ui-button-primary:focus-visible {
+  background: #ff7a2f;
+}
+
+.public-dark-area .ui-button-secondary {
+  border-color: var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.public-dark-area .ui-button-secondary:hover,
+.public-dark-area .ui-button-secondary:focus-visible {
+  border-color: var(--color-border-stronger);
+  background: var(--color-surface-muted);
+  box-shadow: none;
+}
+
+.public-dark-area .ui-tech-panel,
+.public-dark-area .ui-warm-panel,
+.public-dark-area .ui-warm-panel-soft {
+  background: transparent;
+  background-image: none;
+}
+
+.public-dark-area .ui-tech-panel::before,
+.public-dark-area .ui-tech-panel::after,
+.public-dark-area .ui-precision-card::before,
+.public-dark-area .ui-precision-card::after,
+.public-dark-area .ui-scan-frame::before,
+.public-dark-area .ui-scan-frame::after {
+  display: none;
+}
+
+.public-dark-area :where(article, section, aside) {
+  border-radius: 0;
+}
+
+.public-dark-area :where(article, .ui-soft-lift):hover {
+  transform: none;
 }
 
 .ui-tech-panel,
@@ -1729,6 +1815,10 @@ img {
   .public-surface :where(article, .ui-soft-lift):hover {
     transform: translateY(-2px);
   }
+
+  .public-dark-area :where(article, .ui-soft-lift):hover {
+    transform: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1752,7 +1842,7 @@ img {
   .ui-content-flow > div > *,
   .ui-accent-rule,
   .ui-carousel-frame img,
-  .public-surface::before,
+  .public-dark-area::before,
   .ui-future-shell::before,
   .ui-tech-panel::after,
   .ui-scan-frame::after,

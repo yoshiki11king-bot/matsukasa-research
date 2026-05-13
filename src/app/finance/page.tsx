@@ -303,7 +303,7 @@ export default async function FinancePage() {
                           </a>
                         ) : null}
                         <Link href={`/reports/${statement.slug}`} className="ui-button ui-button-secondary h-10 px-4 text-sm">
-                          詳細を見る
+                          詳細
                         </Link>
                       </div>
                     </div>

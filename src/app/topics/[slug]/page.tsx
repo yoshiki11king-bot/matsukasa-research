@@ -127,10 +127,10 @@ export default async function TopicPage({ params }: TopicPageProps) {
               このテーマで記事を探す
             </Link>
             <Link href="/reports" className="ui-button ui-button-secondary px-5 py-3 text-sm">
-              関連報告書を見る
+              関連報告書
             </Link>
             <Link href="/methodologies" className="ui-button ui-button-secondary px-5 py-3 text-sm">
-              方法論を見る
+              方法論
             </Link>
           </div>
         </section>

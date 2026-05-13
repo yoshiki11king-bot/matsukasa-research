@@ -17,12 +17,12 @@ type LatestResourceCardProps = {
 
 function LatestResourceCard({ eyebrow, title, summary, href, ctaLabel }: LatestResourceCardProps) {
   return (
-    <article className="rounded-[2rem] border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-6 py-7 shadow-[var(--shadow-soft)]">
-      <p className="text-[0.72rem] font-semibold tracking-[0.18em] text-[color:var(--color-muted)]">{eyebrow}</p>
-      <h2 className="mt-3 text-[1.5rem] font-semibold tracking-tight text-[color:var(--color-primary)]">{title}</h2>
+    <article className="border-l border-[color:var(--color-border)] px-6 py-2">
+      <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[color:var(--color-muted)]">{eyebrow}</p>
+      <h2 className="font-editorial mt-3 text-[1.6rem] font-semibold leading-9 tracking-tight text-[color:var(--color-primary)]">{title}</h2>
       <p className="mt-3 text-sm leading-7 text-[color:var(--color-secondary-ink)]">{summary}</p>
       <div className="mt-5">
-        <Link href={href} className="ui-button ui-button-secondary h-10 px-4 text-sm">
+        <Link href={href} className="text-sm font-semibold uppercase tracking-[0.04em] text-[color:var(--color-primary)] underline decoration-[color:var(--color-border-stronger)] underline-offset-4 transition hover:text-[color:var(--color-accent-ink)]">
           {ctaLabel}
         </Link>
       </div>
@@ -51,7 +51,7 @@ export function HomeLatestResources({
           title: latestReport.title,
           summary: latestReport.summary,
           href: `/reports/${latestReport.slug}`,
-          ctaLabel: "報告書を見る",
+          ctaLabel: "報告書",
         }
       : null,
     latestMethodology
@@ -70,7 +70,7 @@ export function HomeLatestResources({
   }
 
   return (
-    <section className="grid gap-6 xl:grid-cols-3">
+    <section className="grid gap-8 border-y border-[color:var(--color-border)] py-8 xl:grid-cols-3">
       {cards.map((card) => (
         <LatestResourceCard key={card.href} {...card} />
       ))}

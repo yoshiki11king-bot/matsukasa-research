@@ -142,7 +142,7 @@ export function LaunchGate() {
                 onClick={closeGate}
                 className="inline-flex min-h-12 items-center justify-center rounded-lg border border-[rgba(15,23,42,0.16)] bg-[rgba(255,255,255,0.78)] px-6 py-3 text-sm font-medium text-[color:var(--color-primary)] transition hover:border-[rgba(15,23,42,0.28)] hover:bg-white focus-visible:bg-white"
               >
-                サイトを見る
+                サイト
               </button>
             </div>
 

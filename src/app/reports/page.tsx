@@ -44,7 +44,7 @@ export default async function ReportsPage() {
             title="報告書ページは準備中です"
             body="図表や PDF を添えた報告書は、公開準備が整い次第このページに追加します。決算資料や調査ブリーフもここに集約していきます。"
             actionHref="/finance"
-            actionLabel="財務情報を見る"
+            actionLabel="財務情報"
           />
         )}
       </div>

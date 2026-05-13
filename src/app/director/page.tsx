@@ -91,7 +91,7 @@ export default async function DirectorPage() {
                 私たちについて
               </Link>
               <Link href="/finance" className="ui-button ui-button-secondary h-11 px-5 text-sm">
-                財務情報を見る
+                財務情報
               </Link>
             </div>
           </div>

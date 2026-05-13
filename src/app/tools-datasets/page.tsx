@@ -147,10 +147,10 @@ export default async function ToolsDatasetsPage() {
             <p className="text-base font-semibold text-[color:var(--color-primary)]">関連するページ</p>
             <div className="mt-4 grid gap-3">
               <Link href="/methodologies" className="ui-button ui-button-secondary h-10 px-4 text-sm">
-                方法論を見る
+                方法論
               </Link>
               <Link href="/reports" className="ui-button ui-button-secondary h-10 px-4 text-sm">
-                報告書を見る
+                報告書
               </Link>
             </div>
           </aside>
