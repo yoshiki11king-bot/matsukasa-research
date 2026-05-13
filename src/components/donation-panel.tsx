@@ -1,28 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 const presetAmounts = ["500円", "1,000円", "3,000円", "任意額"] as const;
 
-type DonationPanelProps = {
-  contactEmail: string;
-};
-
-export function DonationPanel({ contactEmail }: DonationPanelProps) {
+export function DonationPanel() {
   const [selectedAmount, setSelectedAmount] = useState<(typeof presetAmounts)[number]>("1,000円");
   const [customAmount, setCustomAmount] = useState("");
-
-  const resolvedAmount =
-    selectedAmount === "任意額" ? (customAmount.trim() ? `${customAmount.trim()}円` : "任意額") : selectedAmount;
-
-  const donateHref = useMemo(() => {
-    const params = new URLSearchParams({
-      subject: "松笠研究所への寄付について",
-      body: `松笠研究所を支援したいです。\n希望額: ${resolvedAmount}\n\n継続支援の方法をご案内ください。`,
-    });
-
-    return `mailto:${contactEmail}?${params.toString()}`;
-  }, [contactEmail, resolvedAmount]);
 
   return (
     <section className="rounded-lg border border-[color:var(--color-border-strong)] bg-[color:var(--color-surface)] px-5 py-5 shadow-[var(--shadow-soft)]">
@@ -69,12 +53,12 @@ export function DonationPanel({ contactEmail }: DonationPanelProps) {
           </label>
         ) : null}
 
-        <a
-          href={donateHref}
-          className="ui-button ui-button-primary h-12 w-full px-5 text-sm"
+        <div
+          className="ui-button ui-button-primary h-12 w-full px-5 text-sm opacity-75"
+          aria-disabled="true"
         >
-          寄付する
-        </a>
+          寄付方法は準備中
+        </div>
 
         <a
           href="#support-principles"

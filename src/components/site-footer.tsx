@@ -46,14 +46,6 @@ export async function SiteFooter() {
             <div className="space-y-2 text-sm leading-7 text-[color:var(--color-secondary-ink)]">
               <p>{siteConfig.headerLabel}</p>
               <p>{siteConfig.description}</p>
-              <p>
-                <a
-                  href={`mailto:${siteConfig.contactEmail}`}
-                  className="ui-signal-link inline-flex font-medium text-[color:var(--color-accent-ink)] transition hover:text-[color:var(--color-primary)]"
-                >
-                  {siteConfig.contactEmail}
-                </a>
-              </p>
             </div>
           </section>
 
@@ -81,12 +73,6 @@ export async function SiteFooter() {
               <div className="ui-accent-rule mt-3 h-px w-full opacity-70" />
             </div>
             <div className="grid gap-3 text-base text-[color:var(--color-primary)]">
-              <a
-                href={`mailto:${siteConfig.contactEmail}`}
-                className="ui-signal-link inline-flex w-fit transition hover:text-[color:var(--color-accent-ink)]"
-              >
-                メールで連絡
-              </a>
               {footerLinks.map((item) => (
                 <Link
                   key={item.href}
@@ -133,12 +119,6 @@ export async function SiteFooter() {
             <Link href="/donate" className="ui-signal-link transition hover:text-[color:var(--color-primary)]">
               寄付
             </Link>
-            <a
-              href={`mailto:${siteConfig.contactEmail}`}
-              className="ui-signal-link transition hover:text-[color:var(--color-primary)]"
-            >
-              お問い合わせ
-            </a>
           </nav>
         </div>
       </div>

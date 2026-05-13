@@ -46,7 +46,6 @@ export const siteConfig = {
     "報告書と図表の公開整備",
     "地域聞き取りの交通費と編集費",
   ],
-  contactEmail: "hello@matsukasa-research.org",
 };
 
 export function getSiteUrl() {

@@ -13,7 +13,6 @@ import {
   getTopics,
 } from "@/lib/microcms";
 import { buildBreadcrumbJsonLd, buildPageMetadata, buildWebPageJsonLd } from "@/lib/seo";
-import { siteConfig } from "@/lib/site";
 
 export const revalidate = 3600;
 
@@ -84,7 +83,7 @@ export default async function DonatePage() {
             </div>
           </div>
 
-          <DonationPanel contactEmail={siteConfig.contactEmail} />
+          <DonationPanel />
         </section>
 
         <section className="space-y-8">

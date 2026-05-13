@@ -5,41 +5,17 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { siteConfig } from "@/lib/site";
 
-const LAUNCH_GATE_STORAGE_KEY = "matsukasa-launch-gate-seen";
-
-function hasSeenLaunchGate() {
-  try {
-    return window.localStorage.getItem(LAUNCH_GATE_STORAGE_KEY) === "true";
-  } catch {
-    return false;
-  }
-}
-
-function saveLaunchGateSeen() {
-  try {
-    window.localStorage.setItem(LAUNCH_GATE_STORAGE_KEY, "true");
-  } catch {
-    // Storage can be unavailable in strict privacy modes. The button should still close the gate.
-  }
-}
-
 export function LaunchGate() {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    const hasSeenGate = hasSeenLaunchGate();
+    const timer = window.setTimeout(() => {
+      setIsVisible(true);
+    }, 0);
 
-    if (!hasSeenGate) {
-      const timer = window.setTimeout(() => {
-        setIsVisible(true);
-      }, 0);
-
-      return () => {
-        window.clearTimeout(timer);
-      };
-    }
-
-    return undefined;
+    return () => {
+      window.clearTimeout(timer);
+    };
   }, []);
 
   useEffect(() => {
@@ -50,7 +26,6 @@ export function LaunchGate() {
     const originalOverflow = document.body.style.overflow;
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
-        saveLaunchGateSeen();
         setIsVisible(false);
       }
     }
@@ -69,7 +44,6 @@ export function LaunchGate() {
   }
 
   function closeGate() {
-    saveLaunchGateSeen();
     setIsVisible(false);
   }
 
@@ -147,7 +121,7 @@ export function LaunchGate() {
             </div>
 
             <p className="text-xs leading-6 text-[color:var(--color-muted)]">
-              この表示は一度閉じると、次回以降は表示されません。
+              この表示はページに入るたびに表示されます。
             </p>
           </section>
 

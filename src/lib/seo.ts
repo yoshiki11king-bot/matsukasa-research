@@ -124,7 +124,6 @@ export function buildOrganizationJsonLd() {
     url: getSiteUrl(),
     logo: getAbsoluteUrl("/matsukasa-logo.png"),
     description: siteConfig.description,
-    email: siteConfig.contactEmail,
   };
 }
 

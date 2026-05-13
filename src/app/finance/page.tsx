@@ -7,7 +7,6 @@ import { StructuredData } from "@/components/structured-data";
 import { formatDate } from "@/lib/formatters";
 import { getReports, getSidebarSnapshot } from "@/lib/microcms";
 import { buildBreadcrumbJsonLd, buildPageMetadata, buildWebPageJsonLd } from "@/lib/seo";
-import { siteConfig } from "@/lib/site";
 import type { ResearchReport } from "@/lib/types";
 
 export const metadata: Metadata = buildPageMetadata({
@@ -77,7 +76,7 @@ const financePageContent = {
     },
   ],
   contactText:
-    "公開項目の希望や確認したい点がある場合は、寄付ページまたはメールからお知らせください。運営の透明性に関わる内容は、このページに反映していきます。",
+    "公開項目の希望や確認したい点がある場合は、今後整備するお問い合わせ導線で受け付けます。運営の透明性に関わる内容は、このページに反映していきます。",
 } as const;
 
 function isFinancialReport(report: ResearchReport) {
@@ -340,12 +339,6 @@ export default async function FinancePage() {
             <div className="flex flex-wrap gap-3">
               <Link href="/donate" className="ui-button ui-button-primary h-11 px-5 text-sm">
                 寄付ページへ
-              </Link>
-              <Link
-                href={`mailto:${siteConfig.contactEmail}?subject=松笠研究所の財務情報について`}
-                className="ui-button ui-button-secondary h-11 px-5 text-sm"
-              >
-                メールで連絡
               </Link>
             </div>
           </div>

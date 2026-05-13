@@ -83,7 +83,6 @@ export function SiteHeader({ variant = "default" }: SiteHeaderProps) {
           <nav className="flex max-w-full items-center gap-4 overflow-x-auto">
             <Link href="/articles" className="transition hover:text-[color:var(--color-primary)]">記事</Link>
             <Link href="/reports" className="transition hover:text-[color:var(--color-primary)]">レポート</Link>
-            <a href={`mailto:${siteConfig.contactEmail}`} className="transition hover:text-[color:var(--color-primary)]">お問い合わせ</a>
           </nav>
         </div>
       </div>

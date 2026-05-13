@@ -3,7 +3,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { RudbeckiaIntro } from "@/components/rudbeckia-intro";
 import { buildPageMetadata } from "@/lib/seo";
-import { getSiteUrl } from "@/lib/site";
 
 export const revalidate = 3600;
 
@@ -36,11 +35,6 @@ const roadmap = [
   ["03", "継続"],
   ["04", "研究所へ"],
 ];
-
-const rudbeckiaPageUrl = `${getSiteUrl()}/projects/rudbeckia`;
-const teacherSurveyShareHref = `mailto:?subject=${encodeURIComponent(
-  "Project Rudbeckiaの教員調査",
-)}&body=${encodeURIComponent(rudbeckiaPageUrl)}`;
 
 export default function RudbeckiaProjectPage() {
   return (
@@ -78,7 +72,7 @@ export default function RudbeckiaProjectPage() {
             </p>
             <div className="rudbeckia-actions">
               <Link
-                href="mailto:hello@matsukasa-research.org?subject=Project%20Rudbeckia%20%E3%81%AB%E5%8D%94%E5%8A%9B%E3%81%97%E3%81%9F%E3%81%84"
+                href="#join"
                 className="rudbeckia-button rudbeckia-button-primary"
               >
                 仲間になる
@@ -113,13 +107,13 @@ export default function RudbeckiaProjectPage() {
               <p>小中学校教員の実感から、見えにくい差を測ります。</p>
               <div className="rudbeckia-actions">
                 <Link
-                  href="mailto:hello@matsukasa-research.org?subject=Project%20Rudbeckia%20%E7%AC%AC1%E5%9B%9E%E8%AA%BF%E6%9F%BB%E3%81%AB%E5%8D%94%E5%8A%9B%E3%81%97%E3%81%9F%E3%81%84"
+                  href="#roadmap"
                   className="rudbeckia-button rudbeckia-button-yellow"
                 >
                   調査に協力する
                 </Link>
                 <Link
-                  href={teacherSurveyShareHref}
+                  href="/projects/rudbeckia"
                   className="rudbeckia-button rudbeckia-button-secondary"
                 >
                   紹介する
@@ -169,12 +163,12 @@ export default function RudbeckiaProjectPage() {
             <h2>参加は、ひとこと相談から。</h2>
             <span>調査に答える。紹介する。設計を手伝う。できる形で入れます。</span>
           </div>
-          <Link
-            href="mailto:hello@matsukasa-research.org?subject=Project%20Rudbeckia%E3%81%AB%E5%8F%82%E5%8A%A0%E3%81%97%E3%81%9F%E3%81%84"
+          <span
             className="rudbeckia-button rudbeckia-button-dark"
+            aria-disabled="true"
           >
-            参加の相談をする
-          </Link>
+            参加導線は準備中
+          </span>
         </section>
       </main>
     </div>

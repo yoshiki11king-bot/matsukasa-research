@@ -125,12 +125,6 @@ export default async function CareersPage() {
 
             <div className="space-y-2 text-sm leading-7 text-[color:var(--color-secondary-ink)]">
               <p>応募後は内容確認のうえ、必要に応じてオンラインで面談をご案内します。</p>
-              <p>
-                フォーム公開前の連絡先:{" "}
-                <a href={`mailto:${siteConfig.contactEmail}`} className="font-medium text-[color:var(--color-accent-ink)]">
-                  {siteConfig.contactEmail}
-                </a>
-              </p>
             </div>
           </aside>
         </section>
