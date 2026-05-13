@@ -11,6 +11,26 @@ type MetadataOptions = {
   imageUrl?: string;
 };
 
+type JsonLdType =
+  | "AboutPage"
+  | "CollectionPage"
+  | "ContactPage"
+  | "ProfilePage"
+  | "SearchResultsPage"
+  | "WebPage";
+
+type BreadcrumbItem = {
+  name: string;
+  path: string;
+};
+
+type ItemListEntry = {
+  name: string;
+  path: string;
+  description?: string;
+  imageUrl?: string;
+};
+
 export function getAbsoluteUrl(path = "/") {
   return new URL(path, getSiteUrl()).toString();
 }
@@ -98,6 +118,7 @@ export function buildOrganizationJsonLd() {
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
+    "@id": `${getSiteUrl()}/#organization`,
     name: siteConfig.name,
     alternateName: siteConfig.englishName,
     url: getSiteUrl(),
@@ -111,10 +132,14 @@ export function buildWebsiteJsonLd() {
   return {
     "@context": "https://schema.org",
     "@type": "WebSite",
+    "@id": `${getSiteUrl()}/#website`,
     name: siteConfig.name,
     alternateName: siteConfig.englishName,
     url: getSiteUrl(),
     inLanguage: "ja-JP",
+    publisher: {
+      "@id": `${getSiteUrl()}/#organization`,
+    },
     potentialAction: {
       "@type": "SearchAction",
       target: {
@@ -123,5 +148,83 @@ export function buildWebsiteJsonLd() {
       },
       "query-input": "required name=search_term_string",
     },
+  };
+}
+
+export function buildBreadcrumbJsonLd(items: BreadcrumbItem[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: siteConfig.name,
+        item: getAbsoluteUrl("/"),
+      },
+      ...items.map((item, index) => ({
+        "@type": "ListItem",
+        position: index + 2,
+        name: item.name,
+        item: getAbsoluteUrl(item.path),
+      })),
+    ],
+  };
+}
+
+export function buildWebPageJsonLd({
+  type = "WebPage",
+  name,
+  description,
+  path = "/",
+  dateModified,
+}: {
+  type?: JsonLdType;
+  name: string;
+  description: string;
+  path?: string;
+  dateModified?: string;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": type,
+    "@id": `${getAbsoluteUrl(path)}#webpage`,
+    name,
+    description,
+    url: getAbsoluteUrl(path),
+    inLanguage: "ja-JP",
+    isPartOf: {
+      "@id": `${getSiteUrl()}/#website`,
+    },
+    publisher: {
+      "@id": `${getSiteUrl()}/#organization`,
+    },
+    ...(dateModified ? { dateModified } : {}),
+  };
+}
+
+export function buildCollectionPageJsonLd(options: Omit<Parameters<typeof buildWebPageJsonLd>[0], "type">) {
+  return buildWebPageJsonLd({
+    ...options,
+    type: "CollectionPage",
+  });
+}
+
+export function buildItemListJsonLd(name: string, items: ItemListEntry[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name,
+    itemListElement: items.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      item: {
+        "@type": "CreativeWork",
+        name: item.name,
+        url: getAbsoluteUrl(item.path),
+        ...(item.description ? { description: item.description } : {}),
+        ...(item.imageUrl ? { image: getAbsoluteUrl(item.imageUrl) } : {}),
+      },
+    })),
   };
 }

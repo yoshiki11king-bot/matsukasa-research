@@ -2,8 +2,14 @@ import type { Metadata } from "next";
 import { CollectionEmptyState } from "@/components/collection-empty-state";
 import { PublicShell } from "@/components/public-shell";
 import { ReportCard } from "@/components/report-card";
+import { StructuredData } from "@/components/structured-data";
 import { getReports, getSidebarSnapshot } from "@/lib/microcms";
-import { buildPageMetadata } from "@/lib/seo";
+import {
+  buildBreadcrumbJsonLd,
+  buildCollectionPageJsonLd,
+  buildItemListJsonLd,
+  buildPageMetadata,
+} from "@/lib/seo";
 
 export const revalidate = 3600;
 
@@ -17,6 +23,23 @@ export const metadata: Metadata = buildPageMetadata({
 
 export default async function ReportsPage() {
   const [reports, sidebar] = await Promise.all([getReports(), getSidebarSnapshot()]);
+  const structuredData = [
+    buildCollectionPageJsonLd({
+      name: "報告書",
+      description: "図表や PDF を含む調査報告書の一覧です。",
+      path: "/reports",
+    }),
+    buildBreadcrumbJsonLd([{ name: "報告書", path: "/reports" }]),
+    buildItemListJsonLd(
+      "報告書一覧",
+      reports.map((report) => ({
+        name: report.title,
+        path: `/reports/${report.slug}`,
+        description: report.summary,
+        imageUrl: report.coverImage?.url,
+      })),
+    ),
+  ];
 
   return (
     <PublicShell
@@ -24,6 +47,7 @@ export default async function ReportsPage() {
       methodologies={sidebar.featuredMethodologies}
       reports={sidebar.featuredReports}
     >
+      <StructuredData data={structuredData} />
       <div className="space-y-8">
         <section className="space-y-4 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-soft)] px-6 py-7 shadow-[var(--shadow-card)]">
           <p className="text-xs font-semibold tracking-[0.14em] text-[color:var(--color-muted)]">REPORTS</p>

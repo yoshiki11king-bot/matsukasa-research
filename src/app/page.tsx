@@ -5,6 +5,7 @@ import { LaunchGate } from "@/components/LaunchGate";
 import { LatestPostsStrip } from "@/components/latest-posts-strip";
 import { PublicShell } from "@/components/public-shell";
 import { StatusBanner } from "@/components/status-banner";
+import { StructuredData } from "@/components/structured-data";
 import { buildLegacyArticlesSearch, pickFeaturedPosts } from "@/lib/home-page";
 import {
   cmsStatus,
@@ -13,7 +14,7 @@ import {
   getReports,
   getSidebarSnapshot,
 } from "@/lib/microcms";
-import { buildPageMetadata } from "@/lib/seo";
+import { buildItemListJsonLd, buildPageMetadata, buildWebPageJsonLd } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
 
 export const revalidate = 3600;
@@ -51,9 +52,26 @@ export default async function HomePage({ searchParams }: RootPageProps) {
   const latestArticle = postsPage.contents[0] ?? null;
   const latestReport = reports[0] ?? null;
   const latestMethodology = methodologies[0] ?? null;
+  const structuredData = [
+    buildWebPageJsonLd({
+      name: siteConfig.name,
+      description: siteConfig.description,
+      path: "/",
+    }),
+    buildItemListJsonLd(
+      "松笠研究所の新着記事",
+      featuredPosts.map((post) => ({
+        name: post.title,
+        path: `/posts/${post.slug}`,
+        description: post.excerpt,
+        imageUrl: post.coverImage?.url,
+      })),
+    ),
+  ];
 
   return (
     <>
+      <StructuredData data={structuredData} />
       <LaunchGate />
       <PublicShell
         researchers={sidebar.featuredResearchers}

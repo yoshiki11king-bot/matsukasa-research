@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PublicShell } from "@/components/public-shell";
 import { SectionHeading } from "@/components/section-heading";
+import { StructuredData } from "@/components/structured-data";
 import { TypologyQuizDeck } from "@/components/typology-quiz-deck";
 import { getSidebarSnapshot } from "@/lib/microcms";
-import { buildPageMetadata } from "@/lib/seo";
+import { buildBreadcrumbJsonLd, buildCollectionPageJsonLd, buildItemListJsonLd, buildPageMetadata } from "@/lib/seo";
 
 export const revalidate = 3600;
 
@@ -52,6 +53,22 @@ const publicationRules = [
 
 export default async function ToolsDatasetsPage() {
   const sidebar = await getSidebarSnapshot();
+  const structuredData = [
+    buildCollectionPageJsonLd({
+      name: "ツールとデータセット",
+      description: "調査票、集計ノート、可視化サンプル、公開データセットをまとめるページです。",
+      path: "/tools-datasets",
+    }),
+    buildBreadcrumbJsonLd([{ name: "ツールとデータセット", path: "/tools-datasets" }]),
+    buildItemListJsonLd(
+      "公開予定のツールとデータセット",
+      plannedResources.map((resource) => ({
+        name: resource.title,
+        path: "/tools-datasets",
+        description: resource.body,
+      })),
+    ),
+  ];
 
   return (
     <PublicShell
@@ -59,6 +76,7 @@ export default async function ToolsDatasetsPage() {
       methodologies={sidebar.featuredMethodologies}
       reports={sidebar.featuredReports}
     >
+      <StructuredData data={structuredData} />
       <div className="space-y-10">
         <section className="space-y-4 border-b border-[color:var(--color-border)] pb-8">
           <p className="text-sm font-medium text-[color:var(--color-muted)]">ツールとデータセット</p>

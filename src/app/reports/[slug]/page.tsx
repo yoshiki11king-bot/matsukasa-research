@@ -12,7 +12,7 @@ import {
   getResearchers,
   getSidebarSnapshot,
 } from "@/lib/microcms";
-import { buildPageMetadata, getAbsoluteUrl } from "@/lib/seo";
+import { buildBreadcrumbJsonLd, buildPageMetadata, getAbsoluteUrl } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
 
 type ReportDetailPageProps = {
@@ -83,6 +83,13 @@ export default async function ReportDetailPage({ params }: ReportDetailPageProps
     inLanguage: "ja-JP",
     about: report.topicNames,
   };
+  const structuredData = [
+    reportJsonLd,
+    buildBreadcrumbJsonLd([
+      { name: "報告書", path: "/reports" },
+      { name: report.title, path: `/reports/${report.slug}` },
+    ]),
+  ];
 
   return (
     <PublicShell
@@ -148,7 +155,7 @@ export default async function ReportDetailPage({ params }: ReportDetailPageProps
       }
     >
       <div className="space-y-8">
-        <StructuredData data={reportJsonLd} />
+        <StructuredData data={structuredData} />
         <Link href="/reports" className="text-sm font-medium text-[color:var(--color-accent-ink)] transition hover:text-[color:var(--color-accent-ink)]">
           ← 報告書一覧へ戻る
         </Link>

@@ -4,9 +4,15 @@ import { ArticleSearchPanel } from "@/components/articles/article-search-panel";
 import { LeadStory, PopularPostsAside, SideStory, StoryRow } from "@/components/articles/article-story-parts";
 import { PublicShell } from "@/components/public-shell";
 import { StatusBanner } from "@/components/status-banner";
+import { StructuredData } from "@/components/structured-data";
 import { buildArticlesHref, getPopularityScore, parseSelectedTopics } from "@/lib/articles-page";
 import { cmsStatus, getPostsPage, getSidebarSnapshot, getTopics } from "@/lib/microcms";
-import { buildPageMetadata } from "@/lib/seo";
+import {
+  buildBreadcrumbJsonLd,
+  buildCollectionPageJsonLd,
+  buildItemListJsonLd,
+  buildPageMetadata,
+} from "@/lib/seo";
 
 export const revalidate = 3600;
 
@@ -63,6 +69,23 @@ export default async function ArticlesPage({ searchParams }: HomePageProps) {
       : primarySideStories.length > 0
         ? "xl:grid-cols-[280px_minmax(0,1fr)]"
         : "";
+  const structuredData = [
+    buildCollectionPageJsonLd({
+      name: "記事",
+      description: "統計調査を主軸に、日本社会を読み解くための記事一覧です。",
+      path: "/articles",
+    }),
+    buildBreadcrumbJsonLd([{ name: "記事", path: "/articles" }]),
+    buildItemListJsonLd(
+      "記事一覧",
+      page.contents.map((post) => ({
+        name: post.title,
+        path: `/posts/${post.slug}`,
+        description: post.excerpt,
+        imageUrl: post.coverImage?.url,
+      })),
+    ),
+  ];
 
   return (
     <PublicShell
@@ -71,6 +94,7 @@ export default async function ArticlesPage({ searchParams }: HomePageProps) {
       reports={sidebar.featuredReports}
       showSidebar={false}
     >
+      <StructuredData data={structuredData} />
       <div className="space-y-10 lg:space-y-12">
         {!cmsStatus.configured ? <StatusBanner kind="demo" /> : null}
 

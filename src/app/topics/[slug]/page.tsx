@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { CollectionEmptyState } from "@/components/collection-empty-state";
 import { PostCard } from "@/components/post-card";
 import { PublicShell } from "@/components/public-shell";
+import { StructuredData } from "@/components/structured-data";
 import {
   getMethodologies,
   getPostsPage,
@@ -13,7 +14,12 @@ import {
   getSidebarSnapshot,
   getTopics,
 } from "@/lib/microcms";
-import { buildPageMetadata } from "@/lib/seo";
+import {
+  buildBreadcrumbJsonLd,
+  buildCollectionPageJsonLd,
+  buildItemListJsonLd,
+  buildPageMetadata,
+} from "@/lib/seo";
 import {
   getTopicDefinitionBySlug,
   getTopicHref,
@@ -94,6 +100,27 @@ export default async function TopicPage({ params }: TopicPageProps) {
   const topicMethodologies = methodologies.filter((entry) => entry.focusTopics.includes(topic.name));
   const topicResearchers = researchers.filter((researcher) => researcher.focusTopics.includes(topic.name));
   const copy = getTopicPageCopy(topic);
+  const topicPath = getTopicHref(topic.name);
+  const structuredData = [
+    buildCollectionPageJsonLd({
+      name: `${topic.name} | 研究テーマ`,
+      description: copy.summary,
+      path: topicPath,
+    }),
+    buildBreadcrumbJsonLd([
+      { name: "研究テーマ", path: "/articles" },
+      { name: topic.name, path: topicPath },
+    ]),
+    buildItemListJsonLd(
+      `${topic.name}の記事`,
+      postsPage.contents.map((post) => ({
+        name: post.title,
+        path: `/posts/${post.slug}`,
+        description: post.excerpt,
+        imageUrl: post.coverImage?.url,
+      })),
+    ),
+  ];
 
   return (
     <PublicShell
@@ -101,6 +128,7 @@ export default async function TopicPage({ params }: TopicPageProps) {
       methodologies={sidebar.featuredMethodologies}
       reports={sidebar.featuredReports}
     >
+      <StructuredData data={structuredData} />
       <div className="space-y-10">
         <section className="overflow-hidden rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] shadow-[var(--shadow-card)]">
           <div className="relative h-[240px] sm:h-[300px] lg:h-[340px]">

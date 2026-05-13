@@ -13,7 +13,7 @@ import {
   getResearcherBySlug,
   getSidebarSnapshot,
 } from "@/lib/microcms";
-import { buildPageMetadata, getAbsoluteUrl } from "@/lib/seo";
+import { buildBreadcrumbJsonLd, buildPageMetadata, getAbsoluteUrl } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
 
 type ResearcherDetailPageProps = {
@@ -77,6 +77,13 @@ export default async function ResearcherDetailPage({ params }: ResearcherDetailP
     image: researcher.portraitImage?.url,
     knowsAbout: researcher.focusTopics,
   };
+  const structuredData = [
+    personJsonLd,
+    buildBreadcrumbJsonLd([
+      { name: "研究員", path: "/researchers" },
+      { name: researcher.name, path: `/researchers/${researcher.slug}` },
+    ]),
+  ];
 
   return (
     <PublicShell
@@ -110,7 +117,7 @@ export default async function ResearcherDetailPage({ params }: ResearcherDetailP
       }
     >
       <div className="space-y-8">
-        <StructuredData data={personJsonLd} />
+        <StructuredData data={structuredData} />
         <Link href="/researchers" className="text-sm font-medium text-[color:var(--color-accent-ink)] transition hover:text-[color:var(--color-accent-ink)]">
           ← 研究員一覧へ戻る
         </Link>

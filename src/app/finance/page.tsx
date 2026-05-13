@@ -3,9 +3,10 @@ import Link from "next/link";
 import { RichTextBody } from "@/components/post-body";
 import { PublicShell } from "@/components/public-shell";
 import { SectionHeading } from "@/components/section-heading";
+import { StructuredData } from "@/components/structured-data";
 import { formatDate } from "@/lib/formatters";
 import { getReports, getSidebarSnapshot } from "@/lib/microcms";
-import { buildPageMetadata } from "@/lib/seo";
+import { buildBreadcrumbJsonLd, buildPageMetadata, buildWebPageJsonLd } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
 import type { ResearchReport } from "@/lib/types";
 
@@ -104,6 +105,15 @@ export default async function FinancePage() {
     (a, b) => new Date(b.publishedDate).getTime() - new Date(a.publishedDate).getTime(),
   );
   const latestStatement = sortedStatements[0] ?? null;
+  const structuredData = [
+    buildWebPageJsonLd({
+      name: financePageContent.title,
+      description: financePageContent.summary,
+      path: "/finance",
+      dateModified: financePageContent.updatedDate,
+    }),
+    buildBreadcrumbJsonLd([{ name: "財務情報", path: "/finance" }]),
+  ];
 
   return (
     <PublicShell
@@ -111,6 +121,7 @@ export default async function FinancePage() {
       methodologies={sidebar.featuredMethodologies}
       reports={sidebar.featuredReports}
     >
+      <StructuredData data={structuredData} />
       <div className="space-y-10">
         <section className="ui-warm-panel space-y-4 rounded-[2rem] border border-[color:var(--color-border)] px-6 py-7 shadow-[var(--shadow-soft)]">
           <p className="text-sm font-medium text-[color:var(--color-muted)]">財務情報</p>

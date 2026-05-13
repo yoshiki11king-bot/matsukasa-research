@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { RichTextBody } from "@/components/post-body";
 import { PublicShell } from "@/components/public-shell";
+import { StructuredData } from "@/components/structured-data";
 import { formatDate } from "@/lib/formatters";
 import {
   getMethodologyBySlug,
@@ -10,7 +11,7 @@ import {
   getReportsByMethodology,
   getSidebarSnapshot,
 } from "@/lib/microcms";
-import { buildPageMetadata } from "@/lib/seo";
+import { buildBreadcrumbJsonLd, buildItemListJsonLd, buildPageMetadata, buildWebPageJsonLd } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
 
 type MethodologyDetailPageProps = {
@@ -53,6 +54,36 @@ export default async function MethodologyDetailPage({ params }: MethodologyDetai
     notFound();
   }
 
+  const structuredData = [
+    buildWebPageJsonLd({
+      name: entry.title,
+      description: entry.summary,
+      path: `/methodologies/${entry.slug}`,
+      dateModified: entry.updatedDate,
+    }),
+    buildBreadcrumbJsonLd([
+      { name: "方法論", path: "/methodologies" },
+      { name: entry.title, path: `/methodologies/${entry.slug}` },
+    ]),
+    buildItemListJsonLd(
+      `${entry.title}に関連する記事と報告書`,
+      [
+        ...posts.map((post) => ({
+          name: post.title,
+          path: `/posts/${post.slug}`,
+          description: post.excerpt,
+          imageUrl: post.coverImage?.url,
+        })),
+        ...reports.map((report) => ({
+          name: report.title,
+          path: `/reports/${report.slug}`,
+          description: report.summary,
+          imageUrl: report.coverImage?.url,
+        })),
+      ],
+    ),
+  ];
+
   return (
     <PublicShell
       researchers={sidebar.featuredResearchers}
@@ -83,6 +114,7 @@ export default async function MethodologyDetailPage({ params }: MethodologyDetai
       }
     >
       <div className="space-y-8">
+        <StructuredData data={structuredData} />
         <Link href="/methodologies" className="text-sm font-medium text-[color:var(--color-accent-ink)] transition hover:text-[color:var(--color-accent-ink)]">
           ← 方法論一覧へ戻る
         </Link>

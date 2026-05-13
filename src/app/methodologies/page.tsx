@@ -2,8 +2,14 @@ import type { Metadata } from "next";
 import { CollectionEmptyState } from "@/components/collection-empty-state";
 import { MethodologyCard } from "@/components/methodology-card";
 import { PublicShell } from "@/components/public-shell";
+import { StructuredData } from "@/components/structured-data";
 import { getMethodologies, getSidebarSnapshot } from "@/lib/microcms";
-import { buildPageMetadata } from "@/lib/seo";
+import {
+  buildBreadcrumbJsonLd,
+  buildCollectionPageJsonLd,
+  buildItemListJsonLd,
+  buildPageMetadata,
+} from "@/lib/seo";
 
 export const revalidate = 3600;
 
@@ -17,6 +23,22 @@ export const metadata: Metadata = buildPageMetadata({
 
 export default async function MethodologiesPage() {
   const [methodologies, sidebar] = await Promise.all([getMethodologies(), getSidebarSnapshot()]);
+  const structuredData = [
+    buildCollectionPageJsonLd({
+      name: "方法論",
+      description: "統計調査の前提、限界、レビュー体制を公開する方法論ページです。",
+      path: "/methodologies",
+    }),
+    buildBreadcrumbJsonLd([{ name: "方法論", path: "/methodologies" }]),
+    buildItemListJsonLd(
+      "方法論一覧",
+      methodologies.map((entry) => ({
+        name: entry.title,
+        path: `/methodologies/${entry.slug}`,
+        description: entry.summary,
+      })),
+    ),
+  ];
 
   return (
     <PublicShell
@@ -24,6 +46,7 @@ export default async function MethodologiesPage() {
       methodologies={sidebar.featuredMethodologies}
       reports={sidebar.featuredReports}
     >
+      <StructuredData data={structuredData} />
       <div className="space-y-8">
         <section className="space-y-4 border-b border-[color:var(--color-border)] pb-8">
           <p className="text-sm font-medium text-[color:var(--color-muted)]">方法論</p>

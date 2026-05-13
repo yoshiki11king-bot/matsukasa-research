@@ -2,8 +2,14 @@ import type { Metadata } from "next";
 import { CollectionEmptyState } from "@/components/collection-empty-state";
 import { PublicShell } from "@/components/public-shell";
 import { ResearcherCard } from "@/components/researcher-card";
+import { StructuredData } from "@/components/structured-data";
 import { getResearchers, getSidebarSnapshot } from "@/lib/microcms";
-import { buildPageMetadata } from "@/lib/seo";
+import {
+  buildBreadcrumbJsonLd,
+  buildCollectionPageJsonLd,
+  buildItemListJsonLd,
+  buildPageMetadata,
+} from "@/lib/seo";
 
 export const revalidate = 3600;
 
@@ -17,6 +23,22 @@ export const metadata: Metadata = buildPageMetadata({
 
 export default async function ResearchersPage() {
   const [researchers, sidebar] = await Promise.all([getResearchers(), getSidebarSnapshot()]);
+  const structuredData = [
+    buildCollectionPageJsonLd({
+      name: "研究員",
+      description: "松笠研究所の研究員一覧です。",
+      path: "/researchers",
+    }),
+    buildBreadcrumbJsonLd([{ name: "研究員", path: "/researchers" }]),
+    buildItemListJsonLd(
+      "研究員一覧",
+      researchers.map((researcher) => ({
+        name: researcher.name,
+        path: `/researchers/${researcher.slug}`,
+        description: researcher.summary,
+      })),
+    ),
+  ];
 
   return (
     <PublicShell
@@ -24,6 +46,7 @@ export default async function ResearchersPage() {
       methodologies={sidebar.featuredMethodologies}
       reports={sidebar.featuredReports}
     >
+      <StructuredData data={structuredData} />
       <div className="space-y-8">
         <section className="space-y-4 border-b border-[color:var(--color-border)] pb-8">
           <p className="text-sm font-medium text-[color:var(--color-muted)]">研究員</p>

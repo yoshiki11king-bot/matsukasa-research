@@ -3,6 +3,7 @@ import { DonationPanel } from "@/components/donation-panel";
 import { SectionHeading } from "@/components/section-heading";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { StructuredData } from "@/components/structured-data";
 import { formatDate } from "@/lib/formatters";
 import {
   getMethodologies,
@@ -11,7 +12,7 @@ import {
   getResearchers,
   getTopics,
 } from "@/lib/microcms";
-import { buildPageMetadata } from "@/lib/seo";
+import { buildBreadcrumbJsonLd, buildPageMetadata, buildWebPageJsonLd } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
 
 export const revalidate = 3600;
@@ -41,9 +42,19 @@ export default async function DonatePage() {
   ]
     .filter(Boolean)
     .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[0];
+  const structuredData = [
+    buildWebPageJsonLd({
+      name: "寄付",
+      description: "松笠研究所の統計調査と無料公開を支えるための寄付ページです。",
+      path: "/donate",
+      dateModified: lastUpdated,
+    }),
+    buildBreadcrumbJsonLd([{ name: "寄付", path: "/donate" }]),
+  ];
 
   return (
     <div className="min-h-screen bg-[color:var(--color-background)]">
+      <StructuredData data={structuredData} />
       <SiteHeader />
       <main className="mx-auto w-full max-w-[1240px] space-y-20 px-5 py-8 lg:px-8 lg:py-10">
         <section className="grid gap-8 border-b border-[color:var(--color-border)] pb-12 lg:grid-cols-[minmax(0,1.05fr)_380px] lg:items-start">

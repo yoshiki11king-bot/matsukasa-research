@@ -4,9 +4,10 @@ import { notFound } from "next/navigation";
 import { RichTextBody } from "@/components/post-body";
 import { PublicShell } from "@/components/public-shell";
 import { SectionHeading } from "@/components/section-heading";
+import { StructuredData } from "@/components/structured-data";
 import { formatDate } from "@/lib/formatters";
 import { getCurrentDirectorPage, getSidebarSnapshot } from "@/lib/microcms";
-import { buildPageMetadata } from "@/lib/seo";
+import { buildBreadcrumbJsonLd, buildPageMetadata, buildWebPageJsonLd } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
   title: "所長",
@@ -24,12 +25,24 @@ export default async function DirectorPage() {
     notFound();
   }
 
+  const structuredData = [
+    buildWebPageJsonLd({
+      type: "ProfilePage",
+      name: page.title,
+      description: page.summary,
+      path: "/director",
+      dateModified: page.updatedDate,
+    }),
+    buildBreadcrumbJsonLd([{ name: "所長", path: "/director" }]),
+  ];
+
   return (
     <PublicShell
       researchers={sidebar.featuredResearchers}
       methodologies={sidebar.featuredMethodologies}
       reports={sidebar.featuredReports}
     >
+      <StructuredData data={structuredData} />
       <div className="space-y-10">
         <section className="space-y-4 border-b border-[color:var(--color-border)] pb-8">
           <p className="text-sm font-medium text-[color:var(--color-muted)]">所長</p>

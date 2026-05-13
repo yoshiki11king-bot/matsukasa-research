@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PublicShell } from "@/components/public-shell";
 import { SectionHeading } from "@/components/section-heading";
+import { StructuredData } from "@/components/structured-data";
 import {
   getMethodologies,
   getPostsPage,
@@ -9,7 +10,7 @@ import {
   getResearchers,
   getSidebarSnapshot,
 } from "@/lib/microcms";
-import { buildPageMetadata } from "@/lib/seo";
+import { buildBreadcrumbJsonLd, buildPageMetadata, buildWebPageJsonLd } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
 
 export const revalidate = 3600;
@@ -30,6 +31,15 @@ export default async function AboutPage() {
     getMethodologies(),
     getResearchers(),
   ]);
+  const structuredData = [
+    buildWebPageJsonLd({
+      type: "AboutPage",
+      name: "松笠研究所について",
+      description: siteConfig.aboutSummary,
+      path: "/about",
+    }),
+    buildBreadcrumbJsonLd([{ name: "私たちについて", path: "/about" }]),
+  ];
 
   return (
     <PublicShell
@@ -37,6 +47,7 @@ export default async function AboutPage() {
       methodologies={sidebar.featuredMethodologies}
       reports={sidebar.featuredReports}
     >
+      <StructuredData data={structuredData} />
       <div className="space-y-10">
         <section className="space-y-4 border-b border-[color:var(--color-border)] pb-8">
           <p className="text-sm font-medium text-[color:var(--color-muted)]">私たちについて</p>

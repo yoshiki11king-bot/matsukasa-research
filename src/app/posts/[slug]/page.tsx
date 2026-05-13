@@ -16,7 +16,7 @@ import {
   getReports,
   getSidebarSnapshot,
 } from "@/lib/microcms";
-import { buildPageMetadata, getAbsoluteUrl } from "@/lib/seo";
+import { buildBreadcrumbJsonLd, buildPageMetadata, getAbsoluteUrl } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
 
 export const revalidate = 3600;
@@ -118,6 +118,13 @@ export default async function PostPage({ params }: PostPageProps) {
     inLanguage: "ja-JP",
     about: post.topics,
   };
+  const structuredData = [
+    articleJsonLd,
+    buildBreadcrumbJsonLd([
+      { name: "記事", path: "/articles" },
+      { name: post.title, path: `/posts/${post.slug}` },
+    ]),
+  ];
 
   return (
     <PublicShell
@@ -200,7 +207,7 @@ export default async function PostPage({ params }: PostPageProps) {
       }
     >
       <div className="space-y-8">
-        <StructuredData data={articleJsonLd} />
+        <StructuredData data={structuredData} />
         {!cmsStatus.configured ? <StatusBanner kind="demo" /> : null}
 
         <Link href="/articles" className="text-sm font-medium text-[color:var(--color-accent-ink)] transition hover:text-[color:var(--color-accent-ink)]">
