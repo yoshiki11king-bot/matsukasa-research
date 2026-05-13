@@ -8,7 +8,7 @@ type AdminShellProps = {
 };
 
 export function AdminShell({ title, description, children }: AdminShellProps) {
-  const collections = ["posts", "researchers", "methodologies", "reports", "director"] as const;
+  const collections = ["posts", "reports", "methodologies", "researchers", "director", "finance", "financialStatements"] as const;
 
   return (
     <div className="min-h-screen bg-[color:var(--color-background)]">

@@ -81,6 +81,36 @@ function isFinancialReport(item: AdminReport) {
   return text.includes("決算") || text.includes("財務");
 }
 
+function isPublished(entity: AdminEntity) {
+  return entity.status.includes("PUBLISH") || entity.status.includes("PUBLISH_AND_DRAFT");
+}
+
+function isDraftLike(entity: AdminEntity) {
+  return entity.status.includes("DRAFT") || entity.status.includes("PUBLISH_AND_DRAFT");
+}
+
+function getLatestUpdatedAt(items: AdminEntity[]) {
+  const latest = items
+    .map((item) => item.updatedAt)
+    .filter(Boolean)
+    .sort((left, right) => new Date(right).getTime() - new Date(left).getTime())[0];
+
+  return latest ? formatDate(latest) : "未更新";
+}
+
+function getCollectionHealth(items: AdminEntity[]) {
+  return {
+    total: items.length,
+    published: items.filter(isPublished).length,
+    draft: items.filter(isDraftLike).length,
+    latest: getLatestUpdatedAt(items),
+  };
+}
+
+function flattenCollections(collections: Array<[AdminCollectionKey, AdminEntity[]]>) {
+  return collections.flatMap(([collection, items]) => items.map((item) => ({ collection, item })));
+}
+
 function CollectionSection({
   collection,
   items,
@@ -179,10 +209,163 @@ function CollectionSection({
   );
 }
 
+function MetricCard({
+  label,
+  value,
+  note,
+}: {
+  label: string;
+  value: string | number;
+  note: string;
+}) {
+  return (
+    <div className="rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-5 py-5 shadow-[var(--shadow-soft)]">
+      <p className="text-sm text-[color:var(--color-muted)]">{label}</p>
+      <p className="mt-2 text-3xl font-semibold tracking-tight text-[color:var(--color-primary)]">{value}</p>
+      <p className="mt-2 text-xs leading-6 text-[color:var(--color-secondary-ink)]">{note}</p>
+    </div>
+  );
+}
+
+function QuickActionPanel() {
+  const actions = [
+    { href: "/admin/posts/new", label: "記事を書く", note: "短い分析や告知" },
+    { href: "/admin/reports/new", label: "報告書を作る", note: "PDF・図表つき資料" },
+    { href: "/admin/methodologies/new", label: "方法論を追加", note: "調査の前提を公開" },
+    { href: "/admin/researchers/new", label: "研究員を追加", note: "担当者プロフィール" },
+    { href: "/admin/director/new", label: "所長ページ", note: "運営姿勢の固定ページ" },
+    { href: "/admin/finance/new", label: "財務ページ", note: "公開方針の固定ページ" },
+    { href: "/admin/financialStatements/new", label: "決算資料", note: "年度ごとの資料" },
+  ];
+
+  return (
+    <section className="rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-5 py-5 shadow-[var(--shadow-soft)]">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div className="space-y-1">
+          <p className="text-sm font-semibold text-[color:var(--color-primary)]">作業入口</p>
+          <p className="text-sm leading-7 text-[color:var(--color-secondary-ink)]">
+            よく使う管理作業へ直接進めます。
+          </p>
+        </div>
+        <Link href="/" className="ui-button ui-button-secondary h-10 px-4 text-sm">
+          公開サイトを見る
+        </Link>
+      </div>
+      <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {actions.map((action) => (
+          <Link
+            key={action.href}
+            href={action.href}
+            className="rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface-subtle)] px-4 py-4 transition hover:border-[color:var(--color-border-stronger)] hover:bg-[color:var(--color-surface-muted)]"
+          >
+            <p className="text-sm font-semibold text-[color:var(--color-primary)]">{action.label}</p>
+            <p className="mt-2 text-xs leading-6 text-[color:var(--color-secondary-ink)]">{action.note}</p>
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function AdminWorkQueue({
+  collections,
+}: {
+  collections: Array<[AdminCollectionKey, AdminEntity[]]>;
+}) {
+  const allItems = flattenCollections(collections);
+  const draftItems = allItems
+    .filter(({ item }) => isDraftLike(item))
+    .sort((left, right) => new Date(right.item.updatedAt).getTime() - new Date(left.item.updatedAt).getTime())
+    .slice(0, 8);
+  const recentItems = [...allItems]
+    .sort((left, right) => new Date(right.item.updatedAt).getTime() - new Date(left.item.updatedAt).getTime())
+    .slice(0, 8);
+  const fixedPages = allItems.filter(({ collection }) =>
+    collection === "director" || collection === "finance" || collection === "financialStatements"
+  );
+
+  return (
+    <section className="grid gap-5 xl:grid-cols-3">
+      <div className="rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-5 py-5 shadow-[var(--shadow-soft)]">
+        <p className="text-sm font-semibold text-[color:var(--color-primary)]">下書きキュー</p>
+        <p className="mt-1 text-xs leading-6 text-[color:var(--color-secondary-ink)]">公開前に確認するものです。</p>
+        <div className="mt-4 space-y-3">
+          {draftItems.length > 0 ? (
+            draftItems.map(({ collection, item }) => (
+              <Link
+                key={`${collection}-${item.id}`}
+                href={`/admin/${collection}/${item.id}/edit`}
+                className="block rounded-lg border border-[color:var(--color-border)] px-4 py-3 transition hover:border-[color:var(--color-border-stronger)]"
+              >
+                <p className="text-sm font-medium text-[color:var(--color-primary)]">{getEntityTitle(item, collection)}</p>
+                <p className="mt-1 text-xs text-[color:var(--color-muted)]">
+                  {collectionLabel(collection)} ・ {formatShortDate(item.updatedAt)}
+                </p>
+              </Link>
+            ))
+          ) : (
+            <p className="rounded-lg border border-dashed border-[color:var(--color-border)] px-4 py-6 text-sm leading-7 text-[color:var(--color-secondary-ink)]">
+              いま確認待ちの下書きはありません。
+            </p>
+          )}
+        </div>
+      </div>
+
+      <div className="rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-5 py-5 shadow-[var(--shadow-soft)]">
+        <p className="text-sm font-semibold text-[color:var(--color-primary)]">最近更新</p>
+        <p className="mt-1 text-xs leading-6 text-[color:var(--color-secondary-ink)]">直近で触った内容を戻りやすくします。</p>
+        <div className="mt-4 space-y-3">
+          {recentItems.map(({ collection, item }) => (
+            <Link
+              key={`${collection}-${item.id}`}
+              href={`/admin/${collection}/${item.id}/edit`}
+              className="block rounded-lg border border-[color:var(--color-border)] px-4 py-3 transition hover:border-[color:var(--color-border-stronger)]"
+            >
+              <p className="text-sm font-medium text-[color:var(--color-primary)]">{getEntityTitle(item, collection)}</p>
+              <p className="mt-1 text-xs text-[color:var(--color-muted)]">
+                {collectionLabel(collection)} ・ {statusLabel(item.status)} ・ {formatShortDate(item.updatedAt)}
+              </p>
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      <div className="rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-5 py-5 shadow-[var(--shadow-soft)]">
+        <p className="text-sm font-semibold text-[color:var(--color-primary)]">基盤整備メモ</p>
+        <p className="mt-1 text-xs leading-6 text-[color:var(--color-secondary-ink)]">外部基盤が必要な領域を見失わないための置き場です。</p>
+        <div className="mt-4 grid gap-3">
+          {[
+            ["閲覧データ", "Vercel Analytics か GA を決めてから月間PVを表示します。"],
+            ["モニター募集", "フォーム基盤を決めてから応募一覧を接続します。"],
+            ["メルマガ登録者", "配信サービス決定後に購読者管理を追加します。"],
+          ].map(([title, body]) => (
+            <div key={title} className="rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface-subtle)] px-4 py-3">
+              <p className="text-sm font-medium text-[color:var(--color-primary)]">{title}</p>
+              <p className="mt-1 text-xs leading-6 text-[color:var(--color-secondary-ink)]">{body}</p>
+            </div>
+          ))}
+        </div>
+        <div className="mt-4 border-t border-[color:var(--color-border)] pt-4">
+          <p className="text-xs font-semibold text-[color:var(--color-muted)]">固定ページ</p>
+          <p className="mt-2 text-sm text-[color:var(--color-secondary-ink)]">{fixedPages.length} 件を管理対象にしています。</p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default async function AdminPage({ searchParams }: AdminPageProps) {
   await requireAdmin();
 
-  const collections: AdminCollectionKey[] = ["posts", "researchers", "methodologies", "reports", "director"];
+  const collections: AdminCollectionKey[] = [
+    "posts",
+    "reports",
+    "methodologies",
+    "researchers",
+    "director",
+    "finance",
+    "financialStatements",
+  ];
   const settledCollections = await Promise.allSettled(
     collections.map(async (collection) => [collection, await getAdminCollection(collection)] as const),
   );
@@ -203,7 +386,27 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   const methodologies = collectionMap.get("methodologies") ?? [];
   const reports = collectionMap.get("reports") ?? [];
   const directorPages = collectionMap.get("director") ?? [];
+  const financePages = collectionMap.get("finance") ?? [];
+  const financialStatements = collectionMap.get("financialStatements") ?? [];
   const financialReports = reports.filter((item) => isFinancialReport(item as AdminReport));
+  const contentGroups: Array<[AdminCollectionKey, AdminEntity[]]> = [
+    ["posts", posts],
+    ["reports", reports],
+    ["methodologies", methodologies],
+    ["researchers", researchers],
+    ["director", directorPages],
+    ["finance", financePages],
+    ["financialStatements", financialStatements],
+  ];
+  const allContent = flattenCollections(contentGroups).map(({ item }) => item);
+  const health = {
+    all: getCollectionHealth(allContent),
+    posts: getCollectionHealth(posts),
+    reports: getCollectionHealth(reports),
+    methodologies: getCollectionHealth(methodologies),
+    researchers: getCollectionHealth(researchers),
+    fixed: getCollectionHealth([...directorPages, ...financePages, ...financialStatements]),
+  };
 
   const resolvedSearchParams = (await searchParams) ?? {};
   const message = resolvedSearchParams.message ? messageMap[resolvedSearchParams.message] : null;
@@ -234,39 +437,21 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
         />
       ) : null}
 
-      <section className="grid gap-4 lg:grid-cols-4">
-        <div className="rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-5 py-5 shadow-[var(--shadow-soft)]">
-          <p className="text-sm text-[color:var(--color-muted)]">記事</p>
-          <p className="mt-2 text-3xl font-semibold tracking-tight text-[color:var(--color-primary)]">{posts.length}</p>
-        </div>
-        <div className="rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-5 py-5 shadow-[var(--shadow-soft)]">
-          <p className="text-sm text-[color:var(--color-muted)]">研究員</p>
-          <p className="mt-2 text-3xl font-semibold tracking-tight text-[color:var(--color-primary)]">{researchers.length}</p>
-        </div>
-        <div className="rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-5 py-5 shadow-[var(--shadow-soft)]">
-          <p className="text-sm text-[color:var(--color-muted)]">方法論</p>
-          <p className="mt-2 text-3xl font-semibold tracking-tight text-[color:var(--color-primary)]">{methodologies.length}</p>
-        </div>
-        <div className="rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-5 py-5 shadow-[var(--shadow-soft)]">
-          <p className="text-sm text-[color:var(--color-muted)]">報告書</p>
-          <p className="mt-2 text-3xl font-semibold tracking-tight text-[color:var(--color-primary)]">{reports.length}</p>
-        </div>
-        <div className="rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-5 py-5 shadow-[var(--shadow-soft)]">
-          <p className="text-sm text-[color:var(--color-muted)]">所長ページ</p>
-          <p className="mt-2 text-3xl font-semibold tracking-tight text-[color:var(--color-primary)]">{directorPages.length}</p>
-        </div>
-        <div className="rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-5 py-5 shadow-[var(--shadow-soft)]">
-          <p className="text-sm text-[color:var(--color-muted)]">決算資料</p>
-          <p className="mt-2 text-3xl font-semibold tracking-tight text-[color:var(--color-primary)]">{financialReports.length}</p>
-        </div>
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+        <MetricCard label="総コンテンツ" value={health.all.total} note={`公開 ${health.all.published} / 下書き ${health.all.draft}`} />
+        <MetricCard label="記事" value={health.posts.total} note={`最終更新 ${health.posts.latest}`} />
+        <MetricCard label="報告書" value={health.reports.total} note={`決算系 ${financialReports.length} 件`} />
+        <MetricCard label="方法論・研究員" value={health.methodologies.total + health.researchers.total} note={`方法論 ${health.methodologies.total} / 研究員 ${health.researchers.total}`} />
+        <MetricCard label="固定ページ" value={health.fixed.total} note={`所長 ${directorPages.length} / 財務 ${financePages.length} / 決算 ${financialStatements.length}`} />
       </section>
 
+      <QuickActionPanel />
+      <AdminWorkQueue collections={contentGroups} />
+
       <div className="space-y-6">
-        <CollectionSection collection="posts" items={posts} />
-        <CollectionSection collection="researchers" items={researchers} />
-        <CollectionSection collection="methodologies" items={methodologies} />
-        <CollectionSection collection="reports" items={reports} />
-        <CollectionSection collection="director" items={directorPages} />
+        {contentGroups.map(([collection, items]) => (
+          <CollectionSection key={collection} collection={collection} items={items} />
+        ))}
       </div>
     </AdminShell>
   );

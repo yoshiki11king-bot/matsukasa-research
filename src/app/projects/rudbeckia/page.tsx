@@ -42,7 +42,7 @@ export default function RudbeckiaProjectPage() {
       <RudbeckiaIntro />
       <header className="rudbeckia-header">
         <div className="mx-auto flex w-full max-w-[1440px] flex-col items-center gap-5 px-5 py-6 md:grid md:grid-cols-[1fr_auto_1fr] md:px-8">
-          <Link href="/projects/rudbeckia" className="relative block w-[310px] max-w-[88vw] md:col-start-2 md:w-[430px]">
+          <Link href="/projects/rudbeckia" className="relative block w-[360px] max-w-[92vw] md:col-start-2 md:w-[560px]">
             <Image
               src="/projects/rudbeckia/title-logo.svg"
               alt="Project: Rudbeckia"
@@ -50,7 +50,7 @@ export default function RudbeckiaProjectPage() {
               height={360}
               priority
               unoptimized
-              sizes="(min-width: 768px) 430px, 88vw"
+              sizes="(min-width: 768px) 560px, 92vw"
               className="h-auto w-full object-contain mix-blend-multiply"
             />
           </Link>
