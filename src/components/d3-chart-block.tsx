@@ -91,12 +91,21 @@ function resolveSeriesKeys(block: ChartBlock, rows: ChartRow[]) {
   return inferred.length > 1 ? inferred : [block.yKey];
 }
 
+function hasSeriesValue(keys: string[], row: ChartRow) {
+  return keys.some((key) => row[key] !== undefined);
+}
+
 function labelForRow(block: ChartBlock, row: ChartRow) {
   const key = block.nameKey || block.xKey;
   return String(row[key] ?? row[block.xKey] ?? "");
 }
 
 function hasRenderableData(block: ChartBlock) {
+  if (block.chartType === "bar" || block.chartType === "line") {
+    const keys = resolveSeriesKeys(block, block.data);
+    return block.data.some((row) => row[block.xKey] !== undefined && hasSeriesValue(keys, row));
+  }
+
   if (block.chartType === "histogram" || block.chartType === "boxplot" || block.chartType === "lorenz") {
     return block.data.some((row) => row[block.yKey] !== undefined);
   }
@@ -250,9 +259,9 @@ export function D3ChartBlock({ block }: D3ChartBlockProps) {
     const root = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
 
     if (block.chartType === "bar") {
-      const usableRows = rows.filter((row) => row[block.xKey] !== undefined && row[block.yKey] !== undefined);
+      const keys = resolveSeriesKeys(block, rows);
+      const usableRows = rows.filter((row) => row[block.xKey] !== undefined && hasSeriesValue(keys, row));
       const labels = usableRows.map((row) => String(row[block.xKey]));
-      const keys = resolveSeriesKeys(block, usableRows);
       const x0 = d3.scaleBand<string>().domain(labels).range([0, innerWidth]).padding(0.18);
       const x1 = d3.scaleBand<string>().domain(keys).range([0, x0.bandwidth()]).padding(0.12);
       const y = d3.scaleLinear().domain([0, Math.max(...usableRows.flatMap((row) => keys.map((key) => toNumber(row[key]))), 0) * 1.12 || 1]).nice().range([innerHeight, 0]);
@@ -344,9 +353,9 @@ export function D3ChartBlock({ block }: D3ChartBlockProps) {
           .text((row) => formatValue(toNumber(row[block.yKey])));
       }
     } else if (block.chartType === "line") {
-      const usableRows = rows.filter((row) => row[block.xKey] !== undefined);
+      const keys = resolveSeriesKeys(block, rows);
+      const usableRows = rows.filter((row) => row[block.xKey] !== undefined && hasSeriesValue(keys, row));
       const labels = usableRows.map((row) => String(row[block.xKey]));
-      const keys = resolveSeriesKeys(block, usableRows);
       const x = d3.scalePoint<string>().domain(labels).range([0, innerWidth]).padding(0.32);
       const y = d3.scaleLinear().domain([0, Math.max(...usableRows.flatMap((row) => keys.map((key) => toNumber(row[key]))), 0) * 1.12 || 1]).nice().range([innerHeight, 0]);
       const line = d3
