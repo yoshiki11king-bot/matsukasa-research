@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { D3ChartBlock } from "@/components/d3-chart-block";
 import { formatD3ChartData, normalizeD3ChartInput, parseD3ChartJSON } from "@/lib/d3-chart";
-import type { ContentBlock, D3ChartDatum } from "@/lib/types";
+import type { ContentBlock, D3ChartDatum, D3ChartType } from "@/lib/types";
 
 type EditorBlock =
   | {
@@ -37,10 +37,18 @@ type EditorBlock =
       type: "d3Chart";
       title: string;
       description: string;
-      chartType: "bar" | "line";
+      chartType: D3ChartType;
       xKey: string;
       yKey: string;
+      xLabel: string;
       yLabel: string;
+      colorKey: string;
+      nameKey: string;
+      showLegend: boolean;
+      showGrid: boolean;
+      showDataLabels: boolean;
+      footnote: string;
+      abstract: string;
       height: number;
       csvText: string;
       csvError: string;
@@ -97,7 +105,15 @@ function toEditorBlock(block: ContentBlock): EditorBlock {
       chartType: block.chartType,
       xKey: block.xKey,
       yKey: block.yKey,
+      xLabel: block.xLabel ?? "",
       yLabel: block.yLabel ?? "",
+      colorKey: block.colorKey ?? "",
+      nameKey: block.nameKey ?? "",
+      showLegend: block.showLegend ?? true,
+      showGrid: block.showGrid ?? true,
+      showDataLabels: block.showDataLabels ?? false,
+      footnote: block.footnote ?? "",
+      abstract: block.abstract ?? "",
       height: block.height ?? 320,
       csvText: formatChartDataAsDelimited(block.data),
       csvError: "",
@@ -152,7 +168,15 @@ function createBlock(type: EditorBlock["type"]): EditorBlock {
       chartType: "bar",
       xKey: "label",
       yKey: "value",
+      xLabel: "",
       yLabel: "",
+      colorKey: "",
+      nameKey: "",
+      showLegend: true,
+      showGrid: true,
+      showDataLabels: false,
+      footnote: "",
+      abstract: "",
       height: 320,
       csvText: "label\tvalue\nA\t24\nB\t38\nC\t31",
       csvError: "",
@@ -189,6 +213,29 @@ function blockLabel(type: EditorBlock["type"]) {
 }
 
 type D3EditorBlock = Extract<EditorBlock, { type: "d3Chart" }>;
+
+const chartTypeOptions: Array<{ value: D3ChartType; label: string; hint: string }> = [
+  { value: "bar", label: "棒グラフ", hint: "カテゴリごとの値を縦棒で比較" },
+  { value: "line", label: "折れ線グラフ", hint: "時系列や順序のある推移" },
+  { value: "pie", label: "円グラフ", hint: "全体に対する構成比" },
+  { value: "band", label: "帯グラフ", hint: "構成比を1本の帯で表示" },
+  { value: "horizontalBar", label: "横棒グラフ", hint: "長い項目名のランキング" },
+  { value: "donut", label: "ドーナツグラフ", hint: "構成比をリングで表示" },
+  { value: "stacked100Bar", label: "100%積み上げ棒グラフ", hint: "複数系列の構成比を比較" },
+  { value: "radar", label: "レーダーマップ", hint: "複数指標のバランス" },
+  { value: "histogram", label: "ヒストグラム", hint: "数値の分布を見る" },
+  { value: "boxplot", label: "箱ひげ図", hint: "中央値とばらつきを見る" },
+  { value: "bubble", label: "バブルチャート", hint: "X/Yに大きさを加えた散布図" },
+  { value: "scatter", label: "散布図", hint: "2つの数値の関係を見る" },
+  { value: "statMap", label: "統計地図", hint: "地域別の値をタイル地図で表示" },
+  { value: "lorenz", label: "ローレンツ曲線", hint: "累積比率で偏りを見る" },
+  { value: "pictogram", label: "絵グラフ", hint: "割合や数をアイコンで見せる" },
+  { value: "stackedArea", label: "積み上げ面グラフ", hint: "複数系列の推移を面で比較" },
+];
+
+function isD3ChartType(value: string): value is D3ChartType {
+  return chartTypeOptions.some((option) => option.value === value);
+}
 
 type ParsedTable =
   | {
@@ -410,7 +457,15 @@ function buildChartPreview(block: D3EditorBlock) {
     chartType: block.chartType,
     xKey: block.xKey,
     yKey: block.yKey,
+    xLabel: block.xLabel,
     yLabel: block.yLabel,
+    colorKey: block.colorKey,
+    nameKey: block.nameKey,
+    showLegend: block.showLegend,
+    showGrid: block.showGrid,
+    showDataLabels: block.showDataLabels,
+    footnote: block.footnote,
+    abstract: block.abstract,
     height: block.height,
     data: rows.data,
   });
@@ -494,12 +549,22 @@ function ChartBuilderFields({ block, index, updateBlock }: ChartBuilderFieldsPro
       chartType: "bar",
       xKey: "年代",
       yKey: "回答率",
+      xLabel: "年代",
       yLabel: "%",
+      colorKey: "",
+      nameKey: "",
+      showLegend: true,
+      showGrid: true,
+      showDataLabels: false,
+      footnote: "",
+      abstract: "",
       csvText: formatChartDataAsDelimited(sample),
       csvError: "",
       dataJson: formatD3ChartData(sample),
     }));
   };
+
+  const selectedChartType = chartTypeOptions.find((option) => option.value === block.chartType);
 
   return (
     <div className="space-y-5">
@@ -552,7 +617,7 @@ function ChartBuilderFields({ block, index, updateBlock }: ChartBuilderFieldsPro
 
       <div className="grid gap-4 lg:grid-cols-2">
         <label className="space-y-2 text-sm text-[color:var(--color-text)]">
-          <span className="font-medium">チャート名</span>
+          <span className="font-medium">グラフタイトル</span>
           <input
             type="text"
             name={`contentBlocks[${index}][title]`}
@@ -567,15 +632,36 @@ function ChartBuilderFields({ block, index, updateBlock }: ChartBuilderFieldsPro
             name={`contentBlocks[${index}][chartType]`}
             value={block.chartType}
             onChange={(event) =>
-              setChartBlock((current) => ({ ...current, chartType: event.target.value === "line" ? "line" : "bar" }))
+              setChartBlock((current) => ({
+                ...current,
+                chartType: isD3ChartType(event.target.value) ? event.target.value : "bar",
+              }))
             }
             className="h-11 w-full rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-4 outline-none transition focus:border-[color:var(--color-accent-ink)] focus:shadow-[0_0_0_4px_var(--color-focus-ring)]"
           >
-            <option value="bar">棒グラフ</option>
-            <option value="line">折れ線グラフ</option>
+            {chartTypeOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </select>
+          {selectedChartType ? (
+            <span className="text-xs leading-6 text-[color:var(--color-muted)]">{selectedChartType.hint}</span>
+          ) : null}
         </label>
       </div>
+
+      <label className="block space-y-2 text-sm text-[color:var(--color-text)]">
+        <span className="font-medium">アブストラクト</span>
+        <textarea
+          name={`contentBlocks[${index}][abstract]`}
+          rows={2}
+          value={block.abstract}
+          onChange={(event) => setChartBlock((current) => ({ ...current, abstract: event.target.value }))}
+          placeholder="グラフの要点や読み取り方を短く書きます"
+          className="w-full rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-4 py-3 outline-none transition focus:border-[color:var(--color-accent-ink)] focus:shadow-[0_0_0_4px_var(--color-focus-ring)]"
+        />
+      </label>
 
       <label className="block space-y-2 text-sm text-[color:var(--color-text)]">
         <span className="font-medium">補足・注記・出典</span>
@@ -585,6 +671,18 @@ function ChartBuilderFields({ block, index, updateBlock }: ChartBuilderFieldsPro
           value={block.description}
           onChange={(event) => setChartBlock((current) => ({ ...current, description: event.target.value }))}
           placeholder="出典、調査対象、注記など"
+          className="w-full rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-4 py-3 outline-none transition focus:border-[color:var(--color-accent-ink)] focus:shadow-[0_0_0_4px_var(--color-focus-ring)]"
+        />
+      </label>
+
+      <label className="block space-y-2 text-sm text-[color:var(--color-text)]">
+        <span className="font-medium">脚注</span>
+        <textarea
+          name={`contentBlocks[${index}][footnote]`}
+          rows={2}
+          value={block.footnote}
+          onChange={(event) => setChartBlock((current) => ({ ...current, footnote: event.target.value }))}
+          placeholder="注: n=..., 小数点処理、推定値の注意など"
           className="w-full rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-4 py-3 outline-none transition focus:border-[color:var(--color-accent-ink)] focus:shadow-[0_0_0_4px_var(--color-focus-ring)]"
         />
       </label>
@@ -619,6 +717,16 @@ function ChartBuilderFields({ block, index, updateBlock }: ChartBuilderFieldsPro
           />
         </label>
         <label className="space-y-2 text-sm text-[color:var(--color-text)]">
+          <span className="font-medium">X軸ラベル</span>
+          <input
+            type="text"
+            name={`contentBlocks[${index}][xLabel]`}
+            value={block.xLabel}
+            onChange={(event) => setChartBlock((current) => ({ ...current, xLabel: event.target.value }))}
+            className="h-11 w-full rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-4 outline-none transition focus:border-[color:var(--color-accent-ink)] focus:shadow-[0_0_0_4px_var(--color-focus-ring)]"
+          />
+        </label>
+        <label className="space-y-2 text-sm text-[color:var(--color-text)]">
           <span className="font-medium">Y軸ラベル</span>
           <input
             type="text"
@@ -627,6 +735,77 @@ function ChartBuilderFields({ block, index, updateBlock }: ChartBuilderFieldsPro
             onChange={(event) => setChartBlock((current) => ({ ...current, yLabel: event.target.value }))}
             className="h-11 w-full rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-4 outline-none transition focus:border-[color:var(--color-accent-ink)] focus:shadow-[0_0_0_4px_var(--color-focus-ring)]"
           />
+        </label>
+      </div>
+
+      <fieldset className="rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-4 py-3">
+        <legend className="px-1 text-sm font-medium text-[color:var(--color-text)]">表示オプション</legend>
+        <div className="grid gap-3 text-sm text-[color:var(--color-text)] sm:grid-cols-3">
+          <label className="flex items-center gap-2">
+            <input type="hidden" name={`contentBlocks[${index}][showLegend]`} value="0" />
+            <input
+              type="checkbox"
+              name={`contentBlocks[${index}][showLegend]`}
+              value="1"
+              checked={block.showLegend}
+              onChange={(event) => setChartBlock((current) => ({ ...current, showLegend: event.target.checked }))}
+              className="size-4 rounded border-[color:var(--color-border)]"
+            />
+            <span>凡例を表示</span>
+          </label>
+          <label className="flex items-center gap-2">
+            <input type="hidden" name={`contentBlocks[${index}][showGrid]`} value="0" />
+            <input
+              type="checkbox"
+              name={`contentBlocks[${index}][showGrid]`}
+              value="1"
+              checked={block.showGrid}
+              onChange={(event) => setChartBlock((current) => ({ ...current, showGrid: event.target.checked }))}
+              className="size-4 rounded border-[color:var(--color-border)]"
+            />
+            <span>目盛り線を表示</span>
+          </label>
+          <label className="flex items-center gap-2">
+            <input type="hidden" name={`contentBlocks[${index}][showDataLabels]`} value="0" />
+            <input
+              type="checkbox"
+              name={`contentBlocks[${index}][showDataLabels]`}
+              value="1"
+              checked={block.showDataLabels}
+              onChange={(event) => setChartBlock((current) => ({ ...current, showDataLabels: event.target.checked }))}
+              className="size-4 rounded border-[color:var(--color-border)]"
+            />
+            <span>データラベルを表示</span>
+          </label>
+        </div>
+      </fieldset>
+
+      <div className="grid gap-4 lg:grid-cols-3">
+        <label className="space-y-2 text-sm text-[color:var(--color-text)]">
+          <span className="font-medium">色分けキー</span>
+          <input
+            type="text"
+            list={columnListId}
+            name={`contentBlocks[${index}][colorKey]`}
+            value={block.colorKey}
+            onChange={(event) => setChartBlock((current) => ({ ...current, colorKey: event.target.value }))}
+            placeholder="例: 色 / group / region"
+            className="h-11 w-full rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-4 outline-none transition focus:border-[color:var(--color-accent-ink)] focus:shadow-[0_0_0_4px_var(--color-focus-ring)]"
+          />
+          <span className="text-xs leading-6 text-[color:var(--color-muted)]">列の値が #1d4ed8 などの色コードならその色を使います。</span>
+        </label>
+        <label className="space-y-2 text-sm text-[color:var(--color-text)]">
+          <span className="font-medium">名称キー</span>
+          <input
+            type="text"
+            list={columnListId}
+            name={`contentBlocks[${index}][nameKey]`}
+            value={block.nameKey}
+            onChange={(event) => setChartBlock((current) => ({ ...current, nameKey: event.target.value }))}
+            placeholder="例: 名称 / series / name"
+            className="h-11 w-full rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-4 outline-none transition focus:border-[color:var(--color-accent-ink)] focus:shadow-[0_0_0_4px_var(--color-focus-ring)]"
+          />
+          <span className="text-xs leading-6 text-[color:var(--color-muted)]">点・円・凡例に出す名前を列で指定できます。</span>
         </label>
         <label className="space-y-2 text-sm text-[color:var(--color-text)]">
           <span className="font-medium">高さ</span>

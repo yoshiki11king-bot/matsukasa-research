@@ -25,7 +25,23 @@ export type LabeledTextBlock = {
   body: string;
 };
 
-export type D3ChartType = "bar" | "line";
+export type D3ChartType =
+  | "bar"
+  | "line"
+  | "pie"
+  | "band"
+  | "horizontalBar"
+  | "donut"
+  | "stacked100Bar"
+  | "radar"
+  | "histogram"
+  | "boxplot"
+  | "bubble"
+  | "scatter"
+  | "statMap"
+  | "lorenz"
+  | "pictogram"
+  | "stackedArea";
 
 export type D3ChartDatum = Record<string, string | number>;
 
@@ -59,7 +75,15 @@ export type ContentBlock =
       chartType: D3ChartType;
       xKey: string;
       yKey: string;
+      xLabel?: string;
       yLabel?: string;
+      colorKey?: string;
+      nameKey?: string;
+      showLegend?: boolean;
+      showGrid?: boolean;
+      showDataLabels?: boolean;
+      footnote?: string;
+      abstract?: string;
       height?: number;
       data: D3ChartDatum[];
     };

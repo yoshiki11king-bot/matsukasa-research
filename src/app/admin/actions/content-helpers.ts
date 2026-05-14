@@ -18,7 +18,7 @@ import {
 } from "@/lib/microcms";
 import { requireAdmin } from "@/lib/admin-session";
 import { slugify } from "@/lib/post-helpers";
-import type { AdminCollectionKey, ContentBlock } from "@/lib/types";
+import type { AdminCollectionKey, ContentBlock, D3ChartType } from "@/lib/types";
 
 type CollectionPayload = {
   slug?: string;
@@ -73,6 +73,30 @@ function parseEntryText(value?: FormDataEntryValue) {
 
 function parseEntryFile(value?: FormDataEntryValue) {
   return value instanceof File && value.size > 0 ? value : null;
+}
+
+function parseD3ChartType(value: string): D3ChartType {
+  switch (value) {
+    case "line":
+    case "pie":
+    case "band":
+    case "horizontalBar":
+    case "donut":
+    case "stacked100Bar":
+    case "radar":
+    case "histogram":
+    case "boxplot":
+    case "bubble":
+    case "scatter":
+    case "statMap":
+    case "lorenz":
+    case "pictogram":
+    case "stackedArea":
+      return value;
+    case "bar":
+    default:
+      return "bar";
+  }
 }
 
 async function resolveSingleAsset(
@@ -236,10 +260,18 @@ async function resolveContentBlocks(formData: FormData): Promise<ContentBlock[]>
     if (fieldId === "block_d3_chart") {
       const title = parseEntryText(entry.title);
       const description = parseEntryText(entry.description);
-      const chartType = parseEntryText(entry.chartType) === "line" ? "line" : "bar";
+      const chartType = parseD3ChartType(parseEntryText(entry.chartType));
       const xKey = parseEntryText(entry.xKey);
       const yKey = parseEntryText(entry.yKey);
+      const xLabel = parseEntryText(entry.xLabel);
       const yLabel = parseEntryText(entry.yLabel);
+      const colorKey = parseEntryText(entry.colorKey);
+      const nameKey = parseEntryText(entry.nameKey);
+      const showLegend = parseEntryText(entry.showLegend) !== "0";
+      const showGrid = parseEntryText(entry.showGrid) !== "0";
+      const showDataLabels = parseEntryText(entry.showDataLabels) === "1";
+      const footnote = parseEntryText(entry.footnote);
+      const abstract = parseEntryText(entry.abstract);
       const height = Number(parseEntryText(entry.height)) || 320;
       const parsedData = parseD3ChartJSON(parseEntryText(entry.dataJson));
 
@@ -253,7 +285,15 @@ async function resolveContentBlocks(formData: FormData): Promise<ContentBlock[]>
         chartType,
         xKey,
         yKey,
+        xLabel,
         yLabel,
+        colorKey,
+        nameKey,
+        showLegend,
+        showGrid,
+        showDataLabels,
+        footnote,
+        abstract,
         height,
         data: Array.isArray(parsedData.data) ? parsedData.data : [],
       });

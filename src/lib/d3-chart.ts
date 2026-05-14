@@ -9,7 +9,15 @@ type RawD3ChartPayload = {
   chartType?: unknown;
   xKey?: unknown;
   yKey?: unknown;
+  xLabel?: unknown;
   yLabel?: unknown;
+  colorKey?: unknown;
+  nameKey?: unknown;
+  showLegend?: unknown;
+  showGrid?: unknown;
+  showDataLabels?: unknown;
+  footnote?: unknown;
+  abstract?: unknown;
   height?: unknown;
   data?: unknown;
 };
@@ -20,13 +28,38 @@ export type D3ChartConfigInput = {
   chartType: D3ChartType;
   xKey: string;
   yKey: string;
+  xLabel?: string;
   yLabel?: string;
+  colorKey?: string;
+  nameKey?: string;
+  showLegend?: boolean;
+  showGrid?: boolean;
+  showDataLabels?: boolean;
+  footnote?: string;
+  abstract?: string;
   height?: number;
   data: D3ChartDatum[];
 };
 
 function isChartType(value: unknown): value is D3ChartType {
-  return value === "bar" || value === "line";
+  return (
+    value === "bar" ||
+    value === "line" ||
+    value === "pie" ||
+    value === "band" ||
+    value === "horizontalBar" ||
+    value === "donut" ||
+    value === "stacked100Bar" ||
+    value === "radar" ||
+    value === "histogram" ||
+    value === "boxplot" ||
+    value === "bubble" ||
+    value === "scatter" ||
+    value === "statMap" ||
+    value === "lorenz" ||
+    value === "pictogram" ||
+    value === "stackedArea"
+  );
 }
 
 function normalizeHeight(value: unknown) {
@@ -77,7 +110,15 @@ export function normalizeD3ChartInput(input: D3ChartConfigInput) {
     chartType: input.chartType,
     xKey,
     yKey,
+    xLabel: input.xLabel?.trim() || undefined,
     yLabel: input.yLabel?.trim() || undefined,
+    colorKey: input.colorKey?.trim() || undefined,
+    nameKey: input.nameKey?.trim() || undefined,
+    showLegend: input.showLegend,
+    showGrid: input.showGrid,
+    showDataLabels: input.showDataLabels,
+    footnote: input.footnote?.trim() || undefined,
+    abstract: input.abstract?.trim() || undefined,
     height: normalizeHeight(input.height),
     data,
   } satisfies Extract<ContentBlock, { type: "d3Chart" }>;
@@ -134,7 +175,15 @@ export function serializeD3ChartBlock(block: Extract<ContentBlock, { type: "d3Ch
         chartType: block.chartType,
         xKey: block.xKey,
         yKey: block.yKey,
+        xLabel: block.xLabel,
         yLabel: block.yLabel,
+        colorKey: block.colorKey,
+        nameKey: block.nameKey,
+        showLegend: block.showLegend,
+        showGrid: block.showGrid,
+        showDataLabels: block.showDataLabels,
+        footnote: block.footnote,
+        abstract: block.abstract,
         height: block.height,
         data: block.data,
       },
@@ -189,7 +238,15 @@ export function parseD3ChartBlock(value: string) {
     chartType: payload.chartType,
     xKey: typeof payload.xKey === "string" ? payload.xKey : "",
     yKey: typeof payload.yKey === "string" ? payload.yKey : "",
+    xLabel: typeof payload.xLabel === "string" ? payload.xLabel : "",
     yLabel: typeof payload.yLabel === "string" ? payload.yLabel : "",
+    colorKey: typeof payload.colorKey === "string" ? payload.colorKey : "",
+    nameKey: typeof payload.nameKey === "string" ? payload.nameKey : "",
+    showLegend: typeof payload.showLegend === "boolean" ? payload.showLegend : undefined,
+    showGrid: typeof payload.showGrid === "boolean" ? payload.showGrid : undefined,
+    showDataLabels: typeof payload.showDataLabels === "boolean" ? payload.showDataLabels : undefined,
+    footnote: typeof payload.footnote === "string" ? payload.footnote : "",
+    abstract: typeof payload.abstract === "string" ? payload.abstract : "",
     height: typeof payload.height === "number" ? payload.height : 320,
     data: normalizeChartData(payload.data) ?? [],
   });
