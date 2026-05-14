@@ -67,9 +67,6 @@ export default function RudbeckiaProjectPage() {
               まだ数えられていない社会を、
               <span>見に行こう。</span>
             </h1>
-            <p className="rudbeckia-lead">
-              若い研究者、学生、読者が参加する社会調査プロジェクトです。
-            </p>
             <div className="rudbeckia-actions">
               <Link
                 href="#join"
@@ -100,7 +97,7 @@ export default function RudbeckiaProjectPage() {
         <section id="survey" className="rudbeckia-section rudbeckia-survey-section">
           <div className="rudbeckia-section-heading">
             <p>First Research</p>
-            <h2>最初の調査を準備中。</h2>
+            <h2>1st Research is preparing...</h2>
           </div>
           <div className="rudbeckia-survey-layout">
             <div className="rudbeckia-survey-copy">
@@ -145,7 +142,6 @@ export default function RudbeckiaProjectPage() {
         <section id="roadmap" className="rudbeckia-section rudbeckia-roadmap-section">
           <div className="rudbeckia-section-heading">
             <p>Roadmap</p>
-            <h2>小さく始めて、公開する。</h2>
           </div>
           <div className="rudbeckia-phase-map">
             {roadmap.map(([number, title]) => (
