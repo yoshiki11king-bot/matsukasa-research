@@ -1,71 +1,25 @@
-import { notFound } from "next/navigation";
-import { FlashMessage } from "@/components/flash-message";
-import { AdminContentForm } from "@/components/admin-content-form";
+import Link from "next/link";
 import { AdminShell } from "@/components/admin-shell";
-import { cmsStatus, getAdminEntity, isAdminCollectionKey } from "@/lib/microcms";
-import { collectionLabel } from "@/lib/post-helpers";
 import { requireAdmin } from "@/lib/admin-session";
 
-type AdminEditEntityPageProps = {
-  params: Promise<{
-    collection: string;
-    id: string;
-  }>;
-  searchParams?: Promise<{
-    error?: string;
-    message?: string;
-  }>;
-};
-
-const messageMap: Record<string, string> = {
-  created: "作成しました。",
-  updated: "更新しました。",
-  published: "公開しました。",
-};
-
-const errorMap: Record<string, string> = {
-  config: "microCMS の環境変数が不足しています。",
-  missing: "必要な入力が足りませんでした。",
-  request: "保存時に microCMS へのリクエストで失敗しました。",
-  notfound: "対象のコンテンツが見つかりませんでした。",
-};
-
-export default async function AdminEditEntityPage({
-  params,
-  searchParams,
-}: AdminEditEntityPageProps) {
+export default async function AdminEditEntityPage() {
   await requireAdmin();
-
-  const { collection, id } = await params;
-
-  if (!isAdminCollectionKey(collection)) {
-    notFound();
-  }
-
-  const entity = await getAdminEntity(collection, id);
-
-  if (!entity) {
-    notFound();
-  }
-
-  const resolvedSearchParams = (await searchParams) ?? {};
-  const message = resolvedSearchParams.message ? messageMap[resolvedSearchParams.message] : null;
-  const error = resolvedSearchParams.error ? errorMap[resolvedSearchParams.error] : undefined;
 
   return (
     <AdminShell
-      title={`${collectionLabel(collection)}を編集`}
-      description="編集内容は公開面にも反映されます。"
+      title="旧編集フォームは停止しました"
+      description="編集は content/ 配下のローカルファイルと Local Press で行います。"
     >
-      {message ? <FlashMessage tone="success" message={message} /> : null}
-      {error ? <FlashMessage tone="error" message={error} /> : null}
-      <AdminContentForm
-        collection={collection}
-        action={`/admin/actions/${collection}/${entity.id}/update`}
-        entity={entity}
-        error={error}
-        configured={cmsStatus.configured}
-      />
+      <section className="rounded-lg border border-[color:var(--color-border)] bg-white px-6 py-6 shadow-[var(--shadow-soft)]">
+        <h2 className="text-2xl font-semibold text-[color:var(--color-primary)]">microCMS編集導線は使いません</h2>
+        <p className="mt-3 text-sm leading-7 text-[color:var(--color-secondary-ink)]">
+          既存のWeb管理フォームはmicroCMSの権限や公開Rendererと噛み合わないため、編集導線としては閉じています。Local Pressで新しいローカル原稿を作り、GitHub Desktopで差分を確認してください。
+        </p>
+        <div className="mt-5 flex flex-wrap gap-3">
+          <Link href="/local-press" className="ui-button ui-button-primary h-11 px-5 text-sm">Local Pressへ</Link>
+          <Link href="/admin" className="ui-button ui-button-secondary h-11 px-5 text-sm">編集者ポータルへ戻る</Link>
+        </div>
+      </section>
     </AdminShell>
   );
 }

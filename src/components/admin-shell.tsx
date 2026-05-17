@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { collectionLabel } from "@/lib/post-helpers";
 
 type AdminShellProps = {
   title: string;
@@ -8,8 +7,6 @@ type AdminShellProps = {
 };
 
 export function AdminShell({ title, description, children }: AdminShellProps) {
-  const collections = ["posts", "reports", "methodologies", "researchers", "director", "finance", "financialStatements"] as const;
-
   return (
     <div className="min-h-screen bg-[color:var(--color-background)]">
       <header className="border-b border-[color:var(--color-border)] bg-[color:var(--color-surface-elevated)] backdrop-blur">
@@ -21,15 +18,15 @@ export function AdminShell({ title, description, children }: AdminShellProps) {
             <p className="text-sm text-[color:var(--color-secondary-ink)]">{description}</p>
           </div>
           <div className="flex flex-wrap items-center gap-3 text-sm text-[color:var(--color-secondary-ink)]">
-            {collections.map((collection) => (
-              <Link
-                key={collection}
-                href={`/admin#${collection}`}
-                className="transition hover:text-[color:var(--color-primary)]"
-              >
-                {collectionLabel(collection)}
-              </Link>
-            ))}
+            <Link href="/local-press" className="transition hover:text-[color:var(--color-primary)]">
+              Local Press
+            </Link>
+            <Link href="/local-press/new" className="transition hover:text-[color:var(--color-primary)]">
+              新しく書く
+            </Link>
+            <Link href="/local-press/tools/chart-builder" className="transition hover:text-[color:var(--color-primary)]">
+              Chart Builder
+            </Link>
             <Link
               href="/"
               className="ui-button ui-button-secondary h-10 px-4 text-sm"

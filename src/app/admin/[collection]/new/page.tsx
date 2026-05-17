@@ -1,43 +1,25 @@
-import { notFound } from "next/navigation";
-import { AdminContentForm } from "@/components/admin-content-form";
+import Link from "next/link";
 import { AdminShell } from "@/components/admin-shell";
-import { cmsStatus, isAdminCollectionKey } from "@/lib/microcms";
-import { collectionLabel } from "@/lib/post-helpers";
 import { requireAdmin } from "@/lib/admin-session";
 
-type AdminNewEntityPageProps = {
-  params: Promise<{
-    collection: string;
-  }>;
-  searchParams?: Promise<{
-    error?: string;
-  }>;
-};
-
-export default async function AdminNewEntityPage({
-  params,
-  searchParams,
-}: AdminNewEntityPageProps) {
+export default async function AdminNewEntityPage() {
   await requireAdmin();
-
-  const { collection } = await params;
-  if (!isAdminCollectionKey(collection)) {
-    notFound();
-  }
-
-  const resolvedSearchParams = (await searchParams) ?? {};
 
   return (
     <AdminShell
-      title={`新規${collectionLabel(collection)}`}
-      description={`${collectionLabel(collection)}の作成、下書き保存、公開ができます。`}
+      title="旧投稿フォームは停止しました"
+      description="新規作成は Matsukasa Local Press で行います。"
     >
-      <AdminContentForm
-        collection={collection}
-        action={`/admin/actions/${collection}/create`}
-        error={resolvedSearchParams.error}
-        configured={cmsStatus.configured}
-      />
+      <section className="rounded-lg border border-[color:var(--color-border)] bg-white px-6 py-6 shadow-[var(--shadow-soft)]">
+        <h2 className="text-2xl font-semibold text-[color:var(--color-primary)]">Local Pressで作成してください</h2>
+        <p className="mt-3 text-sm leading-7 text-[color:var(--color-secondary-ink)]">
+          この旧フォームはmicroCMS連携用だったため、投稿・編集・削除導線としては使いません。タイトルと本文中心のLocal Pressへ移動してください。
+        </p>
+        <div className="mt-5 flex flex-wrap gap-3">
+          <Link href="/local-press/new" className="ui-button ui-button-primary h-11 px-5 text-sm">新しく書く</Link>
+          <Link href="/local-press/tools/chart-builder" className="ui-button ui-button-secondary h-11 px-5 text-sm">図表を作る</Link>
+        </div>
+      </section>
     </AdminShell>
   );
 }
