@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { MarkdownRenderer } from "@/components/content/MarkdownRenderer";
 import { PostBody } from "@/components/post-body";
 import { PublicShell } from "@/components/public-shell";
 import { StatusBanner } from "@/components/status-banner";
 import { StructuredData } from "@/components/structured-data";
+import { getChartsBySlug } from "@/lib/content/charts";
 import { estimateReadingTime, formatDate } from "@/lib/formatters";
 import {
   cmsStatus,
@@ -54,23 +56,15 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
 
 export default async function PostPage({ params }: PostPageProps) {
   const { slug } = await params;
-  const [post, sidebar, researchers, methodologies, reports] = await Promise.all([
+  const [post, sidebar] = await Promise.all([
     getPostBySlug(slug),
     getSidebarSnapshot(),
-    getResearchers(),
-    getMethodologies(),
-    getReports(),
   ]);
 
   if (!post) {
     notFound();
   }
 
-  const relatedResearchers = researchers.filter((researcher) => post.researcherSlugs.includes(researcher.slug));
-  const relatedMethods = methodologies.filter((entry) => post.methodologySlugs.includes(entry.slug));
-  const relatedReports = reports.filter((report) =>
-    report.methodologySlugs.some((methodSlug) => post.methodologySlugs.includes(methodSlug)),
-  );
   const readingSource =
     post.contentBlocks.length > 0
       ? post.contentBlocks
@@ -125,6 +119,116 @@ export default async function PostPage({ params }: PostPageProps) {
       { name: post.title, path: `/posts/${post.slug}` },
     ]),
   ];
+
+  if (post.isLocalPress) {
+    const charts = await getChartsBySlug();
+
+    return (
+      <PublicShell
+        researchers={sidebar.featuredResearchers}
+        methodologies={sidebar.featuredMethodologies}
+        reports={sidebar.featuredReports}
+        showSidebar={false}
+      >
+        <div className="mx-auto max-w-5xl space-y-8">
+          <StructuredData data={structuredData} />
+          <Link href="/articles" className="text-sm font-medium text-[color:var(--color-accent-ink)] transition hover:text-[color:var(--color-accent-ink)]">
+            ← 記事一覧へ戻る
+          </Link>
+
+          <article className="overflow-hidden rounded-[2rem] border border-[color:var(--color-border)] bg-white shadow-[var(--shadow-soft)]">
+            <header className="space-y-6 border-b border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-6 py-8 md:px-10 md:py-10">
+              <div className="flex flex-wrap items-center gap-2 text-xs font-semibold tracking-[0.14em] text-[color:var(--color-muted)]">
+                <span className="rounded-full bg-[color:var(--color-primary)] px-3 py-1 text-white">LOCAL PRESS</span>
+                <span>{post.format}</span>
+                <time dateTime={post.publishedDate}>{formatDate(post.publishedDate)}</time>
+              </div>
+              <div className="space-y-4">
+                <h1 className="font-editorial text-4xl font-semibold leading-tight tracking-tight text-[color:var(--color-primary)] md:text-6xl">
+                  {post.title}
+                </h1>
+                {post.excerpt ? (
+                  <p className="max-w-3xl text-lg leading-9 text-[color:var(--color-secondary-ink)]">{post.excerpt}</p>
+                ) : null}
+              </div>
+              <div className="flex flex-wrap items-center gap-4 text-sm text-[color:var(--color-muted)]">
+                <span>{post.authorName}</span>
+                <span>{estimateReadingTime(readingSource)}分で読めます</span>
+              </div>
+              {post.topics.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {post.topics.map((topic) => (
+                    <span key={topic} className="rounded-full border border-[color:var(--color-border)] bg-white px-3 py-1 text-sm text-[color:var(--color-secondary-ink)]">
+                      {topic}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+            </header>
+
+            {post.coverImage ? (
+              <div className="relative aspect-[16/8] border-b border-[color:var(--color-border)] bg-[color:var(--color-surface-muted)]">
+                <Image
+                  src={post.coverImage.url}
+                  alt={post.coverImage.alt || post.title}
+                  fill
+                  priority
+                  sizes="(min-width: 1024px) 960px, 100vw"
+                  className="object-cover"
+                />
+              </div>
+            ) : null}
+
+            <div className="px-6 py-8 md:px-10 md:py-10">
+              <MarkdownRenderer body={post.body} charts={charts} />
+            </div>
+
+            {(post.sourceBasis || post.updatedNote || post.sourceLinks.length > 0) ? (
+              <footer className="border-t border-[color:var(--color-border)] bg-[color:var(--color-surface-subtle)] px-6 py-6 md:px-10">
+                <div className="grid gap-4 text-sm leading-7 text-[color:var(--color-secondary-ink)] md:grid-cols-3">
+                  {post.sourceBasis ? (
+                    <div>
+                      <p className="font-semibold text-[color:var(--color-primary)]">出典・基準</p>
+                      <p>{post.sourceBasis}</p>
+                    </div>
+                  ) : null}
+                  {post.updatedNote ? (
+                    <div>
+                      <p className="font-semibold text-[color:var(--color-primary)]">更新メモ</p>
+                      <p>{post.updatedNote}</p>
+                    </div>
+                  ) : null}
+                  {post.sourceLinks.length > 0 ? (
+                    <div>
+                      <p className="font-semibold text-[color:var(--color-primary)]">参考リンク</p>
+                      <ul>
+                        {post.sourceLinks.map((item) => (
+                          <li key={`${item.label}-${item.url ?? ""}`}>
+                            {item.url ? <a href={item.url} className="ui-signal-link" target="_blank" rel="noreferrer">{item.label}</a> : item.label}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
+                </div>
+              </footer>
+            ) : null}
+          </article>
+        </div>
+      </PublicShell>
+    );
+  }
+
+  const [researchers, methodologies, reports] = await Promise.all([
+    getResearchers(),
+    getMethodologies(),
+    getReports(),
+  ]);
+  const relatedResearchers = researchers.filter((researcher) => post.researcherSlugs.includes(researcher.slug));
+  const relatedMethods = methodologies.filter((entry) => post.methodologySlugs.includes(entry.slug));
+  const relatedReports = reports.filter((report) =>
+    report.methodologySlugs.some((methodSlug) => post.methodologySlugs.includes(methodSlug)),
+  );
 
   return (
     <PublicShell

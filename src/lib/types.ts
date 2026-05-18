@@ -112,6 +112,7 @@ export type BlogPost = {
   createdAt?: string;
   updatedAt?: string;
   isDemo?: boolean;
+  isLocalPress?: boolean;
 };
 
 export type ResearcherProfile = {

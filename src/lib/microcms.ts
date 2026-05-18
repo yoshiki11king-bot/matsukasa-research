@@ -11,6 +11,7 @@ import {
   demoTopics,
 } from "@/lib/demo-content";
 import { normalizeHeadingLevel } from "@/lib/content-blocks";
+import { getPublishedLocalArticlePosts } from "@/lib/content/articles";
 import { parseD3ChartBlock } from "@/lib/d3-chart";
 import type {
   AdminCollectionKey,
@@ -831,6 +832,26 @@ function matchTopics(post: BlogPost, topics?: string[]) {
   return topics.every((topic) => post.topics.includes(topic));
 }
 
+function sortPostsByPublishedDate(posts: BlogPost[]) {
+  return [...posts].sort((left, right) => {
+    const rightTime = new Date(right.publishedDate).getTime();
+    const leftTime = new Date(left.publishedDate).getTime();
+
+    return (Number.isFinite(rightTime) ? rightTime : 0) - (Number.isFinite(leftTime) ? leftTime : 0);
+  });
+}
+
+async function getPublicPosts(options?: PublicCollectionOptions) {
+  const [cmsPosts, localPosts] = await Promise.all([
+    getAllCollectionItems("posts", options),
+    getPublishedLocalArticlePosts(),
+  ]);
+  const localSlugs = new Set(localPosts.map((post) => post.slug));
+  const merged = [...localPosts, ...cmsPosts.filter((post) => !localSlugs.has(post.slug))];
+
+  return sortPostsByPublishedDate(merged);
+}
+
 export const cmsStatus = {
   configured: Boolean(serviceDomain && apiKey),
 };
@@ -841,7 +862,7 @@ export async function getPostsPage(
 ): Promise<PostsPage> {
   const page = params.page ?? 1;
   const limit = params.limit ?? 8;
-  const allPosts = await getAllCollectionItems("posts", options);
+  const allPosts = await getPublicPosts(options);
   const filtered = allPosts.filter((post) => matchQuery(post, params.q) && matchTopics(post, params.topics));
   const offset = (page - 1) * limit;
 
@@ -856,22 +877,22 @@ export async function getPostsPage(
 }
 
 export async function getAllPostSlugs(options?: PublicCollectionOptions) {
-  const posts = await getAllCollectionItems("posts", options);
+  const posts = await getPublicPosts(options);
   return posts.map((post) => post.slug);
 }
 
 export async function getPostBySlug(slug: string) {
-  const posts = await getAllCollectionItems("posts");
+  const posts = await getPublicPosts();
   return posts.find((post) => post.slug === slug) ?? null;
 }
 
 export async function getPostsByResearcher(slug: string) {
-  const posts = await getAllCollectionItems("posts");
+  const posts = await getPublicPosts();
   return posts.filter((post) => post.researcherSlugs.includes(slug));
 }
 
 export async function getPostsByMethodology(slug: string) {
-  const posts = await getAllCollectionItems("posts");
+  const posts = await getPublicPosts();
   return posts.filter((post) => post.methodologySlugs.includes(slug));
 }
 
