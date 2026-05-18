@@ -12,6 +12,10 @@ import {
 } from "@/lib/demo-content";
 import { normalizeHeadingLevel } from "@/lib/content-blocks";
 import { getPublishedLocalArticlePosts } from "@/lib/content/articles";
+import { getPublishedLocalDirectorPageContent } from "@/lib/content/director";
+import { getPublishedLocalFinancePageContent } from "@/lib/content/finance";
+import { getPublishedLocalFinancialStatements } from "@/lib/content/financial-statements";
+import { getPublishedLocalResearchReports } from "@/lib/content/reports";
 import { parseD3ChartBlock } from "@/lib/d3-chart";
 import type {
   AdminCollectionKey,
@@ -841,6 +845,29 @@ function sortPostsByPublishedDate(posts: BlogPost[]) {
   });
 }
 
+function sortReportsByPublishedDate(reports: ResearchReport[]) {
+  return [...reports].sort((left, right) => {
+    const rightTime = new Date(right.publishedDate).getTime();
+    const leftTime = new Date(left.publishedDate).getTime();
+
+    return (Number.isFinite(rightTime) ? rightTime : 0) - (Number.isFinite(leftTime) ? leftTime : 0);
+  });
+}
+
+function sortFinancialStatements(statements: FinancialStatement[]) {
+  return [...statements].sort((left, right) => {
+    const rightDate = new Date(right.publishedDate).getTime();
+    const leftDate = new Date(left.publishedDate).getTime();
+    const dateSort = (Number.isFinite(rightDate) ? rightDate : 0) - (Number.isFinite(leftDate) ? leftDate : 0);
+
+    if (dateSort !== 0) {
+      return dateSort;
+    }
+
+    return right.fiscalYear.localeCompare(left.fiscalYear);
+  });
+}
+
 async function getPublicPosts(options?: PublicCollectionOptions) {
   const [cmsPosts, localPosts] = await Promise.all([
     getAllCollectionItems("posts", options),
@@ -850,6 +877,28 @@ async function getPublicPosts(options?: PublicCollectionOptions) {
   const merged = [...localPosts, ...cmsPosts.filter((post) => !localSlugs.has(post.slug))];
 
   return sortPostsByPublishedDate(merged);
+}
+
+async function getPublicReports(options?: PublicCollectionOptions) {
+  const [cmsReports, localReports] = await Promise.all([
+    getAllCollectionItems("reports", options),
+    getPublishedLocalResearchReports(),
+  ]);
+  const localSlugs = new Set(localReports.map((report) => report.slug));
+  const merged = [...localReports, ...cmsReports.filter((report) => !localSlugs.has(report.slug))];
+
+  return sortReportsByPublishedDate(merged);
+}
+
+async function getPublicFinancialStatements() {
+  const [cmsStatements, localStatements] = await Promise.all([
+    getAllCollectionItems("financialStatements"),
+    getPublishedLocalFinancialStatements(),
+  ]);
+  const localSlugs = new Set(localStatements.map((statement) => statement.slug));
+  const merged = [...localStatements, ...cmsStatements.filter((statement) => !localSlugs.has(statement.slug))];
+
+  return sortFinancialStatements(merged);
 }
 
 export const cmsStatus = {
@@ -915,21 +964,21 @@ export async function getMethodologyBySlug(slug: string) {
 }
 
 export async function getReports(options?: PublicCollectionOptions) {
-  return getAllCollectionItems("reports", options);
+  return getPublicReports(options);
 }
 
 export async function getReportBySlug(slug: string) {
-  const reports = await getAllCollectionItems("reports");
+  const reports = await getPublicReports();
   return reports.find((report) => report.slug === slug) ?? null;
 }
 
 export async function getReportsByResearcher(slug: string) {
-  const reports = await getAllCollectionItems("reports");
+  const reports = await getPublicReports();
   return reports.filter((report) => report.researcherSlugs.includes(slug));
 }
 
 export async function getReportsByMethodology(slug: string) {
-  const reports = await getAllCollectionItems("reports");
+  const reports = await getPublicReports();
   return reports.filter((report) => report.methodologySlugs.includes(slug));
 }
 
@@ -938,6 +987,12 @@ export async function getDirectorPages() {
 }
 
 export async function getCurrentDirectorPage() {
+  const localPage = await getPublishedLocalDirectorPageContent();
+
+  if (localPage) {
+    return localPage;
+  }
+
   const pages = await getDirectorPages();
   return pickActiveVersion(pages) ?? demoDirectorPages[0] ?? null;
 }
@@ -947,20 +1002,26 @@ export async function getFinancePages() {
 }
 
 export async function getCurrentFinancePage() {
+  const localPage = await getPublishedLocalFinancePageContent();
+
+  if (localPage) {
+    return localPage;
+  }
+
   const pages = await getFinancePages();
   return pickActiveVersion(pages);
 }
 
 export async function getFinancialStatements() {
-  return getAllCollectionItems("financialStatements");
+  return getPublicFinancialStatements();
 }
 
 export async function getTopics(options?: PublicCollectionOptions) {
   const [posts, researchers, methodologies, reports] = await Promise.all([
-    getAllCollectionItems("posts", options),
+    getPublicPosts(options),
     getAllCollectionItems("researchers", options),
     getAllCollectionItems("methodologies", options),
-    getAllCollectionItems("reports", options),
+    getPublicReports(options),
   ]);
 
   const map = new Map(demoTopics.map((topic) => [topic.name, topic.description]));

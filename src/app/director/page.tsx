@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { MarkdownRenderer } from "@/components/content/MarkdownRenderer";
 import { RichTextBody } from "@/components/post-body";
 import { PublicShell } from "@/components/public-shell";
 import { SectionHeading } from "@/components/section-heading";
 import { StructuredData } from "@/components/structured-data";
+import { getChartsBySlug } from "@/lib/content/charts";
 import { formatDate } from "@/lib/formatters";
 import { getCurrentDirectorPage, getSidebarSnapshot } from "@/lib/microcms";
 import { buildBreadcrumbJsonLd, buildPageMetadata, buildWebPageJsonLd } from "@/lib/seo";
@@ -35,6 +37,7 @@ export default async function DirectorPage() {
     }),
     buildBreadcrumbJsonLd([{ name: "所長", path: "/director" }]),
   ];
+  const charts = page.isLocalPress ? await getChartsBySlug() : {};
 
   return (
     <PublicShell
@@ -52,7 +55,13 @@ export default async function DirectorPage() {
           <p className="max-w-3xl text-lg leading-9 text-[color:var(--color-text)]">
             {page.summary}
           </p>
-          <RichTextBody body={page.body} className="max-w-3xl" />
+          {page.isLocalPress ? (
+            <div className="max-w-3xl">
+              <MarkdownRenderer body={page.body} charts={charts} />
+            </div>
+          ) : (
+            <RichTextBody body={page.body} className="max-w-3xl" />
+          )}
           <p className="text-sm text-[color:var(--color-muted)]">
             更新日 {formatDate(page.updatedDate)}
           </p>

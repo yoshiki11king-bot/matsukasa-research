@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { MarkdownRenderer } from "@/components/content/MarkdownRenderer";
 import { RichTextBody } from "@/components/post-body";
 import { PublicShell } from "@/components/public-shell";
 import { SectionHeading } from "@/components/section-heading";
 import { StructuredData } from "@/components/structured-data";
+import { getChartsBySlug } from "@/lib/content/charts";
 import { formatDate } from "@/lib/formatters";
-import { getReports, getSidebarSnapshot } from "@/lib/microcms";
+import { getCurrentFinancePage, getFinancialStatements, getReports, getSidebarSnapshot } from "@/lib/microcms";
 import { buildBreadcrumbJsonLd, buildPageMetadata, buildWebPageJsonLd } from "@/lib/seo";
 import type { ResearchReport } from "@/lib/types";
 
@@ -96,20 +98,50 @@ function getVisibleStatements(reports: ResearchReport[]) {
   );
 }
 
-export default async function FinancePage() {
-  const [reports, sidebar] = await Promise.all([getReports(), getSidebarSnapshot()]);
+function getVisibleFinancialStatements(statements: Awaited<ReturnType<typeof getFinancialStatements>>) {
+  const now = Date.now();
+  return statements.filter((statement) => new Date(statement.publishedDate).getTime() <= now);
+}
 
-  const visibleStatements = getVisibleStatements(reports);
+export default async function FinancePage() {
+  const [financePage, reports, statements, sidebar] = await Promise.all([
+    getCurrentFinancePage(),
+    getReports(),
+    getFinancialStatements(),
+    getSidebarSnapshot(),
+  ]);
+  const pageContent = financePage ?? financePageContent;
+
+  const visibleReports = getVisibleStatements(reports);
+  const visibleStatements = [
+    ...getVisibleFinancialStatements(statements),
+    ...visibleReports.map((report) => ({
+      id: report.id,
+      slug: report.slug,
+      title: report.title,
+      fiscalYear: extractFiscalYear(report),
+      summary: report.summary,
+      publishedDate: report.publishedDate,
+      updatedDate: report.updatedDate,
+      pdfUrl: report.pdfUrl,
+      sourceBasis: report.sourceBasis,
+      highlights: [],
+      body: report.body,
+      isLocalPress: report.isLocalPress,
+    })),
+  ];
   const sortedStatements = [...visibleStatements].sort(
     (a, b) => new Date(b.publishedDate).getTime() - new Date(a.publishedDate).getTime(),
   );
   const latestStatement = sortedStatements[0] ?? null;
+  const isLocalPressFinance = "isLocalPress" in pageContent && Boolean(pageContent.isLocalPress);
+  const charts = isLocalPressFinance ? await getChartsBySlug() : {};
   const structuredData = [
     buildWebPageJsonLd({
-      name: financePageContent.title,
-      description: financePageContent.summary,
+      name: pageContent.title,
+      description: pageContent.summary,
       path: "/finance",
-      dateModified: financePageContent.updatedDate,
+      dateModified: pageContent.updatedDate,
     }),
     buildBreadcrumbJsonLd([{ name: "財務情報", path: "/finance" }]),
   ];
@@ -125,19 +157,25 @@ export default async function FinancePage() {
         <section className="ui-warm-panel space-y-4 rounded-[2rem] border border-[color:var(--color-border)] px-6 py-7 shadow-[var(--shadow-soft)]">
           <p className="text-sm font-medium text-[color:var(--color-muted)]">財務情報</p>
           <h1 className="text-4xl font-semibold tracking-tight text-[color:var(--color-primary)]">
-            {financePageContent.title}
+            {pageContent.title}
           </h1>
           <p className="max-w-3xl text-lg leading-9 text-[color:var(--color-text)]">
-            {financePageContent.summary}
+            {pageContent.summary}
           </p>
-          <RichTextBody body={financePageContent.body} className="max-w-3xl" />
+          {isLocalPressFinance ? (
+            <div className="max-w-3xl">
+              <MarkdownRenderer body={pageContent.body} charts={charts} />
+            </div>
+          ) : (
+            <RichTextBody body={pageContent.body} className="max-w-3xl" />
+          )}
         </section>
 
         <section className="grid gap-4 md:grid-cols-3">
           <article className="ui-warm-panel-soft rounded-lg border border-[color:var(--color-border)] px-5 py-5 shadow-[var(--shadow-soft)]">
             <p className="text-sm font-medium text-[color:var(--color-muted)]">最終更新</p>
             <p className="mt-2 text-3xl font-semibold tracking-tight text-[color:var(--color-primary)]">
-              {formatDate(financePageContent.updatedDate)}
+              {formatDate(pageContent.updatedDate)}
             </p>
           </article>
           <article className="ui-warm-panel-soft rounded-lg border border-[color:var(--color-border)] px-5 py-5 shadow-[var(--shadow-soft)]">
@@ -149,7 +187,7 @@ export default async function FinancePage() {
           <article className="ui-warm-panel-soft rounded-lg border border-[color:var(--color-border)] px-5 py-5 shadow-[var(--shadow-soft)]">
             <p className="text-sm font-medium text-[color:var(--color-muted)]">最新年度</p>
             <p className="mt-2 text-3xl font-semibold tracking-tight text-[color:var(--color-primary)]">
-              {latestStatement ? extractFiscalYear(latestStatement) : "未設定"}
+              {latestStatement ? latestStatement.fiscalYear : "未設定"}
             </p>
           </article>
         </section>
@@ -161,7 +199,7 @@ export default async function FinancePage() {
             description="公開の対象と更新基準を先に示し、このページを財務情報の入口にします。"
           />
           <div className="grid gap-4 md:grid-cols-3">
-            {financePageContent.disclosureItems.map((item) => (
+            {pageContent.disclosureItems.map((item) => (
               <article
                 key={item.title}
                 className="ui-warm-panel-soft rounded-lg border border-[color:var(--color-border)] px-5 py-5 shadow-[var(--shadow-soft)]"
@@ -185,7 +223,7 @@ export default async function FinancePage() {
                 <div className="space-y-4">
                   <div className="flex flex-wrap gap-2 text-xs text-[color:var(--color-muted)]">
                     <span className="rounded-md bg-[color:var(--color-primary)] px-2.5 py-1 font-medium text-[color:var(--color-primary-contrast)]">
-                      {extractFiscalYear(latestStatement)}
+                      {latestStatement.fiscalYear}
                     </span>
                     <span>公開 {formatDate(latestStatement.publishedDate)}</span>
                     <span>更新 {formatDate(latestStatement.updatedDate)}</span>
@@ -230,11 +268,11 @@ export default async function FinancePage() {
               description="現時点では、何をどの粒度で出すかを先に固定します。確定値はこの区分に沿って追加します。"
             />
             <div className="overflow-hidden rounded-lg border border-[color:var(--color-border)]">
-              {financePageContent.disclosureTable.map((item, index) => (
+              {pageContent.disclosureTable.map((item, index) => (
                 <div
                   key={item.title}
                   className={`grid gap-3 px-4 py-4 md:grid-cols-[180px_minmax(0,1fr)] ${
-                    index === financePageContent.disclosureTable.length - 1
+                    index === pageContent.disclosureTable.length - 1
                       ? ""
                       : "border-b border-[color:var(--color-border)]"
                   }`}
@@ -255,7 +293,7 @@ export default async function FinancePage() {
               description="透明性を保ちながら、個人情報や未確定情報を混ぜないための基準です。"
             />
             <div className="grid gap-4 md:grid-cols-2">
-              {financePageContent.policyItems.map((item) => (
+              {pageContent.policyItems.map((item) => (
                 <article
                   key={item.title}
                   className="ui-warm-panel-soft rounded-lg border border-[color:var(--color-border)] px-5 py-5"
@@ -286,7 +324,7 @@ export default async function FinancePage() {
                       <div className="space-y-3">
                         <div className="flex flex-wrap gap-2 text-xs text-[color:var(--color-muted)]">
                           <span className="rounded-md bg-[color:var(--color-primary)] px-2.5 py-1 font-medium text-[color:var(--color-primary-contrast)]">
-                            {extractFiscalYear(statement)}
+                            {statement.fiscalYear}
                           </span>
                           <span>公開 {formatDate(statement.publishedDate)}</span>
                           <span>更新 {formatDate(statement.updatedDate)}</span>
@@ -312,7 +350,14 @@ export default async function FinancePage() {
                             PDF
                           </a>
                         ) : null}
-                        <Link href={`/reports/${statement.slug}`} className="ui-button ui-button-secondary h-10 px-4 text-sm">
+                        <Link
+                          href={
+                            statement.id.startsWith("local-financial-statement-")
+                              ? `/financial-statements/${statement.fiscalYear}`
+                              : `/reports/${statement.slug}`
+                          }
+                          className="ui-button ui-button-secondary h-10 px-4 text-sm"
+                        >
                           詳細
                         </Link>
                       </div>
@@ -333,7 +378,7 @@ export default async function FinancePage() {
             <div className="space-y-3">
               <p className="text-sm font-medium text-[color:var(--color-muted)]">お問い合わせ</p>
               <p className="max-w-3xl text-[1.02rem] leading-8 text-[color:var(--color-text)]">
-                {financePageContent.contactText}
+                {pageContent.contactText}
               </p>
             </div>
             <div className="flex flex-wrap gap-3">

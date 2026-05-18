@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import {
   getAllPostSlugs,
+  getFinancialStatements,
   getPostsPage,
   getMethodologies,
   getReports,
@@ -15,12 +16,13 @@ export const revalidate = 86400;
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = getSiteUrl();
   const cacheOptions = { revalidateSeconds: revalidate };
-  const [postsPage, postSlugs, researchers, methodologies, reports, topics] = await Promise.all([
+  const [postsPage, postSlugs, researchers, methodologies, reports, financialStatements, topics] = await Promise.all([
     getPostsPage({ page: 1, limit: 100 }, cacheOptions),
     getAllPostSlugs(cacheOptions),
     getResearchers(cacheOptions),
     getMethodologies(cacheOptions),
     getReports(cacheOptions),
+    getFinancialStatements(),
     getTopics(cacheOptions),
   ]);
 
@@ -98,6 +100,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(report.updatedDate),
       changeFrequency: "monthly" as const,
       priority: 0.85,
+    })),
+    ...financialStatements.map((statement) => ({
+      url: `${siteUrl}/financial-statements/${statement.fiscalYear}`,
+      lastModified: new Date(statement.updatedDate),
+      changeFrequency: "monthly" as const,
+      priority: 0.75,
     })),
     ...topics.map((topic) => ({
       url: `${siteUrl}${getTopicHref(topic.name)}`,

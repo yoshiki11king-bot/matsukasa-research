@@ -167,6 +167,7 @@ export type ResearchReport = {
   body: string;
   contentBlocks: ContentBlock[];
   isDemo?: boolean;
+  isLocalPress?: boolean;
 };
 
 export type DirectorPageContent = {
@@ -183,6 +184,7 @@ export type DirectorPageContent = {
   stanceCards: LabeledTextBlock[];
   relatedSummary: string;
   isDemo?: boolean;
+  isLocalPress?: boolean;
 };
 
 export type FinancePageContent = {
@@ -198,6 +200,7 @@ export type FinancePageContent = {
   policyItems: LabeledTextBlock[];
   contactText: string;
   isDemo?: boolean;
+  isLocalPress?: boolean;
 };
 
 export type FinancialStatement = {
@@ -213,6 +216,7 @@ export type FinancialStatement = {
   highlights: string[];
   body: string;
   isDemo?: boolean;
+  isLocalPress?: boolean;
 };
 
 export type PostStatus = "DRAFT" | "PUBLISH" | "CLOSED" | "PUBLISH_AND_DRAFT";
