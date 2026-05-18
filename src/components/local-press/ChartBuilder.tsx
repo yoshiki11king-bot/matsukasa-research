@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ChartRenderer } from "@/components/content/ChartRenderer";
+import { applyPaletteToRows, chartPalettePresets, csvToEditableRows, defaultChartRows, parseSimpleCsv, rowsToCsv, type EditableChartRow } from "@/components/local-press/chart-builder-tools";
 import { LOCAL_PRESS_CHART_STORAGE_KEY, normalizeSlug } from "@/lib/content/config";
 import type { LocalChart, LocalChartType } from "@/lib/content/types";
 import type { D3ChartDatum } from "@/lib/types";
@@ -26,35 +27,7 @@ const chartTypes: Array<{ value: LocalChartType; label: string }> = [
   { value: "stackedArea", label: "積み上げ面グラフ" },
 ];
 
-const sampleCsv = `label,value,comparison,color
-教育,42,34,#2a7f9e
-雇用,31,28,#f4941e
-メディア,27,22,#14532d`;
-
-function parseCsv(source: string): D3ChartDatum[] {
-  const lines = source
-    .trim()
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean);
-
-  if (lines.length < 2) {
-    return [];
-  }
-
-  const headers = lines[0].split(",").map((header) => header.trim()).filter(Boolean);
-
-  return lines.slice(1).map((line) => {
-    const cells = line.split(",").map((cell) => cell.trim());
-    return Object.fromEntries(
-      headers.map((header, index) => {
-        const raw = cells[index] ?? "";
-        const numeric = Number(raw.replace(/,/g, ""));
-        return [header, Number.isFinite(numeric) && raw !== "" ? numeric : raw];
-      }),
-    ) as D3ChartDatum;
-  });
-}
+const sampleCsv = rowsToCsv(defaultChartRows);
 
 function buildChart({
   title,
@@ -136,7 +109,7 @@ export function ChartBuilder() {
   const [yKey, setYKey] = useState("value");
   const [xLabel, setXLabel] = useState("");
   const [yLabel, setYLabel] = useState("");
-  const [colorKey, setColorKey] = useState("");
+  const [colorKey, setColorKey] = useState("color");
   const [nameKey, setNameKey] = useState("");
   const [showLegend, setShowLegend] = useState(true);
   const [showGrid, setShowGrid] = useState(true);
@@ -145,6 +118,8 @@ export function ChartBuilder() {
   const [abstract, setAbstract] = useState("");
   const [height, setHeight] = useState(340);
   const [csv, setCsv] = useState(sampleCsv);
+  const [paletteId, setPaletteId] = useState(chartPalettePresets[0].id);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
   const [overwrite, setOverwrite] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -177,6 +152,7 @@ export function ChartBuilder() {
         abstract?: string;
         height?: number;
         csv?: string;
+        paletteId?: string;
       };
       window.requestAnimationFrame(() => {
         setTitle(parsed.title ?? "");
@@ -189,7 +165,7 @@ export function ChartBuilder() {
         setYKey(parsed.yKey ?? "value");
         setXLabel(parsed.xLabel ?? "");
         setYLabel(parsed.yLabel ?? "");
-        setColorKey(parsed.colorKey ?? "");
+        setColorKey(parsed.colorKey ?? "color");
         setNameKey(parsed.nameKey ?? "");
         setShowLegend(parsed.showLegend ?? true);
         setShowGrid(parsed.showGrid ?? true);
@@ -198,6 +174,7 @@ export function ChartBuilder() {
         setAbstract(parsed.abstract ?? "");
         setHeight(parsed.height ?? 340);
         setCsv(parsed.csv ?? sampleCsv);
+        setPaletteId(parsed.paletteId ?? chartPalettePresets[0].id);
       });
     } catch {
       window.localStorage.removeItem(LOCAL_PRESS_CHART_STORAGE_KEY);
@@ -208,19 +185,53 @@ export function ChartBuilder() {
     const timer = window.setTimeout(() => {
       window.localStorage.setItem(
         LOCAL_PRESS_CHART_STORAGE_KEY,
-        JSON.stringify({ title, slug, chartType, description, sourceNote, methodologyNote, xKey, yKey, xLabel, yLabel, colorKey, nameKey, showLegend, showGrid, showDataLabels, footnote, abstract, height, csv }),
+        JSON.stringify({ title, slug, chartType, description, sourceNote, methodologyNote, xKey, yKey, xLabel, yLabel, colorKey, nameKey, showLegend, showGrid, showDataLabels, footnote, abstract, height, csv, paletteId }),
       );
     }, 450);
 
     return () => window.clearTimeout(timer);
-  }, [abstract, chartType, colorKey, csv, description, footnote, height, methodologyNote, nameKey, showDataLabels, showGrid, showLegend, slug, sourceNote, title, xKey, xLabel, yKey, yLabel]);
+  }, [abstract, chartType, colorKey, csv, description, footnote, height, methodologyNote, nameKey, paletteId, showDataLabels, showGrid, showLegend, slug, sourceNote, title, xKey, xLabel, yKey, yLabel]);
 
   const resolvedSlug = slug || normalizeSlug(title) || "chart-slug";
-  const data = useMemo(() => parseCsv(csv), [csv]);
+  const data = useMemo(() => parseSimpleCsv(csv), [csv]);
   const chart = useMemo(
     () => buildChart({ title: title || "無題の図表", slug: resolvedSlug, chartType, description, sourceNote, methodologyNote, xKey, yKey, xLabel, yLabel, colorKey, nameKey, showLegend, showGrid, showDataLabels, footnote, abstract, height, data }),
     [abstract, chartType, colorKey, data, description, footnote, height, methodologyNote, nameKey, resolvedSlug, showDataLabels, showGrid, showLegend, sourceNote, title, xKey, xLabel, yKey, yLabel],
   );
+
+  const editableRows = useMemo(() => csvToEditableRows(csv), [csv]);
+  const selectedPalette = chartPalettePresets.find((palette) => palette.id === paletteId) ?? chartPalettePresets[0];
+
+  function updateRows(nextRows: EditableChartRow[]) {
+    setCsv(rowsToCsv(nextRows));
+  }
+
+  function updateRow(index: number, patch: Partial<EditableChartRow>) {
+    updateRows(editableRows.map((row, rowIndex) => (rowIndex === index ? { ...row, ...patch } : row)));
+  }
+
+  function addRow() {
+    updateRows([
+      ...editableRows,
+      {
+        label: `項目${editableRows.length + 1}`,
+        value: "",
+        comparison: "",
+        color: selectedPalette.colors[editableRows.length % selectedPalette.colors.length],
+      },
+    ]);
+  }
+
+  function removeRow(index: number) {
+    updateRows(editableRows.filter((_, rowIndex) => rowIndex !== index));
+  }
+
+  function applyPalette(paletteIdValue: string) {
+    const palette = chartPalettePresets.find((item) => item.id === paletteIdValue) ?? chartPalettePresets[0];
+    setPaletteId(palette.id);
+    setColorKey("color");
+    updateRows(applyPaletteToRows(editableRows, palette.colors));
+  }
 
   async function handleSave() {
     setError("");
@@ -257,30 +268,97 @@ export function ChartBuilder() {
         </div>
       </header>
 
-      <main className="mx-auto grid w-full max-w-[1320px] gap-6 px-5 py-8 lg:grid-cols-[420px_minmax(0,1fr)]">
+      <main className="mx-auto grid w-full max-w-[1320px] gap-6 px-5 py-8 lg:grid-cols-[460px_minmax(0,1fr)]">
         <section className="space-y-4 rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface-muted)] px-5 py-5">
           <input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="グラフタイトル" className="h-12 w-full rounded-md border border-[color:var(--color-border)] px-3 text-base font-semibold" />
           <input value={slug} onChange={(event) => setSlug(normalizeSlug(event.target.value))} placeholder={resolvedSlug} className="h-10 w-full rounded-md border border-[color:var(--color-border)] px-3 text-sm" />
-          <select value={chartType} onChange={(event) => setChartType(event.target.value as LocalChartType)} className="h-10 w-full rounded-md border border-[color:var(--color-border)] px-3 text-sm">
-            {chartTypes.map((item) => (
-              <option key={item.value} value={item.value}>
-                {item.label}
-              </option>
-            ))}
-          </select>
-          <textarea value={description} onChange={(event) => setDescription(event.target.value)} placeholder="説明" className="min-h-20 w-full rounded-md border border-[color:var(--color-border)] px-3 py-2 text-sm" />
-          <textarea value={abstract} onChange={(event) => setAbstract(event.target.value)} placeholder="アブストラクト" className="min-h-20 w-full rounded-md border border-[color:var(--color-border)] px-3 py-2 text-sm" />
-          <textarea value={sourceNote} onChange={(event) => setSourceNote(event.target.value)} placeholder="出典" className="min-h-16 w-full rounded-md border border-[color:var(--color-border)] px-3 py-2 text-sm" />
-          <textarea value={methodologyNote} onChange={(event) => setMethodologyNote(event.target.value)} placeholder="方法論メモ" className="min-h-16 w-full rounded-md border border-[color:var(--color-border)] px-3 py-2 text-sm" />
-          <textarea value={footnote} onChange={(event) => setFootnote(event.target.value)} placeholder="脚注" className="min-h-16 w-full rounded-md border border-[color:var(--color-border)] px-3 py-2 text-sm" />
-          <div className="grid gap-3 sm:grid-cols-2">
-            <input value={xKey} onChange={(event) => setXKey(event.target.value)} placeholder="Xキー 例: label" className="h-10 rounded-md border border-[color:var(--color-border)] px-3 text-sm" />
-            <input value={yKey} onChange={(event) => setYKey(event.target.value)} placeholder="Yキー 例: value / value,comparison" className="h-10 rounded-md border border-[color:var(--color-border)] px-3 text-sm" />
-            <input value={xLabel} onChange={(event) => setXLabel(event.target.value)} placeholder="X軸ラベル" className="h-10 rounded-md border border-[color:var(--color-border)] px-3 text-sm" />
-            <input value={yLabel} onChange={(event) => setYLabel(event.target.value)} placeholder="Y軸ラベル" className="h-10 rounded-md border border-[color:var(--color-border)] px-3 text-sm" />
-            <input value={colorKey} onChange={(event) => setColorKey(event.target.value)} placeholder="色分けキー 例: color" className="h-10 rounded-md border border-[color:var(--color-border)] px-3 text-sm" />
-            <input value={nameKey} onChange={(event) => setNameKey(event.target.value)} placeholder="名称キー 例: label" className="h-10 rounded-md border border-[color:var(--color-border)] px-3 text-sm" />
+
+          <div>
+            <p className="mb-2 text-xs font-semibold tracking-[0.12em] text-[color:var(--color-muted)]">TYPE</p>
+            <div className="grid grid-cols-2 gap-2">
+              {chartTypes.map((item) => (
+                <button
+                  key={item.value}
+                  type="button"
+                  onClick={() => setChartType(item.value)}
+                  className={`rounded-md border px-3 py-2 text-left text-sm font-semibold transition ${chartType === item.value ? "border-[color:var(--color-primary)] bg-white text-[color:var(--color-primary)] shadow-sm" : "border-[color:var(--color-border)] bg-white/70 text-[color:var(--color-secondary-ink)] hover:bg-white"}`}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
           </div>
+
+          <div>
+            <p className="mb-2 text-xs font-semibold tracking-[0.12em] text-[color:var(--color-muted)]">COLOR</p>
+            <div className="grid gap-2">
+              {chartPalettePresets.map((palette) => (
+                <button
+                  key={palette.id}
+                  type="button"
+                  onClick={() => applyPalette(palette.id)}
+                  className={`flex items-center justify-between gap-3 rounded-md border bg-white px-3 py-2 text-left transition ${paletteId === palette.id ? "border-[color:var(--color-primary)] shadow-sm" : "border-[color:var(--color-border)] hover:border-[color:var(--color-primary)]"}`}
+                >
+                  <span className="text-sm font-semibold text-[color:var(--color-primary)]">{palette.label}</span>
+                  <span className="flex gap-1">
+                    {palette.colors.map((color) => (
+                      <span key={color} className="size-5 rounded-full border border-black/10" style={{ backgroundColor: color }} />
+                    ))}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-[color:var(--color-border)] bg-white p-3">
+            <div className="mb-2 grid grid-cols-[1fr_76px_76px_40px] gap-2 text-xs font-semibold text-[color:var(--color-muted)]">
+              <span>項目</span>
+              <span>値</span>
+              <span>比較</span>
+              <span>色</span>
+            </div>
+            <div className="space-y-2">
+              {editableRows.map((row, index) => (
+                <div key={`${row.label}-${index}`} className="grid grid-cols-[1fr_76px_76px_40px] gap-2">
+                  <input value={row.label} onChange={(event) => updateRow(index, { label: event.target.value })} className="h-9 min-w-0 rounded-md border border-[color:var(--color-border)] px-2 text-sm" />
+                  <input value={row.value} onChange={(event) => updateRow(index, { value: event.target.value })} className="h-9 min-w-0 rounded-md border border-[color:var(--color-border)] px-2 text-sm" />
+                  <input value={row.comparison} onChange={(event) => updateRow(index, { comparison: event.target.value })} className="h-9 min-w-0 rounded-md border border-[color:var(--color-border)] px-2 text-sm" />
+                  <button type="button" onClick={() => updateRow(index, { color: selectedPalette.colors[(selectedPalette.colors.indexOf(row.color) + 1) % selectedPalette.colors.length] ?? selectedPalette.colors[0] })} onDoubleClick={() => removeRow(index)} className="h-9 rounded-md border border-[color:var(--color-border)]" style={{ backgroundColor: row.color }} aria-label="色を変更" title="クリックで色変更 / ダブルクリックで削除" />
+                </div>
+              ))}
+            </div>
+            <button type="button" onClick={addRow} className="mt-3 h-9 w-full rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-surface-subtle)] text-sm font-semibold text-[color:var(--color-primary)]">
+              行を追加
+            </button>
+          </div>
+
+          <textarea value={description} onChange={(event) => setDescription(event.target.value)} placeholder="短い説明" className="min-h-16 w-full rounded-md border border-[color:var(--color-border)] px-3 py-2 text-sm" />
+
+          <button type="button" onClick={() => setAdvancedOpen((current) => !current)} className="h-10 w-full rounded-md border border-[color:var(--color-border)] bg-white text-sm font-semibold text-[color:var(--color-primary)]">
+            {advancedOpen ? "詳細を閉じる" : "詳細"}
+          </button>
+
+          {advancedOpen ? (
+            <div className="space-y-3 rounded-lg border border-[color:var(--color-border)] bg-white p-3">
+              <textarea value={abstract} onChange={(event) => setAbstract(event.target.value)} placeholder="アブストラクト" className="min-h-16 w-full rounded-md border border-[color:var(--color-border)] px-3 py-2 text-sm" />
+              <textarea value={sourceNote} onChange={(event) => setSourceNote(event.target.value)} placeholder="出典" className="min-h-14 w-full rounded-md border border-[color:var(--color-border)] px-3 py-2 text-sm" />
+              <textarea value={methodologyNote} onChange={(event) => setMethodologyNote(event.target.value)} placeholder="方法論メモ" className="min-h-14 w-full rounded-md border border-[color:var(--color-border)] px-3 py-2 text-sm" />
+              <textarea value={footnote} onChange={(event) => setFootnote(event.target.value)} placeholder="脚注" className="min-h-14 w-full rounded-md border border-[color:var(--color-border)] px-3 py-2 text-sm" />
+              <div className="grid gap-3 sm:grid-cols-2">
+                <input value={xKey} onChange={(event) => setXKey(event.target.value)} placeholder="Xキー" className="h-10 rounded-md border border-[color:var(--color-border)] px-3 text-sm" />
+                <input value={yKey} onChange={(event) => setYKey(event.target.value)} placeholder="Yキー / 複数は value,comparison" className="h-10 rounded-md border border-[color:var(--color-border)] px-3 text-sm" />
+                <input value={xLabel} onChange={(event) => setXLabel(event.target.value)} placeholder="X軸ラベル" className="h-10 rounded-md border border-[color:var(--color-border)] px-3 text-sm" />
+                <input value={yLabel} onChange={(event) => setYLabel(event.target.value)} placeholder="Y軸ラベル" className="h-10 rounded-md border border-[color:var(--color-border)] px-3 text-sm" />
+                <input value={colorKey} onChange={(event) => setColorKey(event.target.value)} placeholder="色キー" className="h-10 rounded-md border border-[color:var(--color-border)] px-3 text-sm" />
+                <input value={nameKey} onChange={(event) => setNameKey(event.target.value)} placeholder="名称キー" className="h-10 rounded-md border border-[color:var(--color-border)] px-3 text-sm" />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-[color:var(--color-muted)]">CSV</label>
+                <textarea value={csv} onChange={(event) => setCsv(event.target.value)} className="mt-1 min-h-36 w-full rounded-md border border-[color:var(--color-border)] px-3 py-2 font-mono text-sm" />
+              </div>
+            </div>
+          ) : null}
+
           <label className="block text-xs font-semibold text-[color:var(--color-muted)]">
             高さ: {height}px
             <input type="range" min="240" max="520" step="20" value={height} onChange={(event) => setHeight(Number(event.target.value))} className="mt-2 w-full" />
@@ -298,10 +376,6 @@ export function ChartBuilder() {
               <input type="checkbox" checked={showDataLabels} onChange={(event) => setShowDataLabels(event.target.checked)} />
               データラベル
             </label>
-          </div>
-          <div>
-            <label className="text-xs font-semibold text-[color:var(--color-muted)]">CSV貼り付け</label>
-            <textarea value={csv} onChange={(event) => setCsv(event.target.value)} className="mt-1 min-h-48 w-full rounded-md border border-[color:var(--color-border)] px-3 py-2 font-mono text-sm" />
           </div>
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" checked={overwrite} onChange={(event) => setOverwrite(event.target.checked)} />

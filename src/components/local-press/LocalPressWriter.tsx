@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { BlockEditor } from "@/components/local-press/BlockEditor";
+import { QuickChartComposer } from "@/components/local-press/QuickChartComposer";
 import { LocalDocumentRenderer } from "@/components/content/LocalDocumentRenderer";
 import { ResearcherRenderer } from "@/components/content/ResearcherRenderer";
 import {
@@ -10,12 +12,11 @@ import {
   getDefaultFrontmatter,
   LOCAL_PRESS_STORAGE_KEY,
   LOCAL_PRESS_TYPE_LABELS,
-  LOCAL_PRESS_TYPE_NOTES,
   normalizeSlug,
   type LocalPressContentType,
 } from "@/lib/content/config";
 import type { Frontmatter } from "@/lib/content/frontmatter";
-import type { LocalChartsBySlug, LocalMarkdownDocument, LocalResearcher } from "@/lib/content/types";
+import type { LocalChart, LocalChartsBySlug, LocalMarkdownDocument, LocalResearcher } from "@/lib/content/types";
 
 type Mode = "edit" | "preview" | "split";
 type SaveState = "idle" | "saving" | "saved" | "error";
@@ -34,24 +35,6 @@ const contentTypes: LocalPressContentType[] = [
   "finance",
   "financial-statements",
   "short-readings",
-];
-
-const insertBlocks = [
-  { label: "見出し", value: "\n\n## 見出し\n\n" },
-  { label: "小見出し", value: "\n\n### 小見出し\n\n" },
-  { label: "本文", value: "\n\n本文を書く\n\n" },
-  { label: "引用", value: "\n\n> 引用文\n\n" },
-  { label: "箇条書き", value: "\n\n- 項目\n- 項目\n\n" },
-  { label: "番号リスト", value: "\n\n1. 項目\n2. 項目\n\n" },
-  { label: "画像", value: "\n\n![画像の説明](https://example.com/image.jpg)\n\n" },
-  { label: "リンク", value: "\n\n[リンク名](https://example.com)\n\n" },
-  { label: "区切り線", value: "\n\n---\n\n" },
-  { label: "グラフ", value: "\n\n:::chart slug=\"chart-slug\"\n:::\n\n" },
-  { label: "主な発見", value: "\n\n:::finding\nここに主な発見を書く\n:::\n\n" },
-  { label: "方法論メモ", value: "\n\n:::methodology\nここに方法論上の注意を書く\n:::\n\n" },
-  { label: "注釈", value: "\n\n:::note\nここに注釈を書く\n:::\n\n" },
-  { label: "参考リンク", value: "\n\n[参考リンク](https://example.com)\n\n" },
-  { label: "コードブロック", value: "\n\n```\ncode\n```\n\n" },
 ];
 
 function splitList(value: string) {
@@ -94,14 +77,19 @@ export function LocalPressWriter({ initialType, charts = {} }: LocalPressWriterP
   const [slug, setSlug] = useState("");
   const [body, setBody] = useState(getDefaultBody(initialType));
   const [frontmatter, setFrontmatter] = useState<Frontmatter>(getDefaultFrontmatter(initialType));
-  const [mode, setMode] = useState<Mode>("split");
+  const [localCharts, setLocalCharts] = useState<LocalChartsBySlug>(charts);
+  const [mode, setMode] = useState<Mode>("edit");
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
-  const [insertOpen, setInsertOpen] = useState(false);
+  const [chartComposerOpen, setChartComposerOpen] = useState(false);
+  const [chartInsertHandler, setChartInsertHandler] = useState<((slug: string) => void) | null>(null);
   const [overwrite, setOverwrite] = useState(false);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [saveMessage, setSaveMessage] = useState("");
-  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  useEffect(() => {
+    setLocalCharts(charts);
+  }, [charts]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -203,25 +191,27 @@ export function LocalPressWriter({ initialType, charts = {} }: LocalPressWriterP
     setSaveMessage("");
   }
 
-  function insertBlock(value: string) {
-    const textarea = textareaRef.current;
+  function openChartComposer(insertHandler?: (slug: string) => void) {
+    setChartInsertHandler(() => insertHandler ?? null);
+    setChartComposerOpen(true);
+  }
 
-    if (!textarea) {
-      setBody((current) => `${current}${value}`);
-      return;
+  function closeChartComposer() {
+    setChartComposerOpen(false);
+    setChartInsertHandler(null);
+  }
+
+  function insertChart(chart: LocalChart) {
+    setLocalCharts((current) => ({ ...current, [chart.slug]: chart }));
+    if (chartInsertHandler) {
+      chartInsertHandler(chart.slug);
+    } else {
+      setBody((current) => {
+        const insertion = `:::chart slug="${chart.slug}"\n:::`;
+        return current.trim() ? `${current.trimEnd()}\n\n${insertion}\n` : `${insertion}\n`;
+      });
     }
-
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const next = `${body.slice(0, start)}${value}${body.slice(end)}`;
-    setBody(next);
-    setInsertOpen(false);
-
-    window.requestAnimationFrame(() => {
-      textarea.focus();
-      textarea.selectionStart = start + value.length;
-      textarea.selectionEnd = start + value.length;
-    });
+    closeChartComposer();
   }
 
   async function handleSave() {
@@ -267,12 +257,12 @@ export function LocalPressWriter({ initialType, charts = {} }: LocalPressWriterP
   }
 
   const editor = (
-    <section className="space-y-5">
-      <div className="flex flex-wrap items-center gap-3">
+    <section className="mx-auto min-h-[calc(100vh-130px)] max-w-[1040px] space-y-5 px-4 py-10 md:py-20">
+      <div className="flex flex-wrap items-center gap-2 opacity-45 transition hover:opacity-100 focus-within:opacity-100">
         <select
           value={type}
           onChange={(event) => handleTypeChange(event.target.value as LocalPressContentType)}
-          className="h-11 rounded-md border border-[color:var(--color-border)] bg-white px-3 text-sm font-medium text-[color:var(--color-primary)]"
+          className="h-9 rounded-full border border-[color:var(--color-border)] bg-white px-3 text-xs font-medium text-[color:var(--color-primary)]"
         >
           {contentTypes.map((contentType) => (
             <option key={contentType} value={contentType}>
@@ -280,51 +270,19 @@ export function LocalPressWriter({ initialType, charts = {} }: LocalPressWriterP
             </option>
           ))}
         </select>
-        <span className="text-sm text-[color:var(--color-muted)]">{LOCAL_PRESS_TYPE_NOTES[type]}</span>
+        <p className="text-xs text-[color:var(--color-muted)]">
+          {saveState === "saving" ? "保存中" : saveState === "saved" ? "保存済み" : ""}
+        </p>
       </div>
 
       <input
         value={title}
         onChange={(event) => setTitle(event.target.value)}
-        placeholder={type === "researchers" ? "名前" : "タイトル"}
-        className="w-full border-0 border-b border-[color:var(--color-border)] bg-transparent px-0 py-5 font-editorial text-4xl font-semibold tracking-tight text-[color:var(--color-primary)] outline-none placeholder:text-slate-300 md:text-5xl"
+        placeholder={type === "researchers" ? "名前" : "新規ページ"}
+        className="w-full border-0 bg-transparent px-0 py-8 font-editorial text-5xl font-semibold tracking-tight text-[color:var(--color-primary)] outline-none placeholder:text-slate-200 md:text-6xl"
       />
 
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[color:var(--color-border)] pb-3">
-        <div className="relative">
-          <button type="button" onClick={() => setInsertOpen((current) => !current)} className="ui-button ui-button-secondary h-10 px-4 text-sm">
-            + ブロックを挿入
-          </button>
-          {insertOpen ? (
-            <div className="absolute left-0 top-12 z-20 grid w-[280px] gap-1 rounded-lg border border-[color:var(--color-border)] bg-white p-2 shadow-[var(--shadow-soft)]">
-              {insertBlocks.map((block) => (
-                <button key={block.label} type="button" onClick={() => insertBlock(block.value)} className="rounded-md px-3 py-2 text-left text-sm transition hover:bg-[color:var(--color-surface-subtle)]">
-                  {block.label}
-                </button>
-              ))}
-              <Link href="/local-press/tools/chart-builder" className="rounded-md px-3 py-2 text-sm font-medium text-[color:var(--color-accent-ink)] transition hover:bg-[color:var(--color-accent-soft)]">
-                Chart Builderへ
-              </Link>
-            </div>
-          ) : null}
-        </div>
-        <p className="text-xs text-[color:var(--color-muted)]">
-          {saveState === "saving" ? "下書き保存中" : saveState === "saved" ? "下書き保存済み" : "未保存"}
-        </p>
-      </div>
-
-      <textarea
-        ref={textareaRef}
-        value={body}
-        onChange={(event) => setBody(event.target.value)}
-        onKeyUp={(event) => {
-          if (event.key === "/") {
-            setInsertOpen(true);
-          }
-        }}
-        placeholder={type === "researchers" ? "プロフィール本文を書く" : "本文を書く。/ でブロック候補を開けます。"}
-        className="min-h-[620px] w-full resize-y border-0 bg-transparent px-0 py-4 font-serif text-xl leading-10 text-[color:var(--color-text)] outline-none placeholder:text-slate-300"
-      />
+      <BlockEditor body={body} onChange={setBody} onOpenChart={openChartComposer} />
     </section>
   );
 
@@ -332,12 +290,12 @@ export function LocalPressWriter({ initialType, charts = {} }: LocalPressWriterP
     type === "researchers" ? (
       <ResearcherRenderer researcher={makeResearcher(title, resolvedSlug || "researcher", mergedFrontmatter, body)} />
     ) : (
-      <LocalDocumentRenderer type={type} document={previewDocument} charts={charts} />
+      <LocalDocumentRenderer type={type} document={previewDocument} charts={localCharts} />
     );
 
   return (
     <div className="min-h-screen bg-white text-[color:var(--color-text)]">
-      <header className="sticky top-0 z-30 border-b border-[color:var(--color-border)] bg-white/95 backdrop-blur">
+      <header className="sticky top-0 z-30 border-b border-[color:var(--color-border)] bg-white/90 backdrop-blur">
         <div className="mx-auto flex w-full max-w-[1500px] flex-wrap items-center justify-between gap-3 px-5 py-3">
           <Link href="/local-press" className="font-semibold tracking-tight text-[color:var(--color-primary)]">
             Matsukasa Local Press
@@ -363,15 +321,21 @@ export function LocalPressWriter({ initialType, charts = {} }: LocalPressWriterP
         </div>
       </header>
 
-      <main className={`mx-auto grid w-full max-w-[1500px] gap-6 px-5 py-6 ${detailsOpen ? "xl:grid-cols-[minmax(0,1fr)_360px]" : "grid-cols-1"}`}>
+      <main className={`mx-auto grid w-full max-w-[1500px] gap-6 ${detailsOpen ? "px-5 py-6 xl:grid-cols-[minmax(0,1fr)_360px]" : "grid-cols-1"}`}>
         <div className={mode === "split" ? "grid gap-6 lg:grid-cols-2" : "block"}>
           {mode !== "preview" ? <div className="min-w-0">{editor}</div> : null}
           {mode !== "edit" ? (
-            <div className="min-w-0 overflow-hidden rounded-lg border border-[color:var(--color-border)] bg-white shadow-[var(--shadow-soft)]">
+            <div className="relative min-w-0 overflow-hidden rounded-lg border border-[color:var(--color-border)] bg-white shadow-[var(--shadow-soft)]">
               <div className="border-b border-[color:var(--color-border)] px-4 py-2 text-xs font-semibold tracking-[0.14em] text-[color:var(--color-muted)]">
                 LIVE PUBLIC PREVIEW
               </div>
               <div className="max-h-[calc(100vh-150px)] overflow-auto px-4 py-2">{preview}</div>
+              {chartComposerOpen ? <QuickChartComposer onClose={closeChartComposer} onInsert={insertChart} /> : null}
+            </div>
+          ) : null}
+          {mode === "edit" && chartComposerOpen ? (
+            <div className="fixed inset-4 z-50 overflow-hidden rounded-xl border border-[color:var(--color-border)] bg-white shadow-[var(--shadow-soft)]">
+              <QuickChartComposer onClose={closeChartComposer} onInsert={insertChart} />
             </div>
           ) : null}
         </div>

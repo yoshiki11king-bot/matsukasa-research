@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { ChartRenderer } from "@/components/content/ChartRenderer";
 import type { LocalChartsBySlug } from "@/lib/content/types";
 
@@ -9,13 +9,14 @@ type MarkdownRendererProps = {
 };
 
 type MarkdownBlock =
-  | { type: "heading"; level: 2 | 3; text: string }
+  | { type: "heading"; level: 1 | 2 | 3; text: string }
   | { type: "paragraph"; lines: string[] }
   | { type: "quote"; lines: string[] }
   | { type: "list"; ordered: boolean; items: string[] }
   | { type: "image"; alt: string; src: string }
   | { type: "link"; label: string; url: string }
   | { type: "divider" }
+  | { type: "columns"; columns: string[]; widths: [number, number] }
   | { type: "code"; code: string }
   | { type: "callout"; kind: "finding" | "methodology" | "note"; body: string }
   | { type: "chart"; slug: string };
@@ -32,7 +33,7 @@ function flushParagraph(blocks: MarkdownBlock[], lines: string[]) {
 
 function renderInline(text: string): ReactNode[] {
   const nodes: ReactNode[] = [];
-  const regex = /(\[([^\]]+)\]\((https?:\/\/[^\s)]+)\))/g;
+  const regex = /(\[([^\]]+)\]\((https?:\/\/[^\s)]+|\/[^\s)]+)\))/g;
   let lastIndex = 0;
   let match: RegExpExecArray | null;
 
@@ -84,6 +85,18 @@ function parseFenceStart(value: string) {
     return { type: "callout" as const, kind: calloutMatch[1] as "finding" | "methodology" | "note" };
   }
 
+  const columnsMatch = value.match(/^:::columns(?:\s+widths="([\d.]+),([\d.]+)")?\s*$/);
+
+  if (columnsMatch) {
+    const left = Number(columnsMatch[1]);
+    const right = Number(columnsMatch[2]);
+    const total = left + right;
+    return {
+      type: "columns" as const,
+      widths: Number.isFinite(total) && total > 0 ? ([left / total, right / total] as [number, number]) : ([0.5, 0.5] as [number, number]),
+    };
+  }
+
   return null;
 }
 
@@ -96,6 +109,7 @@ function parseMarkdown(body: string) {
   let quoteLines: string[] = [];
   let codeLines: string[] | null = null;
   let callout: { kind: "finding" | "methodology" | "note"; lines: string[] } | null = null;
+  let columns: { lines: string[]; widths: [number, number] } | null = null;
   let skipClosingFenceAfterChart = false;
 
   function flushLists() {
@@ -149,6 +163,16 @@ function parseMarkdown(body: string) {
       continue;
     }
 
+    if (columns) {
+      if (trimmed === ":::") {
+        blocks.push({ type: "columns", columns: columns.lines.join("\n").split(/(?:^|\n)---column---(?:\n|$)/), widths: columns.widths });
+        columns = null;
+      } else {
+        columns.lines.push(line);
+      }
+      continue;
+    }
+
     if (!trimmed) {
       paragraphLines = flushParagraph(blocks, paragraphLines);
       flushLists();
@@ -175,6 +199,14 @@ function parseMarkdown(body: string) {
       continue;
     }
 
+    if (fence?.type === "columns") {
+      paragraphLines = flushParagraph(blocks, paragraphLines);
+      flushLists();
+      flushQuote();
+      columns = { lines: [], widths: fence.widths };
+      continue;
+    }
+
     if (trimmed === "```") {
       paragraphLines = flushParagraph(blocks, paragraphLines);
       flushLists();
@@ -197,11 +229,11 @@ function parseMarkdown(body: string) {
       paragraphLines = flushParagraph(blocks, paragraphLines);
       flushLists();
       flushQuote();
-      blocks.push({ type: "heading", level: headingMatch[1].length >= 3 ? 3 : 2, text: headingMatch[2].trim() });
+      blocks.push({ type: "heading", level: headingMatch[1].length as 1 | 2 | 3, text: headingMatch[2].trim() });
       continue;
     }
 
-    const imageMatch = trimmed.match(/^!\[(.*)\]\((https?:\/\/[^\s)]+)\)$/);
+    const imageMatch = trimmed.match(/^!\[(.*)\]\((https?:\/\/[^\s)]+|\/[^\s)]+)\)$/);
 
     if (imageMatch) {
       paragraphLines = flushParagraph(blocks, paragraphLines);
@@ -211,7 +243,7 @@ function parseMarkdown(body: string) {
       continue;
     }
 
-    const linkMatch = trimmed.match(/^\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)$/);
+    const linkMatch = trimmed.match(/^\[([^\]]+)\]\((https?:\/\/[^\s)]+|\/[^\s)]+)\)$/);
 
     if (linkMatch) {
       paragraphLines = flushParagraph(blocks, paragraphLines);
@@ -301,6 +333,14 @@ export function MarkdownRenderer({ body, charts = {} }: MarkdownRendererProps) {
     <div className="space-y-7">
       {blocks.map((block, index) => {
         if (block.type === "heading") {
+          if (block.level === 1) {
+            return (
+              <h1 key={index} className="font-editorial text-4xl font-semibold tracking-tight text-[color:var(--color-primary)] md:text-5xl">
+                {block.text}
+              </h1>
+            );
+          }
+
           return block.level === 2 ? (
             <h2 key={index} className="font-editorial text-3xl font-semibold tracking-tight text-[color:var(--color-primary)]">
               {block.text}
@@ -360,6 +400,29 @@ export function MarkdownRenderer({ body, charts = {} }: MarkdownRendererProps) {
 
         if (block.type === "divider") {
           return <hr key={index} className="border-[color:var(--color-border)]" />;
+        }
+
+        if (block.type === "columns") {
+          const left = Math.max(0.25, Math.min(0.75, block.widths[0]));
+          const right = Math.max(0.25, Math.min(0.75, block.widths[1]));
+          return (
+            <div
+              key={index}
+              className="grid gap-6 md:grid-cols-[minmax(0,var(--local-column-left))_1px_minmax(0,var(--local-column-right))]"
+              style={{
+                "--local-column-left": `${left}fr`,
+                "--local-column-right": `${right}fr`,
+              } as CSSProperties}
+            >
+              <div className="space-y-4">
+                <MarkdownRenderer body={block.columns[0] ?? ""} charts={charts} />
+              </div>
+              <div className="hidden bg-[color:var(--color-border)] md:block" />
+              <div className="space-y-4">
+                <MarkdownRenderer body={block.columns[1] ?? ""} charts={charts} />
+              </div>
+            </div>
+          );
         }
 
         if (block.type === "code") {
