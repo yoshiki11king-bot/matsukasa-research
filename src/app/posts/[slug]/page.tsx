@@ -12,14 +12,12 @@ import { estimateReadingTime, formatDate } from "@/lib/formatters";
 import {
   cmsStatus,
   getAllPostSlugs,
-  getMethodologies,
   getPostBySlug,
-  getResearchers,
-  getReports,
   getSidebarSnapshot,
 } from "@/lib/microcms";
 import { buildBreadcrumbJsonLd, buildPageMetadata, getAbsoluteUrl } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
+import type { BlogPost } from "@/lib/types";
 
 export const revalidate = 3600;
 
@@ -54,6 +52,108 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
   });
 }
 
+function getReadingSource(post: BlogPost) {
+  if (post.contentBlocks.length === 0) {
+    return post.body;
+  }
+
+  return post.contentBlocks
+    .map((block) => {
+      if (block.type === "heading") {
+        return block.text;
+      }
+
+      if (block.type === "paragraph") {
+        return block.body;
+      }
+
+      if (block.type === "image") {
+        return [block.caption, block.sourceText].filter(Boolean).join(" ");
+      }
+
+      return [block.title, block.description].filter(Boolean).join(" ");
+    })
+    .join(" ");
+}
+
+function ArticleReadingRail({
+  post,
+  readingMinutes,
+}: {
+  post: BlogPost;
+  readingMinutes: number;
+}) {
+  const topics = post.topics.length > 0 ? post.topics : [post.category].filter(Boolean);
+
+  return (
+    <aside className="article-reading-rail" aria-label="記事の補助情報">
+      <section className="article-reading-rail-section">
+        <h2 className="article-reading-rail-title">関連している</h2>
+        <div className="article-reading-rail-skeleton" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+        </div>
+      </section>
+
+      {topics.length > 0 ? (
+        <section className="article-reading-rail-section">
+          <h2 className="article-reading-rail-title">トピック</h2>
+          <div className="article-reading-topic-list">
+            {topics.map((topic) => (
+              <span key={topic}>{topic}</span>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      <section className="article-reading-rail-section">
+        <h2 className="article-reading-rail-title">人気ランキング</h2>
+        <ol className="article-reading-ranking" aria-label="人気ランキング枠">
+          {[1, 2, 3, 4, 5].map((rank) => (
+            <li key={rank}>
+              <span>{rank}</span>
+              <i />
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section className="article-reading-rail-section">
+        <h2 className="article-reading-rail-title">記事情報</h2>
+        <dl className="article-reading-facts">
+          <div>
+            <dt>形式</dt>
+            <dd>{post.format}</dd>
+          </div>
+          <div>
+            <dt>公開日</dt>
+            <dd>{formatDate(post.publishedDate)}</dd>
+          </div>
+          <div>
+            <dt>読了目安</dt>
+            <dd>{readingMinutes}分</dd>
+          </div>
+        </dl>
+      </section>
+    </aside>
+  );
+}
+
+function ArticleShareRow({ slug }: { slug: string }) {
+  return (
+    <div className="article-reading-share" aria-label="共有">
+      <Link href="/articles" aria-label="記事一覧へ戻る">
+        ←
+      </Link>
+      <a href={`mailto:?subject=${encodeURIComponent(siteConfig.name)}&body=${encodeURIComponent(getAbsoluteUrl(`/posts/${slug}`))}`}>
+        ✉
+      </a>
+      <span>{getAbsoluteUrl(`/posts/${slug}`)}</span>
+    </div>
+  );
+}
+
 export default async function PostPage({ params }: PostPageProps) {
   const { slug } = await params;
   const [post, sidebar] = await Promise.all([
@@ -65,26 +165,9 @@ export default async function PostPage({ params }: PostPageProps) {
     notFound();
   }
 
-  const readingSource =
-    post.contentBlocks.length > 0
-      ? post.contentBlocks
-          .map((block) => {
-            if (block.type === "heading") {
-              return block.text;
-            }
-
-            if (block.type === "paragraph") {
-              return block.body;
-            }
-
-            if (block.type === "image") {
-              return [block.caption, block.sourceText].filter(Boolean).join(" ");
-            }
-
-            return [block.title, block.description].filter(Boolean).join(" ");
-          })
-          .join(" ")
-      : post.body;
+  const readingSource = getReadingSource(post);
+  const readingMinutes = estimateReadingTime(readingSource);
+  const charts = post.isLocalPress ? await getChartsBySlug() : {};
   const articleJsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -120,296 +203,130 @@ export default async function PostPage({ params }: PostPageProps) {
     ]),
   ];
 
-  if (post.isLocalPress) {
-    const charts = await getChartsBySlug();
-
-    return (
-      <PublicShell
-        researchers={sidebar.featuredResearchers}
-        methodologies={sidebar.featuredMethodologies}
-        reports={sidebar.featuredReports}
-        showSidebar={false}
-      >
-        <div className="mx-auto max-w-5xl space-y-8">
-          <StructuredData data={structuredData} />
-          <Link href="/articles" className="text-sm font-medium text-[color:var(--color-accent-ink)] transition hover:text-[color:var(--color-accent-ink)]">
-            ← 記事一覧へ戻る
-          </Link>
-
-          <article className="overflow-hidden rounded-[2rem] border border-[color:var(--color-border)] bg-white shadow-[var(--shadow-soft)]">
-            <header className="space-y-6 border-b border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-6 py-8 md:px-10 md:py-10">
-              <div className="flex flex-wrap items-center gap-2 text-xs font-semibold tracking-[0.14em] text-[color:var(--color-muted)]">
-                <span className="rounded-full bg-[color:var(--color-primary)] px-3 py-1 text-white">LOCAL PRESS</span>
-                <span>{post.format}</span>
-                <time dateTime={post.publishedDate}>{formatDate(post.publishedDate)}</time>
-              </div>
-              <div className="space-y-4">
-                <h1 className="font-editorial text-4xl font-semibold leading-tight tracking-tight text-[color:var(--color-primary)] md:text-6xl">
-                  {post.title}
-                </h1>
-                {post.excerpt ? (
-                  <p className="max-w-3xl text-lg leading-9 text-[color:var(--color-secondary-ink)]">{post.excerpt}</p>
-                ) : null}
-              </div>
-              <div className="flex flex-wrap items-center gap-4 text-sm text-[color:var(--color-muted)]">
-                <span>{post.authorName}</span>
-                <span>{estimateReadingTime(readingSource)}分で読めます</span>
-              </div>
-              {post.topics.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {post.topics.map((topic) => (
-                    <span key={topic} className="rounded-full border border-[color:var(--color-border)] bg-white px-3 py-1 text-sm text-[color:var(--color-secondary-ink)]">
-                      {topic}
-                    </span>
-                  ))}
-                </div>
-              ) : null}
-            </header>
-
-            {post.coverImage ? (
-              <div className="relative aspect-[16/8] border-b border-[color:var(--color-border)] bg-[color:var(--color-surface-muted)]">
-                <Image
-                  src={post.coverImage.url}
-                  alt={post.coverImage.alt || post.title}
-                  fill
-                  priority
-                  sizes="(min-width: 1024px) 960px, 100vw"
-                  className="object-cover"
-                />
-              </div>
-            ) : null}
-
-            <div className="px-6 py-8 md:px-10 md:py-10">
-              <MarkdownRenderer body={post.body} charts={charts} />
-            </div>
-
-            {(post.sourceBasis || post.updatedNote || post.sourceLinks.length > 0) ? (
-              <footer className="border-t border-[color:var(--color-border)] bg-[color:var(--color-surface-subtle)] px-6 py-6 md:px-10">
-                <div className="grid gap-4 text-sm leading-7 text-[color:var(--color-secondary-ink)] md:grid-cols-3">
-                  {post.sourceBasis ? (
-                    <div>
-                      <p className="font-semibold text-[color:var(--color-primary)]">出典・基準</p>
-                      <p>{post.sourceBasis}</p>
-                    </div>
-                  ) : null}
-                  {post.updatedNote ? (
-                    <div>
-                      <p className="font-semibold text-[color:var(--color-primary)]">更新メモ</p>
-                      <p>{post.updatedNote}</p>
-                    </div>
-                  ) : null}
-                  {post.sourceLinks.length > 0 ? (
-                    <div>
-                      <p className="font-semibold text-[color:var(--color-primary)]">参考リンク</p>
-                      <ul>
-                        {post.sourceLinks.map((item) => (
-                          <li key={`${item.label}-${item.url ?? ""}`}>
-                            {item.url ? <a href={item.url} className="ui-signal-link" target="_blank" rel="noreferrer">{item.label}</a> : item.label}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ) : null}
-                </div>
-              </footer>
-            ) : null}
-          </article>
-        </div>
-      </PublicShell>
-    );
-  }
-
-  const [researchers, methodologies, reports] = await Promise.all([
-    getResearchers(),
-    getMethodologies(),
-    getReports(),
-  ]);
-  const relatedResearchers = researchers.filter((researcher) => post.researcherSlugs.includes(researcher.slug));
-  const relatedMethods = methodologies.filter((entry) => post.methodologySlugs.includes(entry.slug));
-  const relatedReports = reports.filter((report) =>
-    report.methodologySlugs.some((methodSlug) => post.methodologySlugs.includes(methodSlug)),
-  );
-
   return (
     <PublicShell
       researchers={sidebar.featuredResearchers}
       methodologies={sidebar.featuredMethodologies}
       reports={sidebar.featuredReports}
-      rightRail={
-        <div className="space-y-5">
-          <section className="rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-5 py-5 shadow-[var(--shadow-soft)]">
-            <div className="space-y-3">
-              <p className="text-sm font-semibold text-[color:var(--color-primary)]">出典・更新・基準</p>
-              <dl className="space-y-3 text-sm leading-7 text-[color:var(--color-text)]">
-                <div>
-                  <dt className="text-[color:var(--color-muted)]">更新日</dt>
-                  <dd>{post.updatedNote || formatDate(post.publishedDate)}</dd>
-                </div>
-                <div>
-                  <dt className="text-[color:var(--color-muted)]">基準</dt>
-                  <dd>{post.sourceBasis}</dd>
-                </div>
-                <div>
-                  <dt className="text-[color:var(--color-muted)]">調査方法</dt>
-                  <dd>{post.methodologySummary}</dd>
-                </div>
-              </dl>
-            </div>
-          </section>
-
-          {relatedResearchers.length > 0 ? (
-            <section className="rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-5 py-5 shadow-[var(--shadow-soft)]">
-              <div className="space-y-3">
-                <p className="text-sm font-semibold text-[color:var(--color-primary)]">担当研究員</p>
-                {relatedResearchers.map((researcher) => (
-                  <Link
-                    key={researcher.id}
-                    href={`/researchers/${researcher.slug}`}
-                    className="block text-sm leading-7 text-[color:var(--color-text)] transition hover:text-[color:var(--color-primary)]"
-                  >
-                    {researcher.name} / {researcher.role}
-                  </Link>
-                ))}
-              </div>
-            </section>
-          ) : null}
-
-          {relatedMethods.length > 0 ? (
-            <section className="rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-5 py-5 shadow-[var(--shadow-soft)]">
-              <div className="space-y-3">
-                <p className="text-sm font-semibold text-[color:var(--color-primary)]">関連する方法論</p>
-                {relatedMethods.map((entry) => (
-                  <Link
-                    key={entry.id}
-                    href={`/methodologies/${entry.slug}`}
-                    className="block text-sm leading-7 text-[color:var(--color-text)] transition hover:text-[color:var(--color-primary)]"
-                  >
-                    {entry.title}
-                  </Link>
-                ))}
-              </div>
-            </section>
-          ) : null}
-
-          {relatedReports.length > 0 ? (
-            <section className="rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-5 py-5 shadow-[var(--shadow-soft)]">
-              <div className="space-y-3">
-                <p className="text-sm font-semibold text-[color:var(--color-primary)]">関連報告書</p>
-                {relatedReports.slice(0, 2).map((report) => (
-                  <Link
-                    key={report.id}
-                    href={`/reports/${report.slug}`}
-                    className="block text-sm leading-7 text-[color:var(--color-text)] transition hover:text-[color:var(--color-primary)]"
-                  >
-                    {report.title}
-                  </Link>
-                ))}
-              </div>
-            </section>
-          ) : null}
-        </div>
-      }
+      showSidebar={false}
+      showHeaderCarousel={false}
+      mainClassName="max-w-none px-0 py-0 lg:px-0 lg:py-0"
     >
-      <div className="space-y-8">
-        <StructuredData data={structuredData} />
+      <StructuredData data={structuredData} />
+      <div className="article-reading-surface">
         {!cmsStatus.configured ? <StatusBanner kind="demo" /> : null}
-
-        <Link href="/articles" className="text-sm font-medium text-[color:var(--color-accent-ink)] transition hover:text-[color:var(--color-accent-ink)]">
-          ← 記事一覧へ戻る
-        </Link>
-
-        <article className="space-y-8 rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-6 py-7 shadow-[var(--shadow-soft)]">
-          <header className="space-y-5 border-b border-[color:var(--color-border)] pb-8">
-            <div className="flex flex-wrap items-center gap-2 text-xs text-[color:var(--color-muted)]">
-              <span className="rounded-md bg-[color:var(--color-primary)] px-2.5 py-1 font-medium text-[color:var(--color-primary-contrast)]">
-                {post.format}
-              </span>
-              {post.topics.map((topic) => (
-                <span key={topic} className="rounded-md bg-[color:var(--color-surface-muted)] px-2.5 py-1 text-[color:var(--color-text)]">
-                  {topic}
-                </span>
-              ))}
-              <time dateTime={post.publishedDate}>{formatDate(post.publishedDate)}</time>
-            </div>
-
-            <div className="space-y-4">
-              <h1 className="max-w-4xl text-4xl font-semibold tracking-tight text-[color:var(--color-primary)] sm:text-5xl">
-                {post.title}
-              </h1>
-              <p className="max-w-3xl text-lg leading-9 text-[color:var(--color-text)]">{post.excerpt}</p>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-4 text-sm text-[color:var(--color-muted)]">
-              <span>{post.authorName}</span>
-              <span>{estimateReadingTime(readingSource)}分で読めます</span>
-            </div>
-          </header>
-
-          {post.coverImage ? (
-            <div className="relative aspect-[16/9] overflow-hidden rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface-muted)]">
-              <Image
-                src={post.coverImage.url}
-                alt={post.coverImage.alt || post.title}
-                fill
-                priority
-                sizes="(min-width: 1024px) 900px, 100vw"
-                className="object-cover"
-              />
-            </div>
+        <nav className="article-reading-breadcrumb" aria-label="パンくずリスト">
+          <Link href="/">家</Link>
+          <span>›</span>
+          <Link href="/articles">記事</Link>
+          {post.category ? (
+            <>
+              <span>›</span>
+              <span>{post.category}</span>
+            </>
           ) : null}
+        </nav>
 
-          <section className="grid gap-4 rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface-subtle)] px-5 py-5 sm:grid-cols-3">
-            <div className="space-y-1">
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--color-muted)]">出典</p>
-              <p className="text-sm leading-7 text-[color:var(--color-text)]">{post.sourceBasis}</p>
+        <div className="article-reading-layout">
+          <article className="article-reading-main">
+            <header className="article-reading-header">
+              <div className="article-reading-meta">
+                {post.isLocalPress ? <span>Local Press</span> : null}
+                <span>{post.format}</span>
+                <time dateTime={post.publishedDate}>{formatDate(post.publishedDate)}</time>
+              </div>
+              <h1 className="article-reading-title">{post.title}</h1>
+              {post.excerpt ? <p className="article-reading-excerpt">{post.excerpt}</p> : null}
+              <ArticleShareRow slug={post.slug} />
+              <p className="article-reading-author">
+                による <span>{post.authorName}</span>
+              </p>
+            </header>
+
+            {post.coverImage ? (
+              <figure className="article-reading-cover">
+                <div className="relative aspect-[16/10] overflow-hidden">
+                  <Image
+                    src={post.coverImage.url}
+                    alt={post.coverImage.alt || post.title}
+                    fill
+                    priority
+                    sizes="(min-width: 1180px) 820px, 100vw"
+                    className="object-cover"
+                  />
+                </div>
+                {post.coverImage.alt ? <figcaption>{post.coverImage.alt}</figcaption> : null}
+              </figure>
+            ) : null}
+
+            {(post.sourceBasis || post.updatedNote || post.methodologySummary) ? (
+              <section className="article-reading-research-note">
+                <h2>この研究について</h2>
+                <dl>
+                  {post.sourceBasis ? (
+                    <div>
+                      <dt>出典・基準</dt>
+                      <dd>{post.sourceBasis}</dd>
+                    </div>
+                  ) : null}
+                  {post.updatedNote ? (
+                    <div>
+                      <dt>更新</dt>
+                      <dd>{post.updatedNote}</dd>
+                    </div>
+                  ) : null}
+                  {post.methodologySummary ? (
+                    <div>
+                      <dt>方法</dt>
+                      <dd>{post.methodologySummary}</dd>
+                    </div>
+                  ) : null}
+                </dl>
+              </section>
+            ) : null}
+
+            {post.keyFindings.length > 0 ? (
+              <section className="article-reading-key-findings">
+                <h2>要点</h2>
+                <ul>
+                  {post.keyFindings.map((finding) => (
+                    <li key={finding}>{finding}</li>
+                  ))}
+                </ul>
+              </section>
+            ) : null}
+
+            <div className="article-reading-body">
+              {post.isLocalPress ? (
+                <MarkdownRenderer body={post.body} charts={charts} />
+              ) : (
+                <PostBody body={post.body} blocks={post.contentBlocks} />
+              )}
             </div>
-            <div className="space-y-1">
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--color-muted)]">更新日</p>
-              <p className="text-sm leading-7 text-[color:var(--color-text)]">{post.updatedNote}</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--color-muted)]">基準</p>
-              <p className="text-sm leading-7 text-[color:var(--color-text)]">{post.methodologySummary}</p>
-            </div>
-          </section>
 
-          {post.keyFindings.length > 0 ? (
-            <section className="space-y-4">
-              <p className="text-sm font-semibold text-[color:var(--color-primary)]">要点</p>
-              <ul className="space-y-3">
-                {post.keyFindings.map((finding) => (
-                  <li
-                    key={finding}
-                    className="border-l-4 border-[color:var(--color-accent-ink)] pl-4 text-sm leading-7 text-[color:var(--color-text)]"
-                  >
-                    {finding}
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ) : null}
+            {post.sourceLinks.length > 0 ? (
+              <section className="article-reading-reference">
+                <h2>参考メモ</h2>
+                <ul>
+                  {post.sourceLinks.map((item) => (
+                    <li key={`${item.label}-${item.url ?? ""}`}>
+                      {item.url ? (
+                        <a href={item.url} target="_blank" rel="noreferrer">
+                          {item.label}
+                        </a>
+                      ) : (
+                        item.label
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ) : null}
+          </article>
 
-          <PostBody body={post.body} blocks={post.contentBlocks} />
-
-          {post.sourceLinks.length > 0 ? (
-            <section className="space-y-3 border-t border-[color:var(--color-border)] pt-6">
-              <p className="text-sm font-semibold text-[color:var(--color-primary)]">参考メモ</p>
-              <ul className="space-y-2 text-sm text-[color:var(--color-secondary-ink)]">
-                {post.sourceLinks.map((item) => (
-                  <li key={`${item.label}-${item.url ?? ""}`}>
-                    {item.url ? (
-                      <a href={item.url} target="_blank" rel="noreferrer" className="transition hover:text-[color:var(--color-primary)]">
-                        {item.label}
-                      </a>
-                    ) : (
-                      item.label
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ) : null}
-        </article>
+          <div className="article-reading-divider" aria-hidden="true" />
+          <ArticleReadingRail post={post} readingMinutes={readingMinutes} />
+        </div>
       </div>
     </PublicShell>
   );

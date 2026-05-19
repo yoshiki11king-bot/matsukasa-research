@@ -11,6 +11,8 @@ type PublicShellProps = {
   reports: ResearchReport[];
   rightRail?: React.ReactNode;
   showSidebar?: boolean;
+  showHeaderCarousel?: boolean;
+  mainClassName?: string;
 };
 
 function getPublicShellLayoutClassName(showSidebar: boolean, hasRightRail: boolean) {
@@ -36,6 +38,8 @@ export function PublicShell({
   reports,
   rightRail,
   showSidebar = true,
+  showHeaderCarousel = true,
+  mainClassName,
 }: PublicShellProps) {
   const layoutClassName = getPublicShellLayoutClassName(showSidebar, Boolean(rightRail));
 
@@ -43,8 +47,15 @@ export function PublicShell({
     <div className="public-surface min-h-screen bg-[color:var(--color-background)]">
       <div className="public-dark-area ui-future-shell">
         <SiteHeader />
-        <HeaderImageCarousel />
-        <main className="ui-site-settle mx-auto w-full max-w-[1320px] px-5 py-9 lg:px-8 lg:py-12">
+        {showHeaderCarousel ? <HeaderImageCarousel /> : null}
+        <main
+          className={[
+            "ui-site-settle mx-auto w-full max-w-[1320px] px-5 py-9 lg:px-8 lg:py-12",
+            mainClassName,
+          ]
+            .filter(Boolean)
+            .join(" ")}
+        >
           <div className={layoutClassName}>
             {showSidebar ? (
               <PublicSidebar
