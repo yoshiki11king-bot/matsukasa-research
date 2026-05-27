@@ -109,6 +109,10 @@ const chartSaveSchema = z.object({
 
 const saveSchema = z.discriminatedUnion("type", [markdownSaveSchema, researcherSaveSchema, chartSaveSchema]);
 
+function contentPath(relativePath: string) {
+  return `content/${relativePath}`;
+}
+
 function normalizeMarkdownType(type: LocalPressContentType, frontmatter: Frontmatter) {
   if (type === "articles") {
     return { ...frontmatter, type: "article", layout: frontmatter.layout ?? "standard" };
@@ -157,10 +161,10 @@ export async function POST(request: Request) {
       });
 
       if (!saved.ok) {
-        return NextResponse.json({ success: false, error: "既存ファイルがあります。上書きする場合はチェックを入れてください。", path: saved.relativePath }, { status: saved.status });
+        return NextResponse.json({ success: false, error: "既存ファイルがあります。上書きする場合はチェックを入れてください。", path: contentPath(saved.relativePath) }, { status: saved.status });
       }
 
-      return NextResponse.json({ success: true, path: saved.relativePath });
+      return NextResponse.json({ success: true, path: contentPath(saved.relativePath) });
     }
 
     if (parsed.type === "charts") {
@@ -172,10 +176,10 @@ export async function POST(request: Request) {
       });
 
       if (!saved.ok) {
-        return NextResponse.json({ success: false, error: "既存ファイルがあります。上書きする場合はチェックを入れてください。", path: saved.relativePath }, { status: saved.status });
+        return NextResponse.json({ success: false, error: "既存ファイルがあります。上書きする場合はチェックを入れてください。", path: contentPath(saved.relativePath) }, { status: saved.status });
       }
 
-      return NextResponse.json({ success: true, path: saved.relativePath });
+      return NextResponse.json({ success: true, path: contentPath(saved.relativePath) });
     }
 
     const frontmatter = normalizeMarkdownType(parsed.type, {
@@ -191,10 +195,10 @@ export async function POST(request: Request) {
     });
 
     if (!saved.ok) {
-      return NextResponse.json({ success: false, error: "既存ファイルがあります。上書きする場合はチェックを入れてください。", path: saved.relativePath }, { status: saved.status });
+      return NextResponse.json({ success: false, error: "既存ファイルがあります。上書きする場合はチェックを入れてください。", path: contentPath(saved.relativePath) }, { status: saved.status });
     }
 
-    return NextResponse.json({ success: true, path: saved.relativePath });
+    return NextResponse.json({ success: true, path: contentPath(saved.relativePath) });
   } catch (error) {
     const message = error instanceof Error ? error.message : "保存に失敗しました。";
     return NextResponse.json({ success: false, error: message }, { status: 500 });
