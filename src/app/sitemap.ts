@@ -102,7 +102,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.85,
     })),
     ...financialStatements.map((statement) => ({
-      url: `${siteUrl}/financial-statements/${statement.fiscalYear}`,
+      url: `${siteUrl}/financial-statements/${statement.slug}`,
       lastModified: new Date(statement.updatedDate),
       changeFrequency: "monthly" as const,
       priority: 0.75,

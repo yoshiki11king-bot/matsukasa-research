@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return buildPageMetadata({
     title: statement.title,
     description: statement.summary,
-    path: `/financial-statements/${statement.fiscalYear}`,
+    path: `/financial-statements/${statement.slug}`,
     type: "article",
     keywords: ["決算資料", "財務情報", statement.fiscalYear],
   });
@@ -67,12 +67,12 @@ export default async function FinancialStatementPage({ params }: PageProps) {
     buildWebPageJsonLd({
       name: statement.title,
       description: statement.summary,
-      path: `/financial-statements/${statement.fiscalYear}`,
+      path: `/financial-statements/${statement.slug}`,
       dateModified: statement.updatedDate,
     }),
     buildBreadcrumbJsonLd([
       { name: "財務情報", path: "/finance" },
-      { name: statement.title, path: `/financial-statements/${statement.fiscalYear}` },
+      { name: statement.title, path: `/financial-statements/${statement.slug}` },
     ]),
   ];
 

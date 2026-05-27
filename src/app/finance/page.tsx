@@ -351,11 +351,7 @@ export default async function FinancePage() {
                           </a>
                         ) : null}
                         <Link
-                          href={
-                            statement.id.startsWith("local-financial-statement-")
-                              ? `/financial-statements/${statement.fiscalYear}`
-                              : `/reports/${statement.slug}`
-                          }
+                          href={`/financial-statements/${statement.slug}`}
                           className="ui-button ui-button-secondary h-10 px-4 text-sm"
                         >
                           詳細

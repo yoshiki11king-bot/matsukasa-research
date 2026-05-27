@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { MethodologyRenderer } from "@/components/content/MethodologyRenderer";
 import { RichTextBody } from "@/components/post-body";
 import { PublicShell } from "@/components/public-shell";
 import { StructuredData } from "@/components/structured-data";
+import { getChartsBySlug } from "@/lib/content/charts";
+import { getPublishedMethodologyBySlug } from "@/lib/content/methodologies";
 import { formatDate } from "@/lib/formatters";
 import {
-  getMethodologyBySlug,
+  getMethodologyBySlug as getMicrocmsMethodologyBySlug,
   getPostsByMethodology,
   getReportsByMethodology,
   getSidebarSnapshot,
@@ -24,7 +27,22 @@ export async function generateMetadata({
   params,
 }: MethodologyDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const entry = await getMethodologyBySlug(slug);
+  const localEntry = await getPublishedMethodologyBySlug(slug);
+
+  if (localEntry) {
+    const title = typeof localEntry.frontmatter.title === "string" ? localEntry.frontmatter.title : "方法論";
+    const summary = typeof localEntry.frontmatter.summary === "string" ? localEntry.frontmatter.summary : "";
+
+    return buildPageMetadata({
+      title,
+      description: summary,
+      path: `/methodologies/${localEntry.slug}`,
+      type: "article",
+      keywords: ["方法論"],
+    });
+  }
+
+  const entry = await getMicrocmsMethodologyBySlug(slug);
 
   if (!entry) {
     return {
@@ -44,11 +62,30 @@ export async function generateMetadata({
 export default async function MethodologyDetailPage({ params }: MethodologyDetailPageProps) {
   const { slug } = await params;
   const [entry, posts, reports, sidebar] = await Promise.all([
-    getMethodologyBySlug(slug),
+    getMicrocmsMethodologyBySlug(slug),
     getPostsByMethodology(slug),
     getReportsByMethodology(slug),
     getSidebarSnapshot(),
   ]);
+  const localEntry = await getPublishedMethodologyBySlug(slug);
+
+  if (localEntry) {
+    return (
+      <PublicShell
+        researchers={sidebar.featuredResearchers}
+        methodologies={sidebar.featuredMethodologies}
+        reports={sidebar.featuredReports}
+        showSidebar={false}
+      >
+        <div className="mx-auto max-w-5xl space-y-8">
+          <Link href="/methodologies" className="text-sm font-medium text-[color:var(--color-accent-ink)] transition hover:text-[color:var(--color-accent-ink)]">
+            ← 方法論一覧へ戻る
+          </Link>
+          <MethodologyRenderer document={localEntry} charts={await getChartsBySlug()} />
+        </div>
+      </PublicShell>
+    );
+  }
 
   if (!entry) {
     notFound();
