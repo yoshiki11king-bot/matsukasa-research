@@ -119,15 +119,6 @@ export function SiteHeader({ variant = "default" }: SiteHeaderProps) {
           >
             <span className="ui-rudbeckia-switch-rule" />
             <span className="ui-rudbeckia-switch-text">To The Rudbeckia</span>
-            <span className="relative h-7 w-7 shrink-0 sm:h-8 sm:w-8">
-                <Image
-                  src="/projects/rudbeckia/switch-icon.png"
-                  alt=""
-                  fill
-                  sizes="32px"
-                  className="object-contain mix-blend-multiply"
-                />
-            </span>
           </Link>
         </div>
         <div className="flex w-full min-w-0 flex-1 flex-col items-stretch gap-4 lg:items-end">
