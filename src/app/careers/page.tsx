@@ -41,7 +41,7 @@ export default async function CareersPage() {
           <p className="text-sm font-medium text-[color:var(--color-muted)]">採用</p>
           <h1 className="text-4xl font-semibold tracking-tight text-[color:var(--color-primary)]">一緒に調べる人を探しています</h1>
           <p className="max-w-3xl text-lg leading-9 text-[color:var(--color-text)]">
-            松笠研究所では、統計調査、資料整理、図表整備、編集を一緒に進める仲間を募集しています。応募は Google
+            松笠研究所では、統計調査、資料整理、図表整備、編集を一緒に進める人を募集しています。応募は Google
             フォームで受け付ける形にしています。
           </p>
         </section>
@@ -75,14 +75,14 @@ export default async function CareersPage() {
           <article className="rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-6 py-7 shadow-[var(--shadow-soft)]">
             <div className="space-y-6">
               <SectionHeading
-                eyebrow="見ていること"
-                title="こんな姿勢の方と相性がいいです"
+                eyebrow="大切にする姿勢"
+                title="こうした姿勢を歓迎します"
                 description="派手な断定より、手元の根拠を丁寧に扱う仕事です。"
               />
               <div className="grid gap-3">
                 {[
                   "数字を見たあとに、前提や限界も一緒に確認できる",
-                  "読者が読みやすい形まで含めて整えるのが苦ではない",
+                  "読者が読みやすい形まで整えることに抵抗がない",
                   "結論を急がず、途中の確認作業を丁寧に進められる",
                   "政治や社会を扱うときに、営利や党派性から距離を取りたい",
                 ].map((item) => (

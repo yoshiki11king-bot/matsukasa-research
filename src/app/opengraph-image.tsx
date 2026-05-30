@@ -50,10 +50,10 @@ export default function OpenGraphImage() {
 
         <div style={{ display: "flex", flexDirection: "column", gap: "18px", maxWidth: "920px" }}>
           <div style={{ fontSize: 46, fontWeight: 700, lineHeight: 1.25 }}>
-            統計調査を主軸に、日本社会をより正確に理解するための知見を積み上げる
+            統計調査を軸に、日本社会を読むためのデータを公開する
           </div>
           <div style={{ fontSize: 28, lineHeight: 1.5, color: "#24323D" }}>
-            方法と根拠を公開しながら、誰もが参照できる知見を届ける独立系シンクタンク
+            方法と根拠を示しながら、誰でも読める形で残す独立系シンクタンク
           </div>
         </div>
       </div>

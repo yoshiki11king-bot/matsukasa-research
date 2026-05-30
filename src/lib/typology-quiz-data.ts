@@ -33,7 +33,7 @@ export const typologyQuizzes: TypologyQuizDefinition[] = [
     id: "group",
     label: "グループ類型",
     title: "グループ類型クイズ",
-    description: "地域、職場、オンラインなど、人とのつながり方の傾向を見ます。",
+    description: "地域、職場、オンラインなど、人とのつながり方の傾向を確認します。",
     caution: "集団への向き合い方を見るための試作版です。個人情報は保存しません。",
     questions: [
       {
@@ -48,7 +48,7 @@ export const typologyQuizzes: TypologyQuizDefinition[] = [
       },
       {
         id: "group-local",
-        prompt: "町内会、PTA、自治会のような地域組織をどう見ますか。",
+        prompt: "町内会、PTA、自治会のような地域組織について、どの考えが近いですか。",
         options: [
           { id: "local-necessary", label: "地域を維持するために必要だと思う", points: { local: 2 } },
           { id: "local-reform", label: "必要だが、運営の見直しがいると思う", points: { civic: 2, task: 1 } },
@@ -117,7 +117,7 @@ export const typologyQuizzes: TypologyQuizDefinition[] = [
         title: "公共参加型",
         summary: "地域や制度をただ受け身で見るのではなく、よりよく整えることに関心を置くタイプです。",
         body: "負担や古い慣習には距離を取りつつ、合意形成や運営改善には関わりたいという傾向があります。",
-        traits: ["運営改善に関心", "合意形成を重視", "公共的な役割を意識"],
+        traits: ["運営改善に関心", "合意形成を重視", "地域での役割を意識"],
       },
       {
         id: "loose",
@@ -146,7 +146,7 @@ export const typologyQuizzes: TypologyQuizDefinition[] = [
     id: "political",
     label: "政治タイプ",
     title: "政治タイプ類型クイズ",
-    description: "政府、地域、参加、自由、再分配への考え方から傾向を見ます。",
+    description: "政府、地域、参加、自由、再分配への考え方から傾向を確認します。",
     caution: "政党支持や投票先を推定するものではありません。価値観の近い方向を見る試作版です。",
     questions: [
       {
@@ -239,7 +239,7 @@ export const typologyQuizzes: TypologyQuizDefinition[] = [
         id: "localist",
         title: "地域実感型",
         summary: "国全体の議論だけでなく、地域や現場への影響を重視します。",
-        body: "生活圏、自治体、地方産業、地域負担のような具体的な場所から政策を見ます。",
+        body: "生活圏、自治体、地方産業、地域負担のような具体的な場所から政策を考えます。",
         traits: ["地域差を見る", "現場感覚を重視", "自治体への関心"],
       },
       {
@@ -262,7 +262,7 @@ export const typologyQuizzes: TypologyQuizDefinition[] = [
     id: "religion",
     label: "宗教タイプ",
     title: "宗教タイプ類型クイズ",
-    description: "信仰、儀礼、スピリチュアリティ、公共性への距離感を見ます。",
+    description: "信仰、儀礼、スピリチュアリティ、公共性への距離感を確認します。",
     caution: "宗教の優劣や正しさを判定するものではありません。日本の生活文化を意識した試作版です。",
     questions: [
       {
@@ -297,7 +297,7 @@ export const typologyQuizzes: TypologyQuizDefinition[] = [
       },
       {
         id: "religion-organization",
-        prompt: "宗教団体や寺社・教会などの社会的役割についてどう見ますか。",
+        prompt: "宗教団体や寺社・教会などの社会的役割について、どの考えが近いですか。",
         options: [
           { id: "org-good", label: "共同体や支援の担い手として大事だと思う", points: { communal: 2, devout: 1 } },
           { id: "org-watch", label: "役割はあるが、透明性と説明責任が必要", points: { cultural: 2, secular: 1 } },

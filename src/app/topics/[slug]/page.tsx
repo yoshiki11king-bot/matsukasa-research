@@ -182,7 +182,7 @@ export default async function TopicPage({ params }: TopicPageProps) {
             ) : (
               <CollectionEmptyState
                 title={`${topic.name}の記事はこれから追加します`}
-                body="いまは特設ページの導線を先に整えています。公開された記事はここにまとまって並びます。"
+                body="いまは特設ページの掲載枠を先に用意しています。公開後、記事はここにまとまって並びます。"
                 actionHref="/"
                 actionLabel="ホームへ戻る"
               />
@@ -213,7 +213,7 @@ export default async function TopicPage({ params }: TopicPageProps) {
                 </div>
               ) : (
                 <p className="text-sm leading-7 text-[color:var(--color-secondary-ink)]">
-                  このテーマの報告書は、公開されしだいここにまとまります。
+                  このテーマの報告書は、公開後ここにまとめます。
                 </p>
               )}
             </section>
@@ -241,7 +241,7 @@ export default async function TopicPage({ params }: TopicPageProps) {
                 </div>
               ) : (
                 <p className="text-sm leading-7 text-[color:var(--color-secondary-ink)]">
-                  調査設計やレビュー基準の整理が進みしだい、このテーマに結びつく方法論を追加します。
+                  調査設計やレビュー基準の整理ができしだい、このテーマに結びつく方法論を追加します。
                 </p>
               )}
             </section>
@@ -273,7 +273,7 @@ export default async function TopicPage({ params }: TopicPageProps) {
                 </div>
               ) : (
                 <p className="text-sm leading-7 text-[color:var(--color-secondary-ink)]">
-                  担当研究員の公開設定が整いしだい、このテーマとの関係をここから見られるようにします。
+                  担当研究員を公開できしだい、このテーマとの関係をここから見られるようにします。
                 </p>
               )}
             </section>

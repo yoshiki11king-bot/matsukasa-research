@@ -88,7 +88,7 @@ function ArticleReadingRail({
   return (
     <aside className="article-reading-rail" aria-label="記事の補助情報">
       <section className="article-reading-rail-section">
-        <h2 className="article-reading-rail-title">関連している</h2>
+        <h2 className="article-reading-rail-title">関連する記事</h2>
         <div className="article-reading-rail-skeleton" aria-hidden="true">
           <span />
           <span />

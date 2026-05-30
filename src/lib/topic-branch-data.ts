@@ -145,7 +145,7 @@ const branchBlueprints: TopicBranchBlueprint[] = [
   {
     id: "learn-work",
     label: "学びと雇用",
-    description: "教育から仕事への移行を見ます",
+    description: "教育から仕事への移行を扱います",
     topicNames: ["教育", "雇用"],
     position: { x: 17, y: 20 },
     leafPositions: [
@@ -156,7 +156,7 @@ const branchBlueprints: TopicBranchBlueprint[] = [
   {
     id: "info-opinion",
     label: "情報と世論",
-    description: "メディア接触と認識の変化を見ます",
+    description: "メディア接触と認識の変化を扱います",
     topicNames: ["メディア", "情報環境", "世論"],
     position: { x: 15, y: 43 },
     leafPositions: [
@@ -168,7 +168,7 @@ const branchBlueprints: TopicBranchBlueprint[] = [
   {
     id: "care-local",
     label: "暮らしと地域",
-    description: "ケア負担と地域の支えを見ます",
+    description: "ケア負担と地域の支えを扱います",
     topicNames: ["ケア", "地域社会"],
     position: { x: 24, y: 64 },
     leafPositions: [
@@ -179,7 +179,7 @@ const branchBlueprints: TopicBranchBlueprint[] = [
   {
     id: "belief-participation",
     label: "価値観と参加",
-    description: "宗教や制度との距離感を見ます",
+    description: "宗教や制度との距離感を扱います",
     topicNames: ["宗教", "政治参加"],
     position: { x: 45, y: 22 },
     leafPositions: [

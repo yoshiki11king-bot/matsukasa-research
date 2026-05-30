@@ -53,7 +53,7 @@ export default async function ReportsPage() {
           <p className="text-xs font-semibold tracking-[0.14em] text-[color:var(--color-muted)]">REPORTS</p>
           <h1 className="text-4xl font-semibold tracking-tight text-[color:var(--color-primary)]">報告書</h1>
           <p className="max-w-3xl text-base leading-8 text-[color:var(--color-secondary-ink)]">
-            図表と PDF を添えた、少し厚めの調査記録をまとめています。
+            図表と PDF を添えた調査記録をまとめています。
           </p>
         </section>
 
@@ -66,7 +66,7 @@ export default async function ReportsPage() {
         ) : (
           <CollectionEmptyState
             title="報告書ページは準備中です"
-            body="図表や PDF を添えた報告書は、公開準備が整い次第このページに追加します。決算資料や調査ブリーフもここに集約していきます。"
+            body="図表や PDF を添えた報告書は、公開準備が整いしだいこのページに追加します。決算資料や調査ブリーフもここにまとめます。"
             actionHref="/finance"
             actionLabel="財務情報"
           />

@@ -9,9 +9,9 @@ export const revalidate = 3600;
 export const metadata: Metadata = buildPageMetadata({
   title: "Project: Rudbeckia",
   description:
-    "Project: Rudbeckia は、若者発の社会調査と可視化を公共のために組み立てる松笠研究所の創設準備プロジェクトです。",
+    "Project: Rudbeckia は、若者発の社会調査を公共にひらく、松笠研究所の創設準備プロジェクトです。",
   path: "/projects/rudbeckia",
-  keywords: ["Project Rudbeckia", "Rudbeckia", "社会調査", "統計", "可視化", "若者発", "松笠研究所"],
+  keywords: ["Project Rudbeckia", "Rudbeckia", "社会調査", "統計", "若者発", "松笠研究所"],
 });
 
 const routeCards = [
@@ -101,7 +101,7 @@ export default function RudbeckiaProjectPage() {
           </div>
           <div className="rudbeckia-survey-layout">
             <div className="rudbeckia-survey-copy">
-              <p>小中学校教員の実感から、見えにくい差を測ります。</p>
+              <p>小中学校教員の実感から、見えにくい差を記録します。</p>
               <div className="rudbeckia-actions">
                 <Link
                   href="#roadmap"
@@ -163,7 +163,7 @@ export default function RudbeckiaProjectPage() {
             className="rudbeckia-button rudbeckia-button-dark"
             aria-disabled="true"
           >
-            参加導線は準備中
+            参加受付は準備中
           </span>
         </section>
       </main>

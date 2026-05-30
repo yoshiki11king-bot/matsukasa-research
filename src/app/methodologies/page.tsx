@@ -65,7 +65,7 @@ export default async function MethodologiesPage() {
         ) : (
           <CollectionEmptyState
             title="方法論ページは準備中です"
-            body="調査設計やレビュー基準の公開準備が整い次第、このページに順次追加します。公開済みの記事から先に読めるよう、ホームでは検索とトピック導線を保っています。"
+            body="調査設計やレビュー基準の公開準備が整いしだい、このページに順次追加します。公開済みの記事から先に読めるよう、ホームでは検索とトピック別の入口を用意しています。"
             actionHref="/articles"
             actionLabel="記事を探す"
           />

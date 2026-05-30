@@ -58,7 +58,7 @@ export default async function AboutPage() {
           <div className="space-y-5">
             <SectionHeading
               eyebrow="研究所の目的"
-              title="統計調査を主軸に、方法と根拠を公開しながら知見を社会に届けます"
+              title="統計調査を軸に、方法と根拠を示して公開します"
             />
             <div className="max-w-4xl space-y-4 text-[1.02rem] leading-9 text-[color:var(--color-text)]">
               {siteConfig.aboutParagraphs.map((paragraph) => (
@@ -70,10 +70,10 @@ export default async function AboutPage() {
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {[
-            ["記事", `${postsPage.totalCount}本`, "日々の変化を読み始める入口です。"],
-            ["報告書", `${reports.length}本`, "図表やPDFを含む、少し厚めの記録です。"],
+            ["記事", `${postsPage.totalCount}本`, "日々の変化を扱う短い記事です。"],
+            ["報告書", `${reports.length}本`, "図表やPDFを含む調査記録です。"],
             ["方法論", `${methodologies.length}件`, "どう調べたかを公開しています。"],
-            ["研究員", `${researchers.length}人`, "誰がどの領域を見ているかが分かります。"],
+            ["研究員", `${researchers.length}人`, "誰がどの領域を担当するかが分かります。"],
           ].map(([title, count, body]) => (
             <article
               key={title}
@@ -91,12 +91,12 @@ export default async function AboutPage() {
             <SectionHeading
               eyebrow="公開の約束"
               title="更新日、方法、前提をできるだけ先に示します"
-              description="記事の見た目だけで判断を急がず、読者が前提をつかんでから読める形を続けます。"
+              description="読者が前提を確認してから読める形を保ちます。"
             />
             <div className="grid gap-4 md:grid-cols-3">
               {[
                 ["更新日を先に書きます", "いつの調査か、どこを直したかを見失わないようにします。"],
-                ["方法を隠しません", "回収条件や聞き取りの前提を、結論の後ろに追いやりません。"],
+                ["方法を隠しません", "回収条件や聞き取りの前提を、本文の後ろに隠しません。"],
                 ["断定を急ぎません", "言い切れないところは、言い切れないまま残します。"],
               ].map(([title, body]) => (
                 <article
@@ -139,7 +139,7 @@ export default async function AboutPage() {
         <section className="space-y-5">
           <SectionHeading
             eyebrow="関連ページ"
-            title="運営の顔と公開方針"
+            title="運営責任と公開方針"
           />
           <div className="grid gap-4 md:grid-cols-3">
             <article className="rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-5 py-5 shadow-[var(--shadow-soft)]">

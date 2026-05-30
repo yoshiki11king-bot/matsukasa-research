@@ -23,7 +23,7 @@ export const revalidate = 3600;
 const financePageContent = {
   title: "財務情報の公開",
   summary:
-    "松笠研究所では、支援や運営費がどこへ向かうかを、読み手が追える形で順次公開します。数字だけを並べるのではなく、使い道と更新の基準が分かることを重視します。",
+    "松笠研究所では、支援や運営費がどこに使われるかを、読み手が追える形で公開します。金額だけでなく、使い道と更新基準も示します。",
   body:
     "このページでは、財務情報の公開方針と決算資料の履歴をまとめます。未確定の数字は見込みで出さず、確定したものだけを更新日付きで反映します。",
   updatedDate: "2026-04-14T00:00:00.000Z",
@@ -70,7 +70,7 @@ const financePageContent = {
     },
     {
       title: "未確定の数字は混ぜません",
-      body: "精査が済んでいない金額は見込みで出さず、確定後に更新日付きで反映します。",
+      body: "精査が済んでいない金額は含めず、確定後に更新日付きで反映します。",
     },
     {
       title: "変更履歴を残します",
@@ -78,7 +78,7 @@ const financePageContent = {
     },
   ],
   contactText:
-    "公開項目の希望や確認したい点がある場合は、今後整備するお問い合わせ導線で受け付けます。運営の透明性に関わる内容は、このページに反映していきます。",
+    "公開項目の希望や確認したい点は、今後整備するお問い合わせ窓口で受け付けます。運営の透明性に関わる内容は、このページへ反映します。",
 } as const;
 
 function isFinancialReport(report: ResearchReport) {
@@ -264,8 +264,8 @@ export default async function FinancePage() {
           <div className="space-y-6">
             <SectionHeading
               eyebrow="公開予定の区分"
-              title="このページで出す項目"
-              description="現時点では、何をどの粒度で出すかを先に固定します。確定値はこの区分に沿って追加します。"
+              title="このページで公開する項目"
+              description="現時点では、何をどの粒度で公開するかを先に固定します。確定値はこの区分に沿って追加します。"
             />
             <div className="overflow-hidden rounded-lg border border-[color:var(--color-border)]">
               {pageContent.disclosureTable.map((item, index) => (
@@ -289,7 +289,7 @@ export default async function FinancePage() {
           <div className="space-y-6">
             <SectionHeading
               eyebrow="公開の線引き"
-              title="出すものと出さないものを分けます"
+              title="公開するものと公開しないものを分けます"
               description="透明性を保ちながら、個人情報や未確定情報を混ぜないための基準です。"
             />
             <div className="grid gap-4 md:grid-cols-2">
@@ -363,7 +363,7 @@ export default async function FinancePage() {
               </div>
             ) : (
               <div className="rounded-lg border border-dashed border-[color:var(--color-border-strong)] px-4 py-10 text-sm text-[color:var(--color-secondary-ink)]">
-                まだ決算資料が登録されていません。管理画面の「報告書」で種類を「決算資料」にして追加してください。
+                まだ決算資料が登録されていません。準備ができしだい追加します。
               </div>
             )}
           </div>

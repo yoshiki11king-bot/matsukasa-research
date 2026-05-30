@@ -88,7 +88,7 @@ export async function SiteFooter() {
 
         <div className="mt-10 border-t border-[color:var(--color-border)] pt-6">
           <p className="max-w-5xl text-sm leading-8 text-[color:var(--color-secondary-ink)]">
-            松笠研究所は、統計調査を主軸に、日本社会をより正確に理解するための知見を蓄積・公開する独立系シンクタンクです。結論を急がず、調査設計、更新日、解釈の前提を公開しながら、誰もが参照できる形で積み上げていきます。
+            松笠研究所は、統計調査を軸に、日本社会を読むためのデータと解説を公開する独立系シンクタンクです。結論を急がず、調査設計、更新日、解釈の前提を示しながら公開します。
           </p>
         </div>
 

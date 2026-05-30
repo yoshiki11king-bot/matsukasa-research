@@ -12,7 +12,7 @@ export const revalidate = 3600;
 export const metadata: Metadata = buildPageMetadata({
   title: "ツールとデータセット",
   description:
-    "松笠研究所が公開する調査票、集計ノート、可視化サンプル、データセットをまとめるページです。",
+    "松笠研究所が公開する調査票、集計ノート、図表サンプル、データセットをまとめるページです。",
   path: "/tools-datasets",
   keywords: ["ツール", "データセット", "統計調査", "調査票", "公開データ"],
 });
@@ -34,7 +34,7 @@ const plannedResources = [
     body: "集計条件、処理手順、除外条件を追える資料を置きます。",
   },
   {
-    title: "可視化サンプル",
+    title: "図表サンプル",
     label: "VISUALIZATION",
     body: "グラフや図表の読み方と、再利用しやすい表示例をまとめます。",
   },
@@ -56,7 +56,7 @@ export default async function ToolsDatasetsPage() {
   const structuredData = [
     buildCollectionPageJsonLd({
       name: "ツールとデータセット",
-      description: "調査票、集計ノート、可視化サンプル、公開データセットをまとめるページです。",
+      description: "調査票、集計ノート、図表サンプル、公開データセットをまとめるページです。",
       path: "/tools-datasets",
     }),
     buildBreadcrumbJsonLd([{ name: "ツールとデータセット", path: "/tools-datasets" }]),
@@ -84,7 +84,7 @@ export default async function ToolsDatasetsPage() {
             調査をたどるための道具
           </h1>
           <p className="max-w-3xl text-lg leading-9 text-[color:var(--color-text)]">
-            調査票、集計ノート、可視化サンプル、公開データセットをここにまとめます。公開時には更新日、出典表記、利用条件を添えて掲載します。
+            調査票、集計ノート、図表サンプル、公開データセットをここにまとめます。公開時には更新日、出典表記、利用条件を添えて掲載します。
           </p>
         </section>
 
@@ -93,7 +93,7 @@ export default async function ToolsDatasetsPage() {
             <SectionHeading
               eyebrow="RESOURCE"
               title="公開予定のもの"
-              description="まだ準備中の項目も、置き場所だけ先に整理しておきます。"
+              description="まだ準備中の項目も、掲載場所を先に用意しています。"
             />
             <div className="grid gap-4 md:grid-cols-2">
               {plannedResources.map((resource) => (

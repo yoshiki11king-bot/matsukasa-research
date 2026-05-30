@@ -13,7 +13,7 @@ export const topicPageDefinitions: TopicPageDefinition[] = [
     name: "ケア",
     slug: "care",
     imageUrl: "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=1600&q=80",
-    strapline: "暮らしの負担を見える形に",
+    strapline: "暮らしの負担を記録する",
     summary: "家事、育児、介護の負担がどこに集まりやすいかを、統計と現場の声で追います。",
   },
   {
@@ -21,14 +21,14 @@ export const topicPageDefinitions: TopicPageDefinition[] = [
     slug: "media",
     imageUrl: "https://images.unsplash.com/photo-1495020689067-958852a7765e?auto=format&fit=crop&w=1600&q=80",
     strapline: "報道と配信の変化をたどる",
-    summary: "ニュースや配信の接触経路が、社会の理解や判断にどう影響するかを見ます。",
+    summary: "ニュースや配信の接触経路が、社会の理解や判断にどう影響するかを調べます。",
   },
   {
     name: "教育",
     slug: "education",
     imageUrl: "https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=1600&q=80",
-    strapline: "学びと移行の詰まりを見る",
-    summary: "学校から社会への移行、学び直し、地域差の現れ方を丁寧に整理します。",
+    strapline: "学びと移行の詰まりを扱う",
+    summary: "学校から社会への移行、学び直し、地域差の現れ方を整理します。",
   },
   {
     name: "雇用",
@@ -42,7 +42,7 @@ export const topicPageDefinitions: TopicPageDefinition[] = [
     slug: "religion",
     imageUrl: "https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&w=1600&q=80",
     strapline: "価値観と社会参加の接点を扱う",
-    summary: "信仰、組織、価値観が社会参加や公共空間とどう結びつくかを見ていきます。",
+    summary: "信仰、組織、価値観が社会参加や公共空間とどう結びつくかを扱います。",
   },
   {
     name: "情報環境",
@@ -63,14 +63,14 @@ export const topicPageDefinitions: TopicPageDefinition[] = [
     slug: "political-participation",
     imageUrl: "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?auto=format&fit=crop&w=1600&q=80",
     strapline: "参加しやすさの条件を探る",
-    summary: "制度への距離感、争点の見え方、参加のしやすさを生活の側から見ます。",
+    summary: "制度との距離、争点の伝わり方、参加しやすさを生活の側から調べます。",
   },
   {
     name: "地域社会",
     slug: "local-community",
     imageUrl: "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=1600&q=80",
-    strapline: "つながりと孤立を見つめる",
-    summary: "都市と地方の孤立、自治、支え合いの変化を長い目で読み解きます。",
+    strapline: "つながりと孤立を調べる",
+    summary: "都市と地方の孤立、自治、支え合いの変化を継続して追います。",
   },
 ];
 

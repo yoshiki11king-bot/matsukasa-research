@@ -6,7 +6,7 @@ type StatusBannerProps = {
 
 const bannerCopy = {
   demo: {
-    title: "microCMS 未接続のため、デモ記事を表示しています。",
+    title: "microCMS 未接続のため、サンプル記事を表示しています。",
     body: "サービスドメインと API キーを入れると、記事、研究員、方法論、報告書が実データに切り替わります。",
   },
 };

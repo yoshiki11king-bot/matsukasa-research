@@ -64,7 +64,7 @@ export default async function DonatePage() {
                 無料公開を続けるための支援
               </h1>
               <p className="max-w-3xl text-lg leading-9 text-[color:var(--color-text)]">
-                結論ありきではなく、統計調査の設計と集計の前提を公開しながら、誰もが参照できる知見を積み上げていくための支援です。調査設計、回収、報告書整備、図表制作に充てます。
+                統計調査の設計と集計の前提を公開し、誰でも読める形で残すための支援です。調査設計、回収、報告書整備、図表制作に充てます。
               </p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
@@ -77,7 +77,7 @@ export default async function DonatePage() {
               <div className="rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-5 py-5 shadow-[var(--shadow-soft)]">
                 <p className="text-sm font-semibold text-[color:var(--color-primary)]">支援の反映先</p>
                 <p className="mt-3 text-sm leading-7 text-[color:var(--color-text)]">
-                  調査設計、回収、図表の整備、本文編集、更新の継続にそのまま充てます。
+                  調査設計、回収、図表の整備、本文編集、更新の継続に充てます。
                 </p>
               </div>
             </div>
@@ -129,7 +129,7 @@ export default async function DonatePage() {
                 description="読むべき内容より目立つ内容が優先される構造から距離を取り、独立した公開を保つためです。"
               />
               <p className="text-[1.02rem] leading-9 text-[color:var(--color-text)]">
-                松笠研究所は、短い注目だけを狙う運営ではなく、調査の条件、更新の履歴、解釈の限界まで含めて公開する形を続けたいと考えています。支援は、その地味だけれど大事な作業時間を支えます。
+                松笠研究所は、短期的な注目だけを追うのではなく、調査の条件、更新の履歴、解釈の限界まで含めて公開します。支援は、その目立ちにくい作業時間を支えます。
               </p>
             </div>
           </article>
