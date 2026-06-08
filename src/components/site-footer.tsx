@@ -45,13 +45,12 @@ export async function SiteFooter() {
 
             <div className="space-y-2 text-sm leading-7 text-[color:var(--color-secondary-ink)]">
               <p>{siteConfig.headerLabel}</p>
-              <p>{siteConfig.description}</p>
             </div>
           </section>
 
           <section className="space-y-4">
             <div className="border-b border-dotted border-[color:var(--color-border-stronger)] pb-3">
-              <p className="text-sm font-semibold text-[color:var(--color-primary)]">研究テーマ</p>
+              <p className="text-sm font-semibold text-[color:var(--color-primary)]">研究ジャンル</p>
               <div className="ui-accent-rule mt-3 h-px w-full opacity-70" />
             </div>
             <div className="grid gap-x-10 gap-y-3 sm:grid-cols-2">

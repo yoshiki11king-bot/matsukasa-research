@@ -87,9 +87,6 @@ export function PublicSidebar({ researchers, methodologies, reports }: PublicSid
           <p className="text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-[color:var(--color-muted)]">SUPPORT</p>
           <p className="font-editorial text-xl font-semibold text-[color:var(--color-primary)]">継続支援</p>
         </div>
-        <p className="text-sm leading-7 text-[color:var(--color-secondary-ink)]">
-          無料公開を続けるための支援先をまとめています。
-        </p>
         <Link
           href="/donate"
           className="ui-button ui-button-primary h-10 px-4 text-sm"

@@ -48,12 +48,8 @@ export default async function MethodologiesPage() {
     >
       <StructuredData data={structuredData} />
       <div className="space-y-8">
-        <section className="space-y-4 border-b border-[color:var(--color-border)] pb-8">
-          <p className="text-sm font-medium text-[color:var(--color-muted)]">方法論</p>
-          <h1 className="text-4xl font-semibold tracking-tight text-[color:var(--color-primary)]">どう調べているか</h1>
-          <p className="max-w-3xl text-lg leading-9 text-[color:var(--color-text)]">
-            統計調査の前提、向いている場面、言えることと言えないことを先に公開します。
-          </p>
+        <section className="border-b border-[color:var(--color-border)] pb-8">
+          <h1 className="font-editorial text-4xl font-semibold tracking-tight text-[color:var(--color-primary)]">方法論</h1>
         </section>
 
         {methodologies.length > 0 ? (

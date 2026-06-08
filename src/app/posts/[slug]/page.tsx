@@ -239,7 +239,7 @@ export default async function PostPage({ params }: PostPageProps) {
               {post.excerpt ? <p className="article-reading-excerpt">{post.excerpt}</p> : null}
               <ArticleShareRow slug={post.slug} />
               <p className="article-reading-author">
-                による <span>{post.authorName}</span>
+                著者 <span>{post.authorName}</span>
               </p>
             </header>
 

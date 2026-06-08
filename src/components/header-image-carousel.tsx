@@ -128,7 +128,6 @@ export function HeaderImageCarousel() {
                   <div className="max-w-[520px] space-y-2">
                     <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/70">{slide.eyebrow}</p>
                     <p className="font-editorial text-3xl font-semibold tracking-tight sm:text-[2.4rem]">{slide.title}</p>
-                    <p className="text-sm leading-7 text-white/88 sm:text-base">{slide.subtitle}</p>
                     <p className="max-w-[520px] text-sm leading-7 text-white/72">{slide.description}</p>
                   </div>
                 </div>

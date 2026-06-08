@@ -79,7 +79,7 @@ export function SiteHeader({ variant = "default" }: SiteHeaderProps) {
     <header className="ui-site-settle sticky top-0 z-40 border-b border-[color:var(--color-border)] bg-[color:var(--color-surface-elevated)] text-[color:var(--color-text)]">
       <div className="border-b border-[color:var(--color-border)] bg-[color:var(--color-surface)]">
         <div className="mx-auto flex w-full max-w-[1320px] flex-col gap-2 px-5 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-[color:var(--color-muted)] sm:flex-row sm:items-center sm:justify-between lg:px-8">
-          <p className="max-w-full truncate">統計・事実・トレンドで日本を形づくる</p>
+          <p className="max-w-full truncate">統計・事実・トレンドで日本を読み解く</p>
           <nav className="flex max-w-full items-center gap-4 overflow-x-auto">
             <Link href="/articles" className="transition hover:text-[color:var(--color-primary)]">記事</Link>
             <Link href="/reports" className="transition hover:text-[color:var(--color-primary)]">レポート</Link>
@@ -145,7 +145,7 @@ export function SiteHeader({ variant = "default" }: SiteHeaderProps) {
           <div className="group shrink-0">
             <Link
               href="/topics/media"
-              className="inline-flex items-center gap-2 transition hover:text-[color:var(--color-primary)] focus-visible:text-[color:var(--color-primary)]"
+              className="inline-flex items-center gap-2 px-4 py-3 transition group-hover:bg-[color:var(--color-surface)] group-hover:text-[color:var(--color-primary)] focus-visible:bg-[color:var(--color-surface)] focus-visible:text-[color:var(--color-primary)]"
             >
               <span>研究テーマ</span>
               <span aria-hidden="true" className="text-[0.7rem] text-[color:var(--color-muted)]">▾</span>
@@ -164,7 +164,7 @@ export function SiteHeader({ variant = "default" }: SiteHeaderProps) {
                             <Link
                               key={topic.slug}
                               href={`/topics/${topic.slug}`}
-                              className="block text-base font-medium normal-case tracking-normal text-[color:var(--color-secondary-ink)] transition hover:text-[color:var(--color-accent-ink)]"
+                              className="block rounded px-2 py-1 text-base font-medium normal-case tracking-normal text-[color:var(--color-secondary-ink)] transition hover:bg-[color:var(--color-surface-subtle)] hover:text-[color:var(--color-primary)]"
                             >
                               {topic.name}
                             </Link>
@@ -183,7 +183,7 @@ export function SiteHeader({ variant = "default" }: SiteHeaderProps) {
                         <Link
                           key={item.href}
                           href={item.href}
-                          className="block text-base font-medium normal-case tracking-normal text-[color:var(--color-secondary-ink)] transition hover:text-[color:var(--color-accent-ink)]"
+                          className="block rounded px-2 py-1 text-base font-medium normal-case tracking-normal text-[color:var(--color-secondary-ink)] transition hover:bg-[color:var(--color-surface-subtle)] hover:text-[color:var(--color-primary)]"
                         >
                           {item.label}
                         </Link>
@@ -200,7 +200,7 @@ export function SiteHeader({ variant = "default" }: SiteHeaderProps) {
                         <Link
                           key={item.href}
                           href={item.href}
-                          className="block text-base font-medium normal-case tracking-normal text-[color:var(--color-secondary-ink)] transition hover:text-[color:var(--color-accent-ink)]"
+                          className="block rounded px-2 py-1 text-base font-medium normal-case tracking-normal text-[color:var(--color-secondary-ink)] transition hover:bg-[color:var(--color-surface-subtle)] hover:text-[color:var(--color-primary)]"
                         >
                           {item.label}
                         </Link>

@@ -48,12 +48,8 @@ export default async function ResearchersPage() {
     >
       <StructuredData data={structuredData} />
       <div className="space-y-8">
-        <section className="space-y-4 border-b border-[color:var(--color-border)] pb-8">
-          <p className="text-sm font-medium text-[color:var(--color-muted)]">研究員</p>
-          <h1 className="text-4xl font-semibold tracking-tight text-[color:var(--color-primary)]">誰が調べているか</h1>
-          <p className="max-w-3xl text-lg leading-9 text-[color:var(--color-text)]">
-            調査テーマごとに、担当研究員と専門領域、使っている方法論をまとめています。
-          </p>
+        <section className="border-b border-[color:var(--color-border)] pb-8">
+          <h1 className="font-editorial text-4xl font-semibold tracking-tight text-[color:var(--color-primary)]">研究員</h1>
         </section>
 
         {researchers.length > 0 ? (
