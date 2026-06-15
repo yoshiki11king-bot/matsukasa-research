@@ -50,7 +50,7 @@ export default async function ReportsPage() {
       <StructuredData data={structuredData} />
       <div className="space-y-8">
         <section className="space-y-4 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface-soft)] px-6 py-7 shadow-[var(--shadow-card)]">
-          <p className="text-xs font-semibold tracking-[0.14em] text-[color:var(--color-muted)]">REPORTS</p>
+          <p className="text-xs font-semibold tracking-[0.14em] text-[color:var(--color-muted)]">報告書</p>
           <h1 className="text-4xl font-semibold tracking-tight text-[color:var(--color-primary)]">報告書</h1>
           <p className="max-w-3xl text-base leading-8 text-[color:var(--color-secondary-ink)]">
             図表と PDF を添えた調査記録をまとめています。

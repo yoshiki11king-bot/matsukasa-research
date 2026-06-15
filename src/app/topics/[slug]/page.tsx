@@ -142,7 +142,7 @@ export default async function TopicPage({ params }: TopicPageProps) {
             <div className="absolute inset-0 bg-gradient-to-r from-[rgba(15,23,42,0.78)] via-[rgba(15,23,42,0.52)] to-[rgba(15,23,42,0.2)]" />
             <div className="absolute inset-x-0 bottom-0 p-6 text-white sm:p-8">
               <div className="max-w-[620px] space-y-3">
-                <p className="text-xs font-semibold tracking-[0.14em] text-white/78">TOPIC PAGE</p>
+                <p className="text-xs font-semibold tracking-[0.14em] text-white/78">研究テーマ</p>
                 <h1 className="text-[2.1rem] font-semibold tracking-tight sm:text-[2.6rem]">{topic.name}</h1>
                 <p className="text-base leading-8 text-white/88">{copy.strapline}</p>
                 <p className="text-sm leading-7 text-white/74 sm:text-base">{copy.summary}</p>
@@ -166,7 +166,7 @@ export default async function TopicPage({ params }: TopicPageProps) {
         <section className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_320px]">
           <div className="space-y-5">
             <div className="space-y-2">
-              <p className="text-xs font-semibold tracking-[0.14em] text-[color:var(--color-muted)]">ARTICLES</p>
+              <p className="text-xs font-semibold tracking-[0.14em] text-[color:var(--color-muted)]">記事</p>
               <h2 className="text-[1.9rem] font-semibold tracking-tight text-[color:var(--color-primary)]">
                 {topic.name}の記事
               </h2>
@@ -192,7 +192,7 @@ export default async function TopicPage({ params }: TopicPageProps) {
           <aside className="space-y-5">
             <section className="space-y-4 rounded-xl border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-5 py-5 shadow-[var(--shadow-soft)]">
               <div className="space-y-1">
-                <p className="text-xs font-semibold tracking-[0.14em] text-[color:var(--color-muted)]">REPORTS</p>
+                <p className="text-xs font-semibold tracking-[0.14em] text-[color:var(--color-muted)]">報告書</p>
                 <h2 className="text-xl font-semibold tracking-tight text-[color:var(--color-primary)]">関連報告書</h2>
               </div>
               {topicReports.length > 0 ? (
