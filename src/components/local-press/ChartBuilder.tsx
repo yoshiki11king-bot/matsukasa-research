@@ -396,9 +396,12 @@ export function ChartBuilder() {
           {message ? (
             <div className="rounded-lg border border-[color:var(--color-border)] px-5 py-4">
               <p className="font-semibold text-[color:var(--color-primary)]">保存されました。</p>
-              <pre className="mt-3 overflow-x-auto rounded-md bg-[color:var(--color-primary)] px-4 py-3 text-sm text-white">{`git add ${message}
+              <p className="mt-2 text-sm text-[color:var(--color-secondary-ink)]">通常はbranchを作り、Pull Requestで公開します。</p>
+              <pre className="mt-3 overflow-x-auto rounded-md bg-[color:var(--color-primary)] px-4 py-3 text-sm text-white">{`git status
+git switch -c chart/${resolvedSlug}
+git add ${message}
 git commit -m "Add content: ${resolvedSlug}"
-git push`}</pre>
+git push origin chart/${resolvedSlug}`}</pre>
             </div>
           ) : null}
           {error ? <p className="rounded-lg border border-[color:#f2b8b8] bg-[#fff4f4] px-4 py-3 text-sm text-[#8d4b50]">{error}</p> : null}

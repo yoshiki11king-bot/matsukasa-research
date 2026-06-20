@@ -22,7 +22,7 @@ export default function LocalPressPage() {
               研究機関版 note.com として、ローカルで書いて公開する。
             </h1>
             <p className="max-w-3xl text-lg leading-9 text-[color:var(--color-secondary-ink)]">
-              ここではmicroCMSや外部APIを使わず、content/ 配下にMarkdownまたはJSONとして保存します。公開はGitHub Desktopまたはgit pushで行います。
+              ここではmicroCMSや外部APIを使わず、content/ 配下にMarkdownまたはJSONとして保存します。共同編集ではGitHub Desktopでbranchを作り、Pull Requestで公開します。
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -49,14 +49,15 @@ export default function LocalPressPage() {
           <h2 className="text-lg font-semibold text-[color:var(--color-primary)]">通常フロー</h2>
           {[
             "GitHub DesktopでFetch/Pull",
-            "npm run dev を起動",
+            "Local Pressを起動",
             "http://localhost:3000/local-press を開く",
             "タイトルと本文を書く",
             "ライブプレビューで確認",
             "ローカル保存",
-            "Commit to main",
+            "branchにCommit",
             "Push origin",
-            "Vercelが自動公開",
+            "Pull Requestを作成",
+            "merge後にVercelが自動公開",
           ].map((item, index) => (
             <p key={item} className="text-sm leading-7 text-[color:var(--color-secondary-ink)]">
               {index + 1}. {item}

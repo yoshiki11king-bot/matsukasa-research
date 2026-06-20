@@ -2,7 +2,7 @@ import Link from "next/link";
 import { AdminShell } from "@/components/admin-shell";
 import { requireAdmin } from "@/lib/admin-session";
 
-const launchCommands = `cd /Users/hiroseyoshiki/next-contentful-blog
+const launchCommands = `cd path/to/matsukasa-research
 npm install
 ENABLE_LOCAL_PRESS=true npm run dev`;
 
@@ -36,7 +36,7 @@ const publishChecks = [
   "画像パスが /local-press/uploads/... で始まっている",
   "出典、脚注、方法論メモが必要な場所に入っている",
   "GitHub Desktopまたはgitで差分を見た",
-  "push後にVercelデプロイが成功した",
+  "Pull Requestまたはpush後にVercelデプロイが成功した",
   "本番URLで表示を確認した",
 ];
 
@@ -88,13 +88,34 @@ const contentSteps = [
 const githubDesktopSteps = [
   "GitHub Desktopを開く",
   "Fetch origin / Pull を押して最新版にする",
+  "Current Branch から新しいbranchを作る",
   "Local Pressで原稿を保存する",
   "GitHub Desktopに出た差分を読む",
   "Summaryに Add content: {slug} と書く",
-  "Commit to main を押す",
+  "Commit to {branch} を押す",
   "Push origin を押す",
+  "GitHubでPull Requestを作る",
+  "管理者レビュー後にmergeする",
   "VercelのDeploymentsで成功を確認する",
   "本番URLを開いて表示を見る",
+];
+
+const editorOnboardingSteps = [
+  "GitHubのリポジトリ設定で編集者をcollaboratorに追加する",
+  "編集者にGitHub DesktopとNode.jsを入れてもらう",
+  "GitHub Desktopでmatsukasa-researchをcloneしてもらう",
+  "scripts/start-local-press.command をダブルクリックして起動する",
+  "初回だけテスト原稿をdraftで保存して差分が出るか確認する",
+  "通常投稿はbranchを切ってPull Requestで送ってもらう",
+];
+
+const collaborationRules = [
+  "同じslugを複数人で使わない",
+  "画像や図表を追加した時は、本文だけでなく画像・図表ファイルもcommitする",
+  "新規投稿は原則Pull Request経由にする",
+  "mainへ直接pushするのは管理者が許可した軽微な修正だけ",
+  "作業前に必ずFetch origin / Pullを行う",
+  "競合が出たら無理に解決せず、差分を残して管理者に相談する",
 ];
 
 const localPreviewRows = [
@@ -186,7 +207,7 @@ export default async function AdminPage() {
         </div>
 
         <SectionCard title="まず起動する" tone="muted">
-          <p>ターミナルでこの3行を順番に実行します。</p>
+          <p>Macでは <code>scripts/start-local-press.command</code> をダブルクリックします。ターミナルで起動する場合はこの3行です。</p>
           <CommandBlock>{launchCommands}</CommandBlock>
           <p className="mt-3">
             「Ready」と出たら、ブラウザで <code>http://localhost:3000/local-press</code> を開きます。
@@ -271,6 +292,30 @@ export default async function AdminPage() {
       </section>
 
       <section className="grid gap-5 lg:grid-cols-2">
+        <SectionCard title="他の編集者を迎える">
+          <ol className="space-y-2">
+            {editorOnboardingSteps.map((step, index) => (
+              <li key={step}>
+                <span className="mr-2 font-semibold text-[color:var(--color-accent)]">{index + 1}.</span>
+                {step}
+              </li>
+            ))}
+          </ol>
+          <p className="mt-4">
+            詳細手順は <code>docs/LOCAL_PRESS_SETUP.md</code> にまとめています。新しい編集者にはこのファイルを渡してください。
+          </p>
+        </SectionCard>
+
+        <SectionCard title="共同編集のルール">
+          <ul className="space-y-2">
+            {collaborationRules.map((rule) => (
+              <li key={rule}>□ {rule}</li>
+            ))}
+          </ul>
+        </SectionCard>
+      </section>
+
+      <section className="grid gap-5 lg:grid-cols-2">
         <SectionCard title="GitHub Desktopで本番反映">
           <ol className="space-y-2">
             {githubDesktopSteps.map((step, index) => (
@@ -283,14 +328,16 @@ export default async function AdminPage() {
         </SectionCard>
 
         <SectionCard title="gitで本番反映">
-          <p>ターミナルで公開する場合は、保存されたファイルだけをaddします。</p>
+          <p>ターミナルで公開する場合も、通常はbranchを作ってPull Requestにします。</p>
           <CommandBlock>{`git status
+git switch -c content/your-slug
 git add content/articles/your-slug.md
 git commit -m "Add content: your-slug"
-git push origin main`}</CommandBlock>
+git push origin content/your-slug`}</CommandBlock>
           <p className="mt-3">
             図表や画像も一緒に出す場合は、対応する <code>content/charts/...</code> や <code>public/local-press/uploads/...</code> もaddします。
           </p>
+          <p className="mt-2">push後、GitHubでPull Requestを作り、管理者レビュー後にmergeします。</p>
         </SectionCard>
       </section>
 
@@ -366,7 +413,7 @@ git push origin main`}</CommandBlock>
           <p>開く: <code>/local-press</code></p>
           <p>書く: <code>/local-press/new</code></p>
           <p>図表: <code>/local-press/tools/chart-builder</code></p>
-          <p>公開: GitHub DesktopでCommitしてPush</p>
+          <p>公開: GitHub Desktopでbranchを作りPull Request</p>
         </SectionCard>
       </section>
     </AdminShell>

@@ -412,17 +412,22 @@ export function LocalPressWriter({ initialType, charts = {} }: LocalPressWriterP
             ) : (
               <div className="space-y-4">
                 <p className="font-semibold text-[color:var(--color-primary)]">保存されました。</p>
-                <p className="text-sm text-[color:var(--color-secondary-ink)]">次のコマンドで公開できます。</p>
-                <pre className="overflow-x-auto rounded-md bg-[color:var(--color-primary)] px-4 py-3 text-sm text-white">{`git add ${saveMessage}
+                <p className="text-sm text-[color:var(--color-secondary-ink)]">通常はbranchを作り、Pull Requestで公開します。</p>
+                <pre className="overflow-x-auto rounded-md bg-[color:var(--color-primary)] px-4 py-3 text-sm text-white">{`git status
+git switch -c content/${resolvedSlug}
+git add ${saveMessage}
 git commit -m "Add content: ${resolvedSlug}"
-git push`}</pre>
+git push origin content/${resolvedSlug}`}</pre>
                 <div className="text-sm leading-7 text-[color:var(--color-secondary-ink)]">
                   <p className="font-semibold text-[color:var(--color-primary)]">GitHub Desktopを使う場合:</p>
                   <p>1. GitHub Desktopを開く</p>
-                  <p>2. 変更内容を確認する</p>
-                  <p>3. Summaryに「Add content: {resolvedSlug}」と入力する</p>
-                  <p>4. Commit to main を押す</p>
-                  <p>5. Push origin を押す</p>
+                  <p>2. Current Branch から新しいbranchを作る</p>
+                  <p>3. 変更内容を確認する</p>
+                  <p>4. Summaryに「Add content: {resolvedSlug}」と入力する</p>
+                  <p>5. Commit to branch を押す</p>
+                  <p>6. Push origin を押す</p>
+                  <p>7. GitHubでPull Requestを作る</p>
+                  <p>8. 管理者レビュー後にmergeする</p>
                 </div>
               </div>
             )}
