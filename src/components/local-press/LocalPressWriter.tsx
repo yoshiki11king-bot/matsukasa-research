@@ -412,7 +412,9 @@ export function LocalPressWriter({ initialType, charts = {} }: LocalPressWriterP
             ) : (
               <div className="space-y-4">
                 <p className="font-semibold text-[color:var(--color-primary)]">保存されました。</p>
-                <p className="text-sm text-[color:var(--color-secondary-ink)]">通常はbranchを作り、Pull Requestで公開します。</p>
+                <p className="text-sm text-[color:var(--color-secondary-ink)]">
+                  Local Pressホームの共同編集チェックで、この保存がGit差分として出ているか確認できます。通常はbranchを作り、Pull Requestで公開します。
+                </p>
                 <pre className="overflow-x-auto rounded-md bg-[color:var(--color-primary)] px-4 py-3 text-sm text-white">{`git status
 git switch -c content/${resolvedSlug}
 git add ${saveMessage}
@@ -422,12 +424,13 @@ git push origin content/${resolvedSlug}`}</pre>
                   <p className="font-semibold text-[color:var(--color-primary)]">GitHub Desktopを使う場合:</p>
                   <p>1. GitHub Desktopを開く</p>
                   <p>2. Current Branch から新しいbranchを作る</p>
-                  <p>3. 変更内容を確認する</p>
-                  <p>4. Summaryに「Add content: {resolvedSlug}」と入力する</p>
-                  <p>5. Commit to branch を押す</p>
-                  <p>6. Push origin を押す</p>
-                  <p>7. GitHubでPull Requestを作る</p>
-                  <p>8. 管理者レビュー後にmergeする</p>
+                  <p>3. Local Pressホームの共同編集チェックを見る</p>
+                  <p>4. 変更内容を確認する</p>
+                  <p>5. Summaryに「Add content: {resolvedSlug}」と入力する</p>
+                  <p>6. Commit to branch を押す</p>
+                  <p>7. Push origin を押す</p>
+                  <p>8. GitHubでPull Requestを作る</p>
+                  <p>9. 管理者レビュー後にmergeする</p>
                 </div>
               </div>
             )}

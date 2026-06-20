@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AdminShell } from "@/components/admin-shell";
+import { LocalPressCollaborationStatus } from "@/components/local-press/LocalPressCollaborationStatus";
 import { requireAdmin } from "@/lib/admin-session";
 
 const launchCommands = `cd path/to/matsukasa-research
@@ -216,6 +217,8 @@ export default async function AdminPage() {
       </section>
 
       <section className="grid gap-5 lg:grid-cols-[300px_minmax(0,1fr)]">
+        <LocalPressCollaborationStatus />
+
         <SectionCard title="よく使う入口">
           <div className="grid gap-2">
             {directLinks.map(([label, href, note]) => (

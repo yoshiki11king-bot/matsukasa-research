@@ -32,18 +32,20 @@ Mac の場合は、`scripts/start-local-press.command` をダブルクリック�
 1. GitHub Desktop で `Fetch origin` / `Pull` を押す
 2. `scripts/start-local-press.command` を開く
 3. `http://localhost:3000/local-press` を開く
-4. `新しく書く` から種類を選ぶ
-5. タイトルと本文を書く
-6. 必要なら画像、図表、引用、注釈を入れる
-7. 詳細設定で `slug` と `status` を確認する
-8. 公開する場合は `status` を `published` にする
-9. `ローカル保存` を押す
-10. GitHub Desktop で差分を確認する
-11. branch を作って commit する
-12. `Push origin` を押す
-13. Pull Request を作る
-14. 管理者が確認して merge する
-15. Vercel の本番反映を確認する
+4. `共同編集チェック` でbranchと差分を確認する
+5. `新しく書く` から種類を選ぶ
+6. タイトルと本文を書く
+7. 必要なら画像、図表、引用、注釈を入れる
+8. 詳細設定で `slug` と `status` を確認する
+9. 公開する場合は `status` を `published` にする
+10. `ローカル保存` を押す
+11. Local Press の `共同編集チェック` に差分が出たか確認する
+12. GitHub Desktop で差分を確認する
+13. branch を作って commit する
+14. `Push origin` を押す
+15. Pull Request を作る
+16. 管理者が確認して merge する
+17. Vercel の本番反映を確認する
 
 ## 直接 main に push してよい場合
 
@@ -110,6 +112,7 @@ ENABLE_LOCAL_PRESS=true npm run dev
 - `ローカル保存` を押したか
 - 保存先が `content/` または `public/local-press/uploads/` か
 - `status` ではなくファイル自体が保存されているか
+- Local Press ホームの `共同編集チェック` に差分が表示されているか
 
 ターミナルでは次を実行します。
 
