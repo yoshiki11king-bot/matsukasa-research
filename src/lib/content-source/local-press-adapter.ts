@@ -98,7 +98,7 @@ async function getLocalPostsPage(params: PostsPageParams = {}) {
 }
 
 export const localPressContentSource: ContentSource = {
-  name: "local-press",
+  name: "local",
 
   getPostsPage: (params) => getLocalPostsPage(params),
   getAllPostSlugs: async () => {
@@ -133,7 +133,7 @@ export const localPressContentSource: ContentSource = {
   getCurrentFinancePage: () => getPublishedLocalFinancePageContent(),
 
   getHealth: () => ({
-    name: "local-press",
+    name: "local",
     configured: true,
   }),
 };

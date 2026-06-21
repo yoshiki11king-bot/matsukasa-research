@@ -9,7 +9,7 @@ import type {
   ResearcherProfile,
 } from "@/lib/types";
 
-export type ContentSourceName = "microcms" | "wordpress" | "local-press" | "hybrid";
+export type ContentSourceName = "microcms" | "local" | "wordpress";
 
 export type PublishedStatus = "draft" | "published" | "all";
 

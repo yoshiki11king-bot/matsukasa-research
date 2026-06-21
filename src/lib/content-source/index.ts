@@ -5,8 +5,7 @@ import { microcmsContentSource } from "./microcms-adapter";
 import { wordpressContentSource } from "./wordpress-adapter";
 import type { ContentSource, ContentSourceName } from "./types";
 
-export type AvailableContentSourceName = Exclude<ContentSourceName, "hybrid" | "local-press"> | "local";
-export const DEFAULT_CONTENT_SOURCE: AvailableContentSourceName = "microcms";
+export const DEFAULT_CONTENT_SOURCE: ContentSourceName = "microcms";
 
 export const contentSource: ContentSource = microcmsContentSource;
 
@@ -14,10 +13,22 @@ export const availableContentSources = {
   microcms: microcmsContentSource,
   local: localPressContentSource,
   wordpress: wordpressContentSource,
-} as const satisfies Record<AvailableContentSourceName, ContentSource>;
+} as const satisfies Record<ContentSourceName, ContentSource>;
+
+export function isContentSourceName(value: string): value is ContentSourceName {
+  return value in availableContentSources;
+}
+
+export function parseContentSourceName(value?: string | null): ContentSourceName {
+  if (!value) {
+    return DEFAULT_CONTENT_SOURCE;
+  }
+
+  return isContentSourceName(value) ? value : DEFAULT_CONTENT_SOURCE;
+}
 
 export function selectContentSource(
-  sourceName: AvailableContentSourceName = DEFAULT_CONTENT_SOURCE,
+  sourceName: ContentSourceName = DEFAULT_CONTENT_SOURCE,
 ): ContentSource {
   return availableContentSources[sourceName];
 }
