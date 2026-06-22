@@ -7,13 +7,9 @@ import { PostBody } from "@/components/post-body";
 import { PublicShell } from "@/components/public-shell";
 import { StructuredData } from "@/components/structured-data";
 import { getChartsBySlug } from "@/lib/content/charts";
+import { contentSource } from "@/lib/content-source";
 import { formatDate } from "@/lib/formatters";
-import {
-  getMethodologies,
-  getReportBySlug,
-  getResearchers,
-  getSidebarSnapshot,
-} from "@/lib/microcms";
+import { getSidebarSnapshot } from "@/lib/microcms";
 import { buildBreadcrumbJsonLd, buildPageMetadata, getAbsoluteUrl } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
 
@@ -25,7 +21,7 @@ type ReportDetailPageProps = {
 
 export async function generateMetadata({ params }: ReportDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const report = await getReportBySlug(slug);
+  const report = await contentSource.getReportBySlug(slug);
 
   if (!report) {
     return {
@@ -46,7 +42,7 @@ export async function generateMetadata({ params }: ReportDetailPageProps): Promi
 export default async function ReportDetailPage({ params }: ReportDetailPageProps) {
   const { slug } = await params;
   const [report, sidebar] = await Promise.all([
-    getReportBySlug(slug),
+    contentSource.getReportBySlug(slug),
     getSidebarSnapshot(),
   ]);
 
@@ -182,8 +178,8 @@ export default async function ReportDetailPage({ params }: ReportDetailPageProps
   }
 
   const [researchers, methodologies] = await Promise.all([
-    getResearchers(),
-    getMethodologies(),
+    contentSource.getResearchers(),
+    contentSource.getMethodologies(),
   ]);
   const relatedResearchers = researchers.filter((researcher) =>
     report.researcherSlugs.includes(researcher.slug),
