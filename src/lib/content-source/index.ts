@@ -7,9 +7,6 @@ import type { ContentSource, ContentSourceName } from "./types";
 
 export const DEFAULT_CONTENT_SOURCE: ContentSourceName = "microcms";
 
-// Keep fixed until the env-based migration phase intentionally connects it.
-export const contentSource: ContentSource = microcmsContentSource;
-
 export const availableContentSources = {
   microcms: microcmsContentSource,
   local: localPressContentSource,
@@ -37,6 +34,10 @@ export function selectContentSource(
 ): ContentSource {
   return availableContentSources[sourceName];
 }
+
+export const contentSource: ContentSource = selectContentSource(
+  getContentSourceNameFromEnv(),
+);
 
 export type {
   ContentSource,
