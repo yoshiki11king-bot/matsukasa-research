@@ -8,13 +8,9 @@ import { PublicShell } from "@/components/public-shell";
 import { StatusBanner } from "@/components/status-banner";
 import { StructuredData } from "@/components/structured-data";
 import { getChartsBySlug } from "@/lib/content/charts";
+import { contentSource } from "@/lib/content-source";
 import { estimateReadingTime, formatDate } from "@/lib/formatters";
-import {
-  cmsStatus,
-  getAllPostSlugs,
-  getPostBySlug,
-  getSidebarSnapshot,
-} from "@/lib/microcms";
+import { cmsStatus, getSidebarSnapshot } from "@/lib/microcms";
 import { buildBreadcrumbJsonLd, buildPageMetadata, getAbsoluteUrl } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
 import type { BlogPost } from "@/lib/types";
@@ -28,13 +24,13 @@ type PostPageProps = {
 };
 
 export async function generateStaticParams() {
-  const slugs = await getAllPostSlugs();
+  const slugs = await contentSource.getAllPostSlugs();
   return slugs.map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: PostPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const post = await getPostBySlug(slug);
+  const post = await contentSource.getPostBySlug(slug);
 
   if (!post) {
     return {
@@ -157,7 +153,7 @@ function ArticleShareRow({ slug }: { slug: string }) {
 export default async function PostPage({ params }: PostPageProps) {
   const { slug } = await params;
   const [post, sidebar] = await Promise.all([
-    getPostBySlug(slug),
+    contentSource.getPostBySlug(slug),
     getSidebarSnapshot(),
   ]);
 

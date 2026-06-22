@@ -6,7 +6,8 @@ import { PublicShell } from "@/components/public-shell";
 import { StatusBanner } from "@/components/status-banner";
 import { StructuredData } from "@/components/structured-data";
 import { buildArticlesHref, getPopularityScore, parseSelectedTopics } from "@/lib/articles-page";
-import { cmsStatus, getPostsPage, getSidebarSnapshot, getTopics } from "@/lib/microcms";
+import { contentSource } from "@/lib/content-source";
+import { cmsStatus, getSidebarSnapshot } from "@/lib/microcms";
 import {
   buildBreadcrumbJsonLd,
   buildCollectionPageJsonLd,
@@ -32,6 +33,18 @@ type HomePageProps = {
   }>;
 };
 
+async function getArticleTopics() {
+  if (!contentSource.getTopics) {
+    return [];
+  }
+
+  try {
+    return await contentSource.getTopics();
+  } catch {
+    return [];
+  }
+}
+
 export default async function ArticlesPage({ searchParams }: HomePageProps) {
   const resolvedSearchParams = (await searchParams) ?? {};
   const currentPage = Number(resolvedSearchParams.page ?? "1") || 1;
@@ -39,17 +52,17 @@ export default async function ArticlesPage({ searchParams }: HomePageProps) {
   const selectedTopics = parseSelectedTopics(resolvedSearchParams.topics);
 
   const [page, rankingSource, allTopics, sidebar] = await Promise.all([
-    getPostsPage({
+    contentSource.getPostsPage({
       page: currentPage,
       limit: 12,
       q: query || undefined,
       topics: selectedTopics,
     }),
-    getPostsPage({
+    contentSource.getPostsPage({
       page: 1,
       limit: 30,
     }),
-    getTopics(),
+    getArticleTopics(),
     getSidebarSnapshot(),
   ]);
 
