@@ -11,6 +11,25 @@ export function getFrontmatterStringArray(frontmatter: Frontmatter, key: string)
   return Array.isArray(value) ? value.map(String).filter(Boolean) : [];
 }
 
+export function parseFrontmatterTextList(value?: string | string[]) {
+  const raw = Array.isArray(value) ? value.join("\n") : value ?? "";
+
+  return raw
+    .split(/\n|,/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+export function getFrontmatterTextList(frontmatter: Frontmatter, key: string) {
+  const value = frontmatter[key];
+
+  if (Array.isArray(value)) {
+    return value.filter((item): item is string => typeof item === "string");
+  }
+
+  return typeof value === "string" ? parseFrontmatterTextList(value) : [];
+}
+
 export function getFrontmatterSourceLinks(frontmatter: Frontmatter): SourceLink[] {
   const value = frontmatter.referenceLinks;
 

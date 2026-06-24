@@ -1,4 +1,8 @@
 import { isPublishedDocument, listMarkdownDocuments, readMarkdownDocument } from "@/lib/content";
+import {
+  getFrontmatterString,
+  getFrontmatterTextList,
+} from "@/lib/content/frontmatter-helpers";
 import type { LocalMarkdownDocument } from "@/lib/content/types";
 import type { MethodologyEntry } from "@/lib/types";
 
@@ -15,45 +19,21 @@ export function getAllMethodologies() {
   return listMarkdownDocuments("methodologies");
 }
 
-function parseTextList(value?: string | string[]) {
-  const raw = Array.isArray(value) ? value.join("\n") : value ?? "";
-
-  return raw
-    .split(/\n|,/)
-    .map((item) => item.trim())
-    .filter(Boolean);
-}
-
-function frontmatterString(document: LocalMarkdownDocument, key: string, fallback = "") {
-  const value = document.frontmatter[key];
-  return typeof value === "string" ? value : fallback;
-}
-
-function frontmatterStringList(document: LocalMarkdownDocument, key: string) {
-  const value = document.frontmatter[key];
-
-  if (Array.isArray(value)) {
-    return value.filter((item): item is string => typeof item === "string");
-  }
-
-  return typeof value === "string" ? parseTextList(value) : [];
-}
-
 export function localMethodologyToEntry(document: LocalMarkdownDocument): MethodologyEntry {
   return {
     id: `local-${document.slug}`,
     slug: document.slug,
-    title: frontmatterString(document, "title", "Untitled"),
-    summary: frontmatterString(document, "summary"),
+    title: getFrontmatterString(document.frontmatter, "title", "Untitled"),
+    summary: getFrontmatterString(document.frontmatter, "summary"),
     updatedDate:
-      frontmatterString(document, "updatedAt") ||
-      frontmatterString(document, "publishedAt") ||
+      getFrontmatterString(document.frontmatter, "updatedAt") ||
+      getFrontmatterString(document.frontmatter, "publishedAt") ||
       new Date().toISOString(),
-    reviewer: frontmatterString(document, "reviewer", "松笠研究所"),
-    focusTopics: frontmatterStringList(document, "topics"),
-    goodFor: frontmatterStringList(document, "goodFor"),
-    limits: frontmatterStringList(document, "limits"),
-    sourceBasis: frontmatterString(document, "sourceNote", "Local Press"),
+    reviewer: getFrontmatterString(document.frontmatter, "reviewer", "松笠研究所"),
+    focusTopics: getFrontmatterTextList(document.frontmatter, "topics"),
+    goodFor: getFrontmatterTextList(document.frontmatter, "goodFor"),
+    limits: getFrontmatterTextList(document.frontmatter, "limits"),
+    sourceBasis: getFrontmatterString(document.frontmatter, "sourceNote", "Local Press"),
     body: document.body,
     isDemo: false,
     isLocalPress: true,
