@@ -6,9 +6,9 @@ import { RichTextBody } from "@/components/post-body";
 import { PublicShell } from "@/components/public-shell";
 import { SectionHeading } from "@/components/section-heading";
 import { StructuredData } from "@/components/structured-data";
-import { getChartsBySlug } from "@/lib/content/charts";
+import { contentSource } from "@/lib/content-source";
 import { formatDate } from "@/lib/formatters";
-import { getCurrentDirectorPage, getSidebarSnapshot } from "@/lib/microcms";
+import { getSidebarSnapshot } from "@/lib/microcms";
 import { buildBreadcrumbJsonLd, buildPageMetadata, buildWebPageJsonLd } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
@@ -21,7 +21,10 @@ export const metadata: Metadata = buildPageMetadata({
 export const revalidate = 3600;
 
 export default async function DirectorPage() {
-  const [page, sidebar] = await Promise.all([getCurrentDirectorPage(), getSidebarSnapshot()]);
+  const [page, sidebar] = await Promise.all([
+    contentSource.getCurrentDirectorPage(),
+    getSidebarSnapshot(),
+  ]);
 
   if (!page) {
     notFound();
@@ -37,7 +40,10 @@ export default async function DirectorPage() {
     }),
     buildBreadcrumbJsonLd([{ name: "所長", path: "/director" }]),
   ];
-  const charts = page.isLocalPress ? await getChartsBySlug() : {};
+  const charts =
+    page.isLocalPress && contentSource.getChartsBySlug
+      ? await contentSource.getChartsBySlug()
+      : {};
 
   return (
     <PublicShell

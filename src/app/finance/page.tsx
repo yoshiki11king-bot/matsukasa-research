@@ -5,11 +5,11 @@ import { RichTextBody } from "@/components/post-body";
 import { PublicShell } from "@/components/public-shell";
 import { SectionHeading } from "@/components/section-heading";
 import { StructuredData } from "@/components/structured-data";
-import { getChartsBySlug } from "@/lib/content/charts";
+import { contentSource } from "@/lib/content-source";
 import { formatDate } from "@/lib/formatters";
-import { getCurrentFinancePage, getFinancialStatements, getReports, getSidebarSnapshot } from "@/lib/microcms";
+import { getSidebarSnapshot } from "@/lib/microcms";
 import { buildBreadcrumbJsonLd, buildPageMetadata, buildWebPageJsonLd } from "@/lib/seo";
-import type { ResearchReport } from "@/lib/types";
+import type { FinancialStatement, ResearchReport } from "@/lib/types";
 
 export const metadata: Metadata = buildPageMetadata({
   title: "財務情報",
@@ -98,16 +98,16 @@ function getVisibleStatements(reports: ResearchReport[]) {
   );
 }
 
-function getVisibleFinancialStatements(statements: Awaited<ReturnType<typeof getFinancialStatements>>) {
+function getVisibleFinancialStatements(statements: FinancialStatement[]) {
   const now = Date.now();
   return statements.filter((statement) => new Date(statement.publishedDate).getTime() <= now);
 }
 
 export default async function FinancePage() {
   const [financePage, reports, statements, sidebar] = await Promise.all([
-    getCurrentFinancePage(),
-    getReports(),
-    getFinancialStatements(),
+    contentSource.getCurrentFinancePage(),
+    contentSource.getReports(),
+    contentSource.getFinancialStatements(),
     getSidebarSnapshot(),
   ]);
   const pageContent = financePage ?? financePageContent;
@@ -135,7 +135,10 @@ export default async function FinancePage() {
   );
   const latestStatement = sortedStatements[0] ?? null;
   const isLocalPressFinance = "isLocalPress" in pageContent && Boolean(pageContent.isLocalPress);
-  const charts = isLocalPressFinance ? await getChartsBySlug() : {};
+  const charts =
+    isLocalPressFinance && contentSource.getChartsBySlug
+      ? await contentSource.getChartsBySlug()
+      : {};
   const structuredData = [
     buildWebPageJsonLd({
       name: pageContent.title,

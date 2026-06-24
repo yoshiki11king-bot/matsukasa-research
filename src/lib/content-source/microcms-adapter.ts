@@ -3,6 +3,7 @@ import "server-only";
 import {
   cmsStatus,
   getAllPostSlugs,
+  getCurrentDirectorPage,
   getCurrentFinancePage,
   getFinancialStatements,
   getMethodologies,
@@ -15,6 +16,11 @@ import {
   getResearchers,
   getTopics,
 } from "@/lib/microcms";
+import {
+  getAllCharts as getLocalCharts,
+  getChartBySlug as getLocalChartBySlug,
+  getChartsBySlug as getLocalChartsBySlug,
+} from "@/lib/content/charts";
 import type { ContentSource, SourceOptions } from "@/lib/content-source/types";
 
 function toMicroCMSOptions(options?: SourceOptions) {
@@ -45,8 +51,18 @@ export const microcmsContentSource: ContentSource = {
 
   getTopics: (options) => getTopics(toMicroCMSOptions(options)),
 
+  getCurrentDirectorPage: () => getCurrentDirectorPage(),
+
   getFinancialStatements: () => getFinancialStatements(),
+  getFinancialStatementByYear: async (year) => {
+    const statements = await getFinancialStatements();
+    return statements.find((statement) => statement.fiscalYear === year || statement.slug === year) ?? null;
+  },
   getCurrentFinancePage: () => getCurrentFinancePage(),
+
+  getCharts: () => getLocalCharts(),
+  getChartBySlug: (slug) => getLocalChartBySlug(slug),
+  getChartsBySlug: () => getLocalChartsBySlug(),
 
   getHealth: () => ({
     name: "microcms",

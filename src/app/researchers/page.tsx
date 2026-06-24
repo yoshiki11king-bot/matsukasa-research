@@ -3,7 +3,8 @@ import { CollectionEmptyState } from "@/components/collection-empty-state";
 import { PublicShell } from "@/components/public-shell";
 import { ResearcherCard } from "@/components/researcher-card";
 import { StructuredData } from "@/components/structured-data";
-import { getResearchers, getSidebarSnapshot } from "@/lib/microcms";
+import { contentSource } from "@/lib/content-source";
+import { getSidebarSnapshot } from "@/lib/microcms";
 import {
   buildBreadcrumbJsonLd,
   buildCollectionPageJsonLd,
@@ -22,7 +23,7 @@ export const metadata: Metadata = buildPageMetadata({
 });
 
 export default async function ResearchersPage() {
-  const [researchers, sidebar] = await Promise.all([getResearchers(), getSidebarSnapshot()]);
+  const [researchers, sidebar] = await Promise.all([contentSource.getResearchers(), getSidebarSnapshot()]);
   const structuredData = [
     buildCollectionPageJsonLd({
       name: "研究員",

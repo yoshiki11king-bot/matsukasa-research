@@ -3,7 +3,8 @@ import { CollectionEmptyState } from "@/components/collection-empty-state";
 import { MethodologyCard } from "@/components/methodology-card";
 import { PublicShell } from "@/components/public-shell";
 import { StructuredData } from "@/components/structured-data";
-import { getMethodologies, getSidebarSnapshot } from "@/lib/microcms";
+import { contentSource } from "@/lib/content-source";
+import { getSidebarSnapshot } from "@/lib/microcms";
 import {
   buildBreadcrumbJsonLd,
   buildCollectionPageJsonLd,
@@ -22,7 +23,7 @@ export const metadata: Metadata = buildPageMetadata({
 });
 
 export default async function MethodologiesPage() {
-  const [methodologies, sidebar] = await Promise.all([getMethodologies(), getSidebarSnapshot()]);
+  const [methodologies, sidebar] = await Promise.all([contentSource.getMethodologies(), getSidebarSnapshot()]);
   const structuredData = [
     buildCollectionPageJsonLd({
       name: "方法論",

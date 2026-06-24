@@ -4,8 +4,8 @@ import { notFound } from "next/navigation";
 import { FinancialStatementRenderer } from "@/components/content/FinancialStatementRenderer";
 import { PublicShell } from "@/components/public-shell";
 import { StructuredData } from "@/components/structured-data";
-import { getChartsBySlug } from "@/lib/content/charts";
-import { getFinancialStatements, getSidebarSnapshot } from "@/lib/microcms";
+import { contentSource } from "@/lib/content-source";
+import { getSidebarSnapshot } from "@/lib/microcms";
 import { buildBreadcrumbJsonLd, buildPageMetadata, buildWebPageJsonLd } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
 
@@ -15,8 +15,9 @@ type PageProps = {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { year } = await params;
-  const statements = await getFinancialStatements();
-  const statement = statements.find((item) => item.fiscalYear === year || item.slug === year);
+  const statement = contentSource.getFinancialStatementByYear
+    ? await contentSource.getFinancialStatementByYear(year)
+    : null;
 
   if (!statement) {
     return {
@@ -35,12 +36,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function FinancialStatementPage({ params }: PageProps) {
   const { year } = await params;
-  const [statements, sidebar, charts] = await Promise.all([
-    getFinancialStatements(),
+  const [statement, sidebar, charts] = await Promise.all([
+    contentSource.getFinancialStatementByYear
+      ? contentSource.getFinancialStatementByYear(year)
+      : null,
     getSidebarSnapshot(),
-    getChartsBySlug(),
+    contentSource.getChartsBySlug ? contentSource.getChartsBySlug() : {},
   ]);
-  const statement = statements.find((item) => item.fiscalYear === year || item.slug === year);
 
   if (!statement) {
     notFound();

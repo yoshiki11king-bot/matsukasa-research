@@ -10,24 +10,31 @@ import {
   getPublishedLocalFinancialStatements,
   localFinancialStatementToContent,
 } from "@/lib/content/financial-statements";
+import {
+  getAllCharts as getLocalCharts,
+  getChartBySlug as getLocalChartBySlug,
+  getChartsBySlug as getLocalChartsBySlug,
+} from "@/lib/content/charts";
+import { getPublishedLocalDirectorPageContent } from "@/lib/content/director";
 import { getPublishedLocalFinancePageContent } from "@/lib/content/finance";
+import {
+  getPublishedLocalMethodologies,
+  getPublishedMethodologyBySlug,
+  localMethodologyToEntry,
+} from "@/lib/content/methodologies";
+import {
+  getPublishedLocalResearchers,
+  getResearcherBySlug as getLocalResearcherBySlug,
+  localResearcherToProfile,
+} from "@/lib/content/researchers";
 import {
   getPublishedLocalResearchReports,
   getPublishedReportBySlug,
   localReportToResearchReport,
 } from "@/lib/content/reports";
+import { getPublishedLocalTopics } from "@/lib/content/topics";
 import type { ContentSource, PostsPageParams } from "@/lib/content-source/types";
-import type {
-  BlogPost,
-  FinancialStatement,
-  InstituteTopic,
-  MethodologyEntry,
-  ResearcherProfile,
-} from "@/lib/types";
-
-function notImplemented<T>(methodName: string): Promise<T> {
-  throw new Error(`Local Press content source does not implement ${methodName} yet.`);
-}
+import type { BlogPost, FinancialStatement } from "@/lib/types";
 
 function sortByPublishedDate<T extends { publishedDate: string }>(items: T[]) {
   return [...items].sort((left, right) => {
@@ -116,13 +123,21 @@ export const localPressContentSource: ContentSource = {
     return document ? localReportToResearchReport(document) : null;
   },
 
-  getResearchers: () => notImplemented<ResearcherProfile[]>("getResearchers"),
-  getResearcherBySlug: () => notImplemented<ResearcherProfile | null>("getResearcherBySlug"),
+  getResearchers: () => getPublishedLocalResearchers(),
+  getResearcherBySlug: async (slug) => {
+    const researcher = await getLocalResearcherBySlug(slug);
+    return researcher ? localResearcherToProfile(researcher) : null;
+  },
 
-  getMethodologies: () => notImplemented<MethodologyEntry[]>("getMethodologies"),
-  getMethodologyBySlug: () => notImplemented<MethodologyEntry | null>("getMethodologyBySlug"),
+  getMethodologies: () => getPublishedLocalMethodologies(),
+  getMethodologyBySlug: async (slug) => {
+    const document = await getPublishedMethodologyBySlug(slug);
+    return document ? localMethodologyToEntry(document) : null;
+  },
 
-  getTopics: () => notImplemented<InstituteTopic[]>("getTopics"),
+  getTopics: () => getPublishedLocalTopics(),
+
+  getCurrentDirectorPage: () => getPublishedLocalDirectorPageContent(),
 
   getFinancialStatements: async () => sortFinancialStatements(await getPublishedLocalFinancialStatements()),
   getFinancialStatementByYear: async (year) => {
@@ -131,6 +146,10 @@ export const localPressContentSource: ContentSource = {
   },
 
   getCurrentFinancePage: () => getPublishedLocalFinancePageContent(),
+
+  getCharts: () => getLocalCharts(),
+  getChartBySlug: (slug) => getLocalChartBySlug(slug),
+  getChartsBySlug: () => getLocalChartsBySlug(),
 
   getHealth: () => ({
     name: "local",

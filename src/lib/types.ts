@@ -130,6 +130,7 @@ export type ResearcherProfile = {
   email?: string;
   sourceBasis: string;
   isDemo?: boolean;
+  isLocalPress?: boolean;
 };
 
 export type MethodologyEntry = {
@@ -145,6 +146,7 @@ export type MethodologyEntry = {
   sourceBasis: string;
   body: string;
   isDemo?: boolean;
+  isLocalPress?: boolean;
 };
 
 export type ResearchReport = {

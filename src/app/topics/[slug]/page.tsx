@@ -6,14 +6,8 @@ import { CollectionEmptyState } from "@/components/collection-empty-state";
 import { PostCard } from "@/components/post-card";
 import { PublicShell } from "@/components/public-shell";
 import { StructuredData } from "@/components/structured-data";
-import {
-  getMethodologies,
-  getPostsPage,
-  getReports,
-  getResearchers,
-  getSidebarSnapshot,
-  getTopics,
-} from "@/lib/microcms";
+import { contentSource } from "@/lib/content-source";
+import { getSidebarSnapshot } from "@/lib/microcms";
 import {
   buildBreadcrumbJsonLd,
   buildCollectionPageJsonLd,
@@ -43,7 +37,7 @@ export function generateStaticParams() {
 }
 
 async function resolveTopic(slug: string) {
-  const topics = await getTopics();
+  const topics = contentSource.getTopics ? await contentSource.getTopics() : [];
   const topic = topics.find((entry) => getTopicSlug(entry.name) === slug);
 
   if (!topic && !getTopicDefinitionBySlug(slug)) {
@@ -85,14 +79,14 @@ export default async function TopicPage({ params }: TopicPageProps) {
   }
 
   const [postsPage, reports, methodologies, researchers, sidebar] = await Promise.all([
-    getPostsPage({
+    contentSource.getPostsPage({
       page: 1,
       limit: 24,
       topics: [topic.name],
     }),
-    getReports(),
-    getMethodologies(),
-    getResearchers(),
+    contentSource.getReports(),
+    contentSource.getMethodologies(),
+    contentSource.getResearchers(),
     getSidebarSnapshot(),
   ]);
 

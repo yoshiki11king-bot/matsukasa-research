@@ -69,10 +69,16 @@ export const wordpressContentSource: ContentSource = {
 
   getTopics: () => notImplemented("getTopics"),
 
+  getCurrentDirectorPage: () => notImplemented("getCurrentDirectorPage"),
+
   getFinancialStatements: () => notImplemented("getFinancialStatements"),
   getFinancialStatementByYear: () => notImplemented("getFinancialStatementByYear"),
 
   getCurrentFinancePage: () => notImplemented("getCurrentFinancePage"),
+
+  getCharts: () => notImplemented("getCharts"),
+  getChartBySlug: () => notImplemented("getChartBySlug"),
+  getChartsBySlug: () => notImplemented("getChartsBySlug"),
 
   getHealth: (): WordPressContentSourceHealth => ({
     name: "wordpress",

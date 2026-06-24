@@ -2,17 +2,14 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ResearcherRenderer } from "@/components/content/ResearcherRenderer";
 import { RichTextBody } from "@/components/post-body";
 import { PublicShell } from "@/components/public-shell";
 import { StructuredData } from "@/components/structured-data";
-import { getResearcherBySlug as getLocalResearcherBySlug } from "@/lib/content/researchers";
+import { contentSource } from "@/lib/content-source";
 import { formatDate } from "@/lib/formatters";
 import {
-  getMethodologies,
   getPostsByResearcher,
   getReportsByResearcher,
-  getResearcherBySlug as getMicrocmsResearcherBySlug,
   getSidebarSnapshot,
 } from "@/lib/microcms";
 import { buildBreadcrumbJsonLd, buildPageMetadata, getAbsoluteUrl } from "@/lib/seo";
@@ -28,20 +25,9 @@ export async function generateMetadata({
   params,
 }: ResearcherDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const localResearcher = await getLocalResearcherBySlug(slug);
-
-  if (localResearcher) {
-    return buildPageMetadata({
-      title: localResearcher.name,
-      description: localResearcher.bio,
-      path: `/researchers/${localResearcher.slug}`,
-      type: "profile",
-      keywords: [localResearcher.role, localResearcher.affiliation, ...localResearcher.interests].filter(Boolean),
-      imageUrl: localResearcher.avatarUrl || undefined,
-    });
-  }
-
-  const researcher = await getMicrocmsResearcherBySlug(slug);
+  const researcher = contentSource.getResearcherBySlug
+    ? await contentSource.getResearcherBySlug(slug)
+    : null;
 
   if (!researcher) {
     return {
@@ -62,31 +48,12 @@ export async function generateMetadata({
 export default async function ResearcherDetailPage({ params }: ResearcherDetailPageProps) {
   const { slug } = await params;
   const [researcher, posts, reports, methodologies, sidebar] = await Promise.all([
-    getMicrocmsResearcherBySlug(slug),
+    contentSource.getResearcherBySlug ? contentSource.getResearcherBySlug(slug) : null,
     getPostsByResearcher(slug),
     getReportsByResearcher(slug),
-    getMethodologies(),
+    contentSource.getMethodologies(),
     getSidebarSnapshot(),
   ]);
-  const localResearcher = await getLocalResearcherBySlug(slug);
-
-  if (localResearcher) {
-    return (
-      <PublicShell
-        researchers={sidebar.featuredResearchers}
-        methodologies={sidebar.featuredMethodologies}
-        reports={sidebar.featuredReports}
-        showSidebar={false}
-      >
-        <div className="mx-auto max-w-5xl space-y-8">
-          <Link href="/researchers" className="text-sm font-medium text-[color:var(--color-accent-ink)] transition hover:text-[color:var(--color-accent-ink)]">
-            ← 研究員一覧へ戻る
-          </Link>
-          <ResearcherRenderer researcher={localResearcher} />
-        </div>
-      </PublicShell>
-    );
-  }
 
   if (!researcher) {
     notFound();

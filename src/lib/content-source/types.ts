@@ -1,5 +1,6 @@
 import type {
   BlogPost,
+  DirectorPageContent,
   FinancePageContent,
   FinancialStatement,
   InstituteTopic,
@@ -8,6 +9,7 @@ import type {
   ResearchReport,
   ResearcherProfile,
 } from "@/lib/types";
+import type { LocalChart, LocalChartsBySlug } from "@/lib/content/types";
 
 export type ContentSourceName = "microcms" | "local" | "wordpress";
 
@@ -61,10 +63,16 @@ export interface ContentSource {
 
   getTopics?(options?: SourceOptions): Promise<InstituteTopic[]>;
 
+  getCurrentDirectorPage(options?: SourceOptions): Promise<DirectorPageContent | null>;
+
   getFinancialStatements(options?: SourceOptions): Promise<FinancialStatement[]>;
   getFinancialStatementByYear?(year: string, options?: SourceOptions): Promise<FinancialStatement | null>;
 
   getCurrentFinancePage(options?: SourceOptions): Promise<FinancePageContent | null>;
+
+  getCharts?(options?: SourceOptions): Promise<LocalChart[]>;
+  getChartBySlug?(slug: string, options?: SourceOptions): Promise<LocalChart | null>;
+  getChartsBySlug?(options?: SourceOptions): Promise<LocalChartsBySlug>;
 
   getHealth?(): ContentSourceHealth;
 }

@@ -7,7 +7,6 @@ import { PostBody } from "@/components/post-body";
 import { PublicShell } from "@/components/public-shell";
 import { StatusBanner } from "@/components/status-banner";
 import { StructuredData } from "@/components/structured-data";
-import { getChartsBySlug } from "@/lib/content/charts";
 import { contentSource } from "@/lib/content-source";
 import { estimateReadingTime, formatDate } from "@/lib/formatters";
 import { cmsStatus, getSidebarSnapshot } from "@/lib/microcms";
@@ -163,7 +162,10 @@ export default async function PostPage({ params }: PostPageProps) {
 
   const readingSource = getReadingSource(post);
   const readingMinutes = estimateReadingTime(readingSource);
-  const charts = post.isLocalPress ? await getChartsBySlug() : {};
+  const charts =
+    post.isLocalPress && contentSource.getChartsBySlug
+      ? await contentSource.getChartsBySlug()
+      : {};
   const articleJsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",

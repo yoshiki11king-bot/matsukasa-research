@@ -12,15 +12,13 @@ import {
 } from "@/lib/demo-content";
 import { normalizeHeadingLevel } from "@/lib/content-blocks";
 import { getPublishedLocalArticlePosts } from "@/lib/content/articles";
-import { isPublishedDocument } from "@/lib/content";
 import { getPublishedLocalDirectorPageContent } from "@/lib/content/director";
 import { getPublishedLocalFinancePageContent } from "@/lib/content/finance";
 import { getPublishedLocalFinancialStatements } from "@/lib/content/financial-statements";
-import { getAllMethodologies as getAllLocalMethodologyDocuments } from "@/lib/content/methodologies";
-import { getAllResearchers as getAllLocalResearchers } from "@/lib/content/researchers";
+import { getPublishedLocalMethodologies } from "@/lib/content/methodologies";
+import { getPublishedLocalResearchers } from "@/lib/content/researchers";
 import { getPublishedLocalResearchReports } from "@/lib/content/reports";
 import { parseD3ChartBlock } from "@/lib/d3-chart";
-import type { LocalMarkdownDocument, LocalResearcher } from "@/lib/content/types";
 import type {
   AdminCollectionKey,
   AdminDirectorPage,
@@ -593,25 +591,6 @@ function normalizeResearcher(researcher: MicroCMSResearcher): ResearcherProfile 
   };
 }
 
-function localResearcherToProfile(researcher: LocalResearcher): ResearcherProfile {
-  return {
-    id: `local-${researcher.slug}`,
-    slug: researcher.slug,
-    name: researcher.name || "No Name",
-    role: researcher.role || "研究員",
-    team: researcher.affiliation || "研究ユニット",
-    summary: researcher.bio,
-    bio: researcher.bio,
-    portraitImage: researcher.avatarUrl ? { url: researcher.avatarUrl, alt: researcher.name } : null,
-    focusTopics: researcher.interests,
-    methodologySlugs: [],
-    updatedDate: new Date().toISOString(),
-    email: "",
-    sourceBasis: "Local Press",
-    isDemo: false,
-  };
-}
-
 function normalizeMethodology(methodology: MicroCMSMethodology): MethodologyEntry {
   return {
     id: methodology.id,
@@ -625,41 +604,6 @@ function normalizeMethodology(methodology: MicroCMSMethodology): MethodologyEntr
     limits: parseTextList(methodology.limitsText),
     sourceBasis: methodology.sourceBasis ?? "",
     body: methodology.body ?? "",
-    isDemo: false,
-  };
-}
-
-function frontmatterString(document: LocalMarkdownDocument, key: string, fallback = "") {
-  const value = document.frontmatter[key];
-  return typeof value === "string" ? value : fallback;
-}
-
-function frontmatterStringList(document: LocalMarkdownDocument, key: string) {
-  const value = document.frontmatter[key];
-
-  if (Array.isArray(value)) {
-    return value.filter((item): item is string => typeof item === "string");
-  }
-
-  return typeof value === "string" ? parseTextList(value) : [];
-}
-
-function localMethodologyToEntry(document: LocalMarkdownDocument): MethodologyEntry {
-  return {
-    id: `local-${document.slug}`,
-    slug: document.slug,
-    title: frontmatterString(document, "title", "Untitled"),
-    summary: frontmatterString(document, "summary"),
-    updatedDate:
-      frontmatterString(document, "updatedAt") ||
-      frontmatterString(document, "publishedAt") ||
-      new Date().toISOString(),
-    reviewer: frontmatterString(document, "reviewer", "松笠研究所"),
-    focusTopics: frontmatterStringList(document, "topics"),
-    goodFor: frontmatterStringList(document, "goodFor"),
-    limits: frontmatterStringList(document, "limits"),
-    sourceBasis: frontmatterString(document, "sourceNote", "Local Press"),
-    body: document.body,
     isDemo: false,
   };
 }
@@ -1006,9 +950,9 @@ export async function getPostsByMethodology(slug: string) {
 export async function getResearchers(options?: PublicCollectionOptions) {
   const [remoteResearchers, localResearchers] = await Promise.all([
     getAllCollectionItems("researchers", options),
-    getAllLocalResearchers(),
+    getPublishedLocalResearchers(),
   ]);
-  const merged = [...localResearchers.map(localResearcherToProfile), ...remoteResearchers];
+  const merged = [...localResearchers, ...remoteResearchers];
   return Array.from(new Map(merged.map((researcher) => [researcher.slug, researcher])).values());
 }
 
@@ -1018,11 +962,10 @@ export async function getResearcherBySlug(slug: string) {
 }
 
 export async function getMethodologies(options?: PublicCollectionOptions) {
-  const [remoteMethodologies, localDocuments] = await Promise.all([
+  const [remoteMethodologies, localMethodologies] = await Promise.all([
     getAllCollectionItems("methodologies", options),
-    getAllLocalMethodologyDocuments(),
+    getPublishedLocalMethodologies(),
   ]);
-  const localMethodologies = localDocuments.filter(isPublishedDocument).map(localMethodologyToEntry);
   const merged = [...localMethodologies, ...remoteMethodologies];
   return Array.from(new Map(merged.map((entry) => [entry.slug, entry])).values());
 }

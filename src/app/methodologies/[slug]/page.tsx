@@ -1,15 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { MethodologyRenderer } from "@/components/content/MethodologyRenderer";
+import { MarkdownRenderer } from "@/components/content/MarkdownRenderer";
 import { RichTextBody } from "@/components/post-body";
 import { PublicShell } from "@/components/public-shell";
 import { StructuredData } from "@/components/structured-data";
-import { getChartsBySlug } from "@/lib/content/charts";
-import { getPublishedMethodologyBySlug } from "@/lib/content/methodologies";
+import { contentSource } from "@/lib/content-source";
 import { formatDate } from "@/lib/formatters";
 import {
-  getMethodologyBySlug as getMicrocmsMethodologyBySlug,
   getPostsByMethodology,
   getReportsByMethodology,
   getSidebarSnapshot,
@@ -27,22 +25,9 @@ export async function generateMetadata({
   params,
 }: MethodologyDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const localEntry = await getPublishedMethodologyBySlug(slug);
-
-  if (localEntry) {
-    const title = typeof localEntry.frontmatter.title === "string" ? localEntry.frontmatter.title : "方法論";
-    const summary = typeof localEntry.frontmatter.summary === "string" ? localEntry.frontmatter.summary : "";
-
-    return buildPageMetadata({
-      title,
-      description: summary,
-      path: `/methodologies/${localEntry.slug}`,
-      type: "article",
-      keywords: ["方法論"],
-    });
-  }
-
-  const entry = await getMicrocmsMethodologyBySlug(slug);
+  const entry = contentSource.getMethodologyBySlug
+    ? await contentSource.getMethodologyBySlug(slug)
+    : null;
 
   if (!entry) {
     return {
@@ -62,14 +47,21 @@ export async function generateMetadata({
 export default async function MethodologyDetailPage({ params }: MethodologyDetailPageProps) {
   const { slug } = await params;
   const [entry, posts, reports, sidebar] = await Promise.all([
-    getMicrocmsMethodologyBySlug(slug),
+    contentSource.getMethodologyBySlug ? contentSource.getMethodologyBySlug(slug) : null,
     getPostsByMethodology(slug),
     getReportsByMethodology(slug),
     getSidebarSnapshot(),
   ]);
-  const localEntry = await getPublishedMethodologyBySlug(slug);
 
-  if (localEntry) {
+  if (!entry) {
+    notFound();
+  }
+
+  if (entry.isLocalPress) {
+    const charts = contentSource.getChartsBySlug
+      ? await contentSource.getChartsBySlug()
+      : {};
+
     return (
       <PublicShell
         researchers={sidebar.featuredResearchers}
@@ -81,14 +73,22 @@ export default async function MethodologyDetailPage({ params }: MethodologyDetai
           <Link href="/methodologies" className="text-sm font-medium text-[color:var(--color-accent-ink)] transition hover:text-[color:var(--color-accent-ink)]">
             ← 方法論一覧へ戻る
           </Link>
-          <MethodologyRenderer document={localEntry} charts={await getChartsBySlug()} />
+          <article className="mx-auto w-full max-w-4xl space-y-10 bg-white px-5 py-10 sm:px-8 lg:px-0">
+            <header className="space-y-5 border-b border-[color:var(--color-border)] pb-8">
+              <div className="flex flex-wrap gap-2 text-xs font-semibold tracking-[0.16em] text-[color:var(--color-muted)]">
+                <span>METHODOLOGY</span>
+                <time dateTime={entry.updatedDate}>{formatDate(entry.updatedDate)}</time>
+              </div>
+              <h1 className="font-editorial text-4xl font-semibold leading-tight tracking-tight text-[color:var(--color-primary)] md:text-5xl">
+                {entry.title}
+              </h1>
+              {entry.summary ? <p className="text-lg leading-9 text-[color:var(--color-secondary-ink)]">{entry.summary}</p> : null}
+            </header>
+            <MarkdownRenderer body={entry.body} charts={charts} />
+          </article>
         </div>
       </PublicShell>
     );
-  }
-
-  if (!entry) {
-    notFound();
   }
 
   const structuredData = [

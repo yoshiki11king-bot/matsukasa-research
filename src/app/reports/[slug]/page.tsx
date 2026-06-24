@@ -6,7 +6,6 @@ import { MarkdownRenderer } from "@/components/content/MarkdownRenderer";
 import { PostBody } from "@/components/post-body";
 import { PublicShell } from "@/components/public-shell";
 import { StructuredData } from "@/components/structured-data";
-import { getChartsBySlug } from "@/lib/content/charts";
 import { contentSource } from "@/lib/content-source";
 import { formatDate } from "@/lib/formatters";
 import { getSidebarSnapshot } from "@/lib/microcms";
@@ -82,7 +81,9 @@ export default async function ReportDetailPage({ params }: ReportDetailPageProps
   ];
 
   if (report.isLocalPress) {
-    const charts = await getChartsBySlug();
+    const charts = contentSource.getChartsBySlug
+      ? await contentSource.getChartsBySlug()
+      : {};
 
     return (
       <PublicShell
