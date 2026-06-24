@@ -172,6 +172,21 @@ export type ResearchReport = {
   isLocalPress?: boolean;
 };
 
+export type ShortReadingEntry = {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  publishedDate: string;
+  updatedDate: string;
+  topicNames: string[];
+  authors: string[];
+  readingTime: string;
+  body: string;
+  isDemo?: boolean;
+  isLocalPress?: boolean;
+};
+
 export type DirectorPageContent = {
   id: string;
   slug: string;

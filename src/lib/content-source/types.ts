@@ -8,6 +8,7 @@ import type {
   PostsPage,
   ResearchReport,
   ResearcherProfile,
+  ShortReadingEntry,
 } from "@/lib/types";
 import type { LocalChart, LocalChartsBySlug } from "@/lib/content/types";
 
@@ -73,6 +74,9 @@ export interface ContentSource {
   getCharts?(options?: SourceOptions): Promise<LocalChart[]>;
   getChartBySlug?(slug: string, options?: SourceOptions): Promise<LocalChart | null>;
   getChartsBySlug?(options?: SourceOptions): Promise<LocalChartsBySlug>;
+
+  getShortReadings?(options?: SourceOptions): Promise<ShortReadingEntry[]>;
+  getShortReadingBySlug?(slug: string, options?: SourceOptions): Promise<ShortReadingEntry | null>;
 
   getHealth?(): ContentSourceHealth;
 }

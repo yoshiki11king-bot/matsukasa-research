@@ -32,6 +32,11 @@ import {
   getPublishedReportBySlug,
   localReportToResearchReport,
 } from "@/lib/content/reports";
+import {
+  getPublishedLocalShortReadings,
+  getPublishedShortReadingBySlug,
+  localShortReadingToEntry,
+} from "@/lib/content/short-readings";
 import { getPublishedLocalTopics } from "@/lib/content/topics";
 import type { ContentSource, PostsPageParams } from "@/lib/content-source/types";
 import type { BlogPost, FinancialStatement } from "@/lib/types";
@@ -150,6 +155,12 @@ export const localPressContentSource: ContentSource = {
   getCharts: () => getLocalCharts(),
   getChartBySlug: (slug) => getLocalChartBySlug(slug),
   getChartsBySlug: () => getLocalChartsBySlug(),
+
+  getShortReadings: () => getPublishedLocalShortReadings(),
+  getShortReadingBySlug: async (slug) => {
+    const document = await getPublishedShortReadingBySlug(slug);
+    return document ? localShortReadingToEntry(document) : null;
+  },
 
   getHealth: () => ({
     name: "local",
