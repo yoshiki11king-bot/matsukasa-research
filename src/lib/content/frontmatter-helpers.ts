@@ -1,5 +1,5 @@
 import type { Frontmatter } from "@/lib/content/frontmatter";
-import type { FigureAttachment, SourceLink } from "@/lib/types";
+import type { FigureAttachment, LabeledTextBlock, SourceLink } from "@/lib/types";
 
 export function getFrontmatterString(frontmatter: Frontmatter, key: string, fallback = "") {
   const value = frontmatter[key];
@@ -28,6 +28,26 @@ export function getFrontmatterTextList(frontmatter: Frontmatter, key: string) {
   }
 
   return typeof value === "string" ? parseFrontmatterTextList(value) : [];
+}
+
+export function getFrontmatterLabeledBlocks(frontmatter: Frontmatter, key: string): LabeledTextBlock[] {
+  const value = frontmatter[key];
+
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.flatMap((item) => {
+    if (!item || typeof item !== "object") {
+      return [];
+    }
+
+    const entry = item as Record<string, unknown>;
+    const title = typeof entry.title === "string" ? entry.title : "";
+    const body = typeof entry.body === "string" ? entry.body : "";
+
+    return title || body ? [{ title, body }] : [];
+  });
 }
 
 export function getFrontmatterSourceLinks(frontmatter: Frontmatter): SourceLink[] {

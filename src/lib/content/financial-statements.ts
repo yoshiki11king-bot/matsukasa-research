@@ -1,4 +1,8 @@
 import { isPublishedDocument, listMarkdownDocuments, readMarkdownDocument } from "@/lib/content";
+import {
+  getFrontmatterString,
+  getFrontmatterStringArray,
+} from "@/lib/content/frontmatter-helpers";
 import type { LocalMarkdownDocument } from "@/lib/content/types";
 import type { FinancialStatement } from "@/lib/types";
 
@@ -15,37 +19,27 @@ export function getAllFinancialStatements() {
   return listMarkdownDocuments("financial-statements");
 }
 
-function getString(document: LocalMarkdownDocument, key: string, fallback = "") {
-  const value = document.frontmatter[key];
-  return typeof value === "string" || typeof value === "number" ? String(value) : fallback;
-}
-
-function getStringArray(document: LocalMarkdownDocument, key: string) {
-  const value = document.frontmatter[key];
-  return Array.isArray(value) ? value.map(String).filter(Boolean) : [];
-}
-
 export function localFinancialStatementToContent(document: LocalMarkdownDocument): FinancialStatement {
-  const year = getString(document, "year", document.slug);
+  const year = getFrontmatterString(document.frontmatter, "year", document.slug);
   const publishedDate =
-    getString(document, "publishedAt") ||
-    getString(document, "updatedAt") ||
+    getFrontmatterString(document.frontmatter, "publishedAt") ||
+    getFrontmatterString(document.frontmatter, "updatedAt") ||
     new Date().toISOString();
 
   return {
     id: `local-financial-statement-${document.slug}`,
     slug: document.slug,
-    title: getString(document, "title", `${year}年度 決算資料`),
+    title: getFrontmatterString(document.frontmatter, "title", `${year}年度 決算資料`),
     fiscalYear: year,
     summary:
-      getString(document, "summary") ||
-      getString(document, "excerpt") ||
+      getFrontmatterString(document.frontmatter, "summary") ||
+      getFrontmatterString(document.frontmatter, "excerpt") ||
       `${year}年度の決算資料です。`,
     publishedDate,
-    updatedDate: getString(document, "updatedAt", publishedDate),
-    pdfUrl: getString(document, "pdfUrl"),
-    sourceBasis: getString(document, "sourceNote", "Local Press"),
-    highlights: getStringArray(document, "highlights"),
+    updatedDate: getFrontmatterString(document.frontmatter, "updatedAt", publishedDate),
+    pdfUrl: getFrontmatterString(document.frontmatter, "pdfUrl"),
+    sourceBasis: getFrontmatterString(document.frontmatter, "sourceNote", "Local Press"),
+    highlights: getFrontmatterStringArray(document.frontmatter, "highlights"),
     body: document.body,
     isLocalPress: true,
   };

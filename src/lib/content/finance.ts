@@ -1,6 +1,10 @@
 import { isPublishedDocument, readMarkdownDocument } from "@/lib/content";
+import {
+  getFrontmatterLabeledBlocks,
+  getFrontmatterString,
+} from "@/lib/content/frontmatter-helpers";
 import type { LocalMarkdownDocument } from "@/lib/content/types";
-import type { FinancePageContent, LabeledTextBlock } from "@/lib/types";
+import type { FinancePageContent } from "@/lib/types";
 
 export function getFinancePage() {
   return readMarkdownDocument("finance/index.md");
@@ -11,49 +15,24 @@ export async function getPublishedFinancePage() {
   return isPublishedDocument(document) ? document : null;
 }
 
-function getString(document: LocalMarkdownDocument, key: string, fallback = "") {
-  const value = document.frontmatter[key];
-  return typeof value === "string" || typeof value === "number" ? String(value) : fallback;
-}
-
-function getLabeledBlocks(document: LocalMarkdownDocument, key: string): LabeledTextBlock[] {
-  const value = document.frontmatter[key];
-
-  if (!Array.isArray(value)) {
-    return [];
-  }
-
-  return value.flatMap((item) => {
-    if (!item || typeof item !== "object") {
-      return [];
-    }
-
-    const entry = item as Record<string, unknown>;
-    const title = typeof entry.title === "string" ? entry.title : "";
-    const body = typeof entry.body === "string" ? entry.body : "";
-
-    return title || body ? [{ title, body }] : [];
-  });
-}
-
 export function localFinanceToPageContent(document: LocalMarkdownDocument): FinancePageContent {
-  const updatedDate = getString(document, "updatedAt") || new Date().toISOString();
+  const updatedDate = getFrontmatterString(document.frontmatter, "updatedAt") || new Date().toISOString();
 
   return {
     id: "local-finance",
     slug: "finance",
-    title: getString(document, "title", "財務情報の公開"),
+    title: getFrontmatterString(document.frontmatter, "title", "財務情報の公開"),
     summary:
-      getString(document, "summary") ||
-      getString(document, "excerpt") ||
+      getFrontmatterString(document.frontmatter, "summary") ||
+      getFrontmatterString(document.frontmatter, "excerpt") ||
       "松笠研究所の財務情報と公開方針をまとめています。",
     body: document.body,
-    effectiveDate: getString(document, "effectiveDate", updatedDate),
+    effectiveDate: getFrontmatterString(document.frontmatter, "effectiveDate", updatedDate),
     updatedDate,
-    disclosureItems: getLabeledBlocks(document, "disclosureItems"),
-    disclosureTable: getLabeledBlocks(document, "disclosureTable"),
-    policyItems: getLabeledBlocks(document, "policyItems"),
-    contactText: getString(document, "contactText"),
+    disclosureItems: getFrontmatterLabeledBlocks(document.frontmatter, "disclosureItems"),
+    disclosureTable: getFrontmatterLabeledBlocks(document.frontmatter, "disclosureTable"),
+    policyItems: getFrontmatterLabeledBlocks(document.frontmatter, "policyItems"),
+    contactText: getFrontmatterString(document.frontmatter, "contactText"),
     isLocalPress: true,
   };
 }
