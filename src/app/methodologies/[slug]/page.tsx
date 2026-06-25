@@ -7,11 +7,6 @@ import { PublicShell } from "@/components/public-shell";
 import { StructuredData } from "@/components/structured-data";
 import { contentSource } from "@/lib/content-source";
 import { formatDate } from "@/lib/formatters";
-import {
-  getPostsByMethodology,
-  getReportsByMethodology,
-  getSidebarSnapshot,
-} from "@/lib/microcms";
 import { buildBreadcrumbJsonLd, buildItemListJsonLd, buildPageMetadata, buildWebPageJsonLd } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
 
@@ -48,9 +43,9 @@ export default async function MethodologyDetailPage({ params }: MethodologyDetai
   const { slug } = await params;
   const [entry, posts, reports, sidebar] = await Promise.all([
     contentSource.getMethodologyBySlug ? contentSource.getMethodologyBySlug(slug) : null,
-    getPostsByMethodology(slug),
-    getReportsByMethodology(slug),
-    getSidebarSnapshot(),
+    contentSource.getPostsByMethodology(slug),
+    contentSource.getReportsByMethodology(slug),
+    contentSource.getSidebarSnapshot(),
   ]);
 
   if (!entry) {

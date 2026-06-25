@@ -7,11 +7,6 @@ import { PublicShell } from "@/components/public-shell";
 import { StructuredData } from "@/components/structured-data";
 import { contentSource } from "@/lib/content-source";
 import { formatDate } from "@/lib/formatters";
-import {
-  getPostsByResearcher,
-  getReportsByResearcher,
-  getSidebarSnapshot,
-} from "@/lib/microcms";
 import { buildBreadcrumbJsonLd, buildPageMetadata, getAbsoluteUrl } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
 
@@ -49,10 +44,10 @@ export default async function ResearcherDetailPage({ params }: ResearcherDetailP
   const { slug } = await params;
   const [researcher, posts, reports, methodologies, sidebar] = await Promise.all([
     contentSource.getResearcherBySlug ? contentSource.getResearcherBySlug(slug) : null,
-    getPostsByResearcher(slug),
-    getReportsByResearcher(slug),
+    contentSource.getPostsByResearcher(slug),
+    contentSource.getReportsByResearcher(slug),
     contentSource.getMethodologies(),
-    getSidebarSnapshot(),
+    contentSource.getSidebarSnapshot(),
   ]);
 
   if (!researcher) {

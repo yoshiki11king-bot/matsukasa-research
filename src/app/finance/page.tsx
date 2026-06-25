@@ -7,7 +7,6 @@ import { SectionHeading } from "@/components/section-heading";
 import { StructuredData } from "@/components/structured-data";
 import { contentSource } from "@/lib/content-source";
 import { formatDate } from "@/lib/formatters";
-import { getSidebarSnapshot } from "@/lib/microcms";
 import { buildBreadcrumbJsonLd, buildPageMetadata, buildWebPageJsonLd } from "@/lib/seo";
 import type { FinancialStatement, ResearchReport } from "@/lib/types";
 
@@ -108,7 +107,7 @@ export default async function FinancePage() {
     contentSource.getCurrentFinancePage(),
     contentSource.getReports(),
     contentSource.getFinancialStatements(),
-    getSidebarSnapshot(),
+    contentSource.getSidebarSnapshot(),
   ]);
   const pageContent = financePage ?? financePageContent;
 

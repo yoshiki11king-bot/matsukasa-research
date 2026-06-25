@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import { ShortReadingRenderer } from "@/components/content/ShortReadingRenderer";
-import { getChartsBySlug } from "@/lib/content/charts";
-import { getPublishedShortReadingBySlug } from "@/lib/content/short-readings";
+import { localPressContentSource } from "@/lib/content-source/local-press-adapter";
 
 export const dynamic = "force-dynamic";
 
@@ -11,11 +10,18 @@ type PageProps = {
 
 export default async function LocalShortReadingPage({ params }: PageProps) {
   const { slug } = await params;
-  const document = await getPublishedShortReadingBySlug(slug);
+  const entry = localPressContentSource.getShortReadingBySlug
+    ? await localPressContentSource.getShortReadingBySlug(slug)
+    : null;
 
-  if (!document) {
+  if (!entry) {
     notFound();
   }
 
-  return <ShortReadingRenderer document={document} charts={await getChartsBySlug()} />;
+  return (
+    <ShortReadingRenderer
+      entry={entry}
+      charts={localPressContentSource.getChartsBySlug ? await localPressContentSource.getChartsBySlug() : {}}
+    />
+  );
 }

@@ -1031,8 +1031,8 @@ export async function getFinancialStatements() {
 export async function getTopics(options?: PublicCollectionOptions) {
   const [posts, researchers, methodologies, reports] = await Promise.all([
     getPublicPosts(options),
-    getAllCollectionItems("researchers", options),
-    getAllCollectionItems("methodologies", options),
+    getResearchers(options),
+    getMethodologies(options),
     getPublicReports(options),
   ]);
 

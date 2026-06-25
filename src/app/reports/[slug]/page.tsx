@@ -8,7 +8,6 @@ import { PublicShell } from "@/components/public-shell";
 import { StructuredData } from "@/components/structured-data";
 import { contentSource } from "@/lib/content-source";
 import { formatDate } from "@/lib/formatters";
-import { getSidebarSnapshot } from "@/lib/microcms";
 import { buildBreadcrumbJsonLd, buildPageMetadata, getAbsoluteUrl } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
 
@@ -42,7 +41,7 @@ export default async function ReportDetailPage({ params }: ReportDetailPageProps
   const { slug } = await params;
   const [report, sidebar] = await Promise.all([
     contentSource.getReportBySlug(slug),
-    getSidebarSnapshot(),
+    contentSource.getSidebarSnapshot(),
   ]);
 
   if (!report) {

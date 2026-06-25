@@ -1,8 +1,12 @@
 import type {
   BlogPost,
+  CorrectionEntry,
+  DatasetEntry,
   DirectorPageContent,
+  EditorialPolicyContent,
   FinancePageContent,
   FinancialStatement,
+  FundingPageContent,
   InstituteTopic,
   MethodologyEntry,
   PostsPage,
@@ -46,15 +50,25 @@ export type ContentSourceHealth = {
   fallbackEnabled?: boolean;
 };
 
+export type SidebarSnapshot = {
+  featuredResearchers: ResearcherProfile[];
+  featuredMethodologies: MethodologyEntry[];
+  featuredReports: ResearchReport[];
+};
+
 export interface ContentSource {
   readonly name: ContentSourceName;
 
   getPostsPage(params?: PostsPageParams, options?: SourceOptions): Promise<PostsPage>;
   getAllPostSlugs(options?: SourceOptions): Promise<string[]>;
   getPostBySlug(slug: string, options?: SourceOptions): Promise<BlogPost | null>;
+  getPostsByResearcher(slug: string, options?: SourceOptions): Promise<BlogPost[]>;
+  getPostsByMethodology(slug: string, options?: SourceOptions): Promise<BlogPost[]>;
 
   getReports(options?: SourceOptions): Promise<ResearchReport[]>;
   getReportBySlug(slug: string, options?: SourceOptions): Promise<ResearchReport | null>;
+  getReportsByResearcher(slug: string, options?: SourceOptions): Promise<ResearchReport[]>;
+  getReportsByMethodology(slug: string, options?: SourceOptions): Promise<ResearchReport[]>;
 
   getResearchers(options?: SourceOptions): Promise<ResearcherProfile[]>;
   getResearcherBySlug?(slug: string, options?: SourceOptions): Promise<ResearcherProfile | null>;
@@ -75,8 +89,18 @@ export interface ContentSource {
   getChartBySlug?(slug: string, options?: SourceOptions): Promise<LocalChart | null>;
   getChartsBySlug?(options?: SourceOptions): Promise<LocalChartsBySlug>;
 
+  getDatasets?(options?: SourceOptions): Promise<DatasetEntry[]>;
+  getDatasetBySlug?(slug: string, options?: SourceOptions): Promise<DatasetEntry | null>;
+
   getShortReadings?(options?: SourceOptions): Promise<ShortReadingEntry[]>;
   getShortReadingBySlug?(slug: string, options?: SourceOptions): Promise<ShortReadingEntry | null>;
+
+  getCorrections?(options?: SourceOptions): Promise<CorrectionEntry[]>;
+  getCorrectionBySlug?(slug: string, options?: SourceOptions): Promise<CorrectionEntry | null>;
+  getEditorialPolicy?(options?: SourceOptions): Promise<EditorialPolicyContent | null>;
+  getFundingPage?(options?: SourceOptions): Promise<FundingPageContent | null>;
+
+  getSidebarSnapshot(options?: SourceOptions): Promise<SidebarSnapshot>;
 
   getHealth?(): ContentSourceHealth;
 }

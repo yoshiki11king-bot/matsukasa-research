@@ -4,7 +4,6 @@ import { PublicShell } from "@/components/public-shell";
 import { ReportCard } from "@/components/report-card";
 import { StructuredData } from "@/components/structured-data";
 import { contentSource } from "@/lib/content-source";
-import { getSidebarSnapshot } from "@/lib/microcms";
 import {
   buildBreadcrumbJsonLd,
   buildCollectionPageJsonLd,
@@ -25,7 +24,7 @@ export const metadata: Metadata = buildPageMetadata({
 export default async function ReportsPage() {
   const [reports, sidebar] = await Promise.all([
     contentSource.getReports(),
-    getSidebarSnapshot(),
+    contentSource.getSidebarSnapshot(),
   ]);
   const structuredData = [
     buildCollectionPageJsonLd({

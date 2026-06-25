@@ -7,7 +7,6 @@ import { PostCard } from "@/components/post-card";
 import { PublicShell } from "@/components/public-shell";
 import { StructuredData } from "@/components/structured-data";
 import { contentSource } from "@/lib/content-source";
-import { getSidebarSnapshot } from "@/lib/microcms";
 import {
   buildBreadcrumbJsonLd,
   buildCollectionPageJsonLd,
@@ -87,7 +86,7 @@ export default async function TopicPage({ params }: TopicPageProps) {
     contentSource.getReports(),
     contentSource.getMethodologies(),
     contentSource.getResearchers(),
-    getSidebarSnapshot(),
+    contentSource.getSidebarSnapshot(),
   ]);
 
   const topicReports = reports.filter((report) => report.topicNames.includes(topic.name));

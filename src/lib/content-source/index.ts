@@ -46,5 +46,6 @@ export type {
   ListResponse,
   PostsPageParams,
   PublishedStatus,
+  SidebarSnapshot,
   SourceOptions,
 } from "./types";

@@ -9,11 +9,16 @@ import {
   getMethodologies,
   getMethodologyBySlug,
   getPostBySlug,
+  getPostsByMethodology,
+  getPostsByResearcher,
   getPostsPage,
   getReportBySlug,
+  getReportsByMethodology,
+  getReportsByResearcher,
   getReports,
   getResearcherBySlug,
   getResearchers,
+  getSidebarSnapshot,
   getTopics,
 } from "@/lib/microcms";
 import {
@@ -39,9 +44,13 @@ export const microcmsContentSource: ContentSource = {
   getPostsPage: (params, options) => getPostsPage(params, toMicroCMSOptions(options)),
   getAllPostSlugs: (options) => getAllPostSlugs(toMicroCMSOptions(options)),
   getPostBySlug: (slug) => getPostBySlug(slug),
+  getPostsByResearcher: (slug) => getPostsByResearcher(slug),
+  getPostsByMethodology: (slug) => getPostsByMethodology(slug),
 
   getReports: (options) => getReports(toMicroCMSOptions(options)),
   getReportBySlug: (slug) => getReportBySlug(slug),
+  getReportsByResearcher: (slug) => getReportsByResearcher(slug),
+  getReportsByMethodology: (slug) => getReportsByMethodology(slug),
 
   getResearchers: (options) => getResearchers(toMicroCMSOptions(options)),
   getResearcherBySlug: (slug) => getResearcherBySlug(slug),
@@ -63,6 +72,8 @@ export const microcmsContentSource: ContentSource = {
   getCharts: () => getLocalCharts(),
   getChartBySlug: (slug) => getLocalChartBySlug(slug),
   getChartsBySlug: () => getLocalChartsBySlug(),
+
+  getSidebarSnapshot: () => getSidebarSnapshot(),
 
   getHealth: () => ({
     name: "microcms",

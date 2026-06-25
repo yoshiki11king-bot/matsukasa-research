@@ -4,7 +4,7 @@ import { PublicShell } from "@/components/public-shell";
 import { SectionHeading } from "@/components/section-heading";
 import { StructuredData } from "@/components/structured-data";
 import { TypologyQuizDeck } from "@/components/typology-quiz-deck";
-import { getSidebarSnapshot } from "@/lib/microcms";
+import { contentSource } from "@/lib/content-source";
 import { buildBreadcrumbJsonLd, buildCollectionPageJsonLd, buildItemListJsonLd, buildPageMetadata } from "@/lib/seo";
 
 export const revalidate = 3600;
@@ -52,7 +52,7 @@ const publicationRules = [
 ];
 
 export default async function ToolsDatasetsPage() {
-  const sidebar = await getSidebarSnapshot();
+  const sidebar = await contentSource.getSidebarSnapshot();
   const structuredData = [
     buildCollectionPageJsonLd({
       name: "ツールとデータセット",

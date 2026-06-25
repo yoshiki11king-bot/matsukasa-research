@@ -8,7 +8,6 @@ import { SectionHeading } from "@/components/section-heading";
 import { StructuredData } from "@/components/structured-data";
 import { contentSource } from "@/lib/content-source";
 import { formatDate } from "@/lib/formatters";
-import { getSidebarSnapshot } from "@/lib/microcms";
 import { buildBreadcrumbJsonLd, buildPageMetadata, buildWebPageJsonLd } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
@@ -23,7 +22,7 @@ export const revalidate = 3600;
 export default async function DirectorPage() {
   const [page, sidebar] = await Promise.all([
     contentSource.getCurrentDirectorPage(),
-    getSidebarSnapshot(),
+    contentSource.getSidebarSnapshot(),
   ]);
 
   if (!page) {

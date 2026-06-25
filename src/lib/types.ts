@@ -15,6 +15,12 @@ export type SourceLink = {
   url?: string;
 };
 
+export type Citation = {
+  label: string;
+  text: string;
+  url?: string;
+};
+
 export type FigureAttachment = {
   title: string;
   url: string;
@@ -232,6 +238,63 @@ export type FinancialStatement = {
   sourceBasis: string;
   highlights: string[];
   body: string;
+  isDemo?: boolean;
+  isLocalPress?: boolean;
+};
+
+export type DatasetEntry = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  publishedDate: string;
+  updatedDate: string;
+  fileUrl?: string;
+  fileFormat: string;
+  topics: string[];
+  relatedReportSlugs: string[];
+  relatedChartSlugs: string[];
+  sourceLinks: SourceLink[];
+  citation: Citation | null;
+  isDemo?: boolean;
+  isLocalPress?: boolean;
+};
+
+export type CorrectionEntry = {
+  id: string;
+  slug: string;
+  title: string;
+  summary: string;
+  targetType: "post" | "report" | "methodology" | "dataset" | "chart" | "page";
+  targetSlug: string;
+  publishedDate: string;
+  updatedDate: string;
+  body: string;
+  isDemo?: boolean;
+  isLocalPress?: boolean;
+};
+
+export type EditorialPolicyContent = {
+  id: string;
+  slug: string;
+  title: string;
+  summary: string;
+  body: string;
+  updatedDate: string;
+  sourceLinks: SourceLink[];
+  isDemo?: boolean;
+  isLocalPress?: boolean;
+};
+
+export type FundingPageContent = {
+  id: string;
+  slug: string;
+  title: string;
+  summary: string;
+  body: string;
+  updatedDate: string;
+  disclosureItems: LabeledTextBlock[];
+  sourceLinks: SourceLink[];
   isDemo?: boolean;
   isLocalPress?: boolean;
 };

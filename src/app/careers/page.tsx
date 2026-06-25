@@ -3,7 +3,7 @@ import Link from "next/link";
 import { PublicShell } from "@/components/public-shell";
 import { SectionHeading } from "@/components/section-heading";
 import { StructuredData } from "@/components/structured-data";
-import { getSidebarSnapshot } from "@/lib/microcms";
+import { contentSource } from "@/lib/content-source";
 import { buildBreadcrumbJsonLd, buildPageMetadata, buildWebPageJsonLd } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
 
@@ -18,7 +18,7 @@ export const metadata: Metadata = buildPageMetadata({
 });
 
 export default async function CareersPage() {
-  const sidebar = await getSidebarSnapshot();
+  const sidebar = await contentSource.getSidebarSnapshot();
   const hasRecruitForm = Boolean(siteConfig.recruitFormUrl);
   const structuredData = [
     buildWebPageJsonLd({

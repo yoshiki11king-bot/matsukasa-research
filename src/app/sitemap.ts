@@ -1,13 +1,5 @@
 import type { MetadataRoute } from "next";
-import {
-  getAllPostSlugs,
-  getFinancialStatements,
-  getPostsPage,
-  getMethodologies,
-  getReports,
-  getResearchers,
-  getTopics,
-} from "@/lib/microcms";
+import { contentSource } from "@/lib/content-source";
 import { getSiteUrl } from "@/lib/site";
 import { getTopicHref } from "@/lib/topic-pages";
 
@@ -17,13 +9,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = getSiteUrl();
   const cacheOptions = { revalidateSeconds: revalidate };
   const [postsPage, postSlugs, researchers, methodologies, reports, financialStatements, topics] = await Promise.all([
-    getPostsPage({ page: 1, limit: 100 }, cacheOptions),
-    getAllPostSlugs(cacheOptions),
-    getResearchers(cacheOptions),
-    getMethodologies(cacheOptions),
-    getReports(cacheOptions),
-    getFinancialStatements(),
-    getTopics(cacheOptions),
+    contentSource.getPostsPage({ page: 1, limit: 100 }, cacheOptions),
+    contentSource.getAllPostSlugs(cacheOptions),
+    contentSource.getResearchers(cacheOptions),
+    contentSource.getMethodologies(cacheOptions),
+    contentSource.getReports(cacheOptions),
+    contentSource.getFinancialStatements(cacheOptions),
+    contentSource.getTopics ? contentSource.getTopics(cacheOptions) : [],
   ]);
 
   const latestPostDate = postsPage.contents

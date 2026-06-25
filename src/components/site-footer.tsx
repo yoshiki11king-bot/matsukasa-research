@@ -1,11 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
-import { getTopics } from "@/lib/microcms";
+import { contentSource } from "@/lib/content-source";
 import { siteConfig } from "@/lib/site";
 import { getTopicHref } from "@/lib/topic-pages";
 
 export async function SiteFooter() {
-  const topics = await getTopics();
+  const topics = contentSource.getTopics ? await contentSource.getTopics() : [];
   const footerLinks = [
     { href: "/about", label: "私たちについて" },
     { href: "/reports", label: "報告書" },
