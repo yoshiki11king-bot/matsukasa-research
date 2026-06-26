@@ -148,6 +148,8 @@ Implemented:
 - Field-level WordPress edit screen meta boxes for Matsukasa REST fields,
   including simple line-based editors for lists, sources, and labeled text
   blocks.
+- Media Library picker buttons for PDF and dataset URL fields in the Matsukasa
+  metadata box.
 - A `matsukasa_editor` role for editorial users who need to draft, publish, and
   upload research content.
 - Next.js `wordpressContentSource` fetch and normalization path.

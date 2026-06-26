@@ -21,6 +21,7 @@ function matsukasa_platform_core_register_admin_hooks(): void
 
     add_action('add_meta_boxes', 'matsukasa_platform_core_register_meta_boxes');
     add_action('save_post', 'matsukasa_platform_core_save_meta_box');
+    add_action('admin_enqueue_scripts', 'matsukasa_platform_core_enqueue_admin_assets');
 }
 
 function matsukasa_platform_core_admin_post_types(): array
@@ -109,6 +110,60 @@ function matsukasa_platform_core_register_meta_boxes(): void
     }
 }
 
+function matsukasa_platform_core_enqueue_admin_assets(string $hook_suffix): void
+{
+    if ($hook_suffix !== 'post.php' && $hook_suffix !== 'post-new.php') {
+        return;
+    }
+
+    $screen = get_current_screen();
+    if (!$screen || !in_array($screen->post_type, matsukasa_platform_core_admin_meta_post_types(), true)) {
+        return;
+    }
+
+    wp_enqueue_media();
+    wp_register_script(
+        'matsukasa-platform-core-admin',
+        '',
+        [],
+        MATSUKASA_PLATFORM_CORE_VERSION,
+        true
+    );
+    wp_enqueue_script('matsukasa-platform-core-admin');
+    wp_add_inline_script(
+        'matsukasa-platform-core-admin',
+        "
+        document.addEventListener('click', function (event) {
+            const button = event.target.closest('.matsukasa-meta-media-button');
+            if (!button || !window.wp || !window.wp.media) {
+                return;
+            }
+
+            event.preventDefault();
+
+            const input = document.getElementById(button.dataset.target);
+            if (!input) {
+                return;
+            }
+
+            const frame = window.wp.media({
+                title: 'Select Matsukasa media',
+                button: { text: 'Use this file' },
+                multiple: false
+            });
+
+            frame.on('select', function () {
+                const attachment = frame.state().get('selection').first().toJSON();
+                input.value = attachment.url || '';
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+            });
+
+            frame.open();
+        });
+        "
+    );
+}
+
 function matsukasa_platform_core_admin_meta_fields(): array
 {
     return [
@@ -187,6 +242,8 @@ function matsukasa_platform_core_render_meta_box(WP_Post $post): void
         .matsukasa-meta-group summary { cursor: pointer; font-weight: 600; }
         .matsukasa-meta-field { margin-top: 12px; }
         .matsukasa-meta-field label { display: block; font-weight: 600; margin-bottom: 4px; }
+        .matsukasa-meta-control-row { align-items: center; display: flex; gap: 8px; max-width: 860px; }
+        .matsukasa-meta-control-row input { flex: 1; }
         .matsukasa-meta-field input,
         .matsukasa-meta-field textarea { width: 100%; max-width: 860px; }
         .matsukasa-meta-field textarea { min-height: 86px; }
@@ -214,16 +271,23 @@ function matsukasa_platform_core_render_meta_field(int $post_id, string $field_n
     $meta_key = 'matsukasa_' . $field_name;
     $value = get_post_meta($post_id, $meta_key, true);
     $input_name = 'matsukasa_meta[' . esc_attr($field_name) . ']';
+    $input_id = 'matsukasa_meta_' . esc_attr($field_name);
     $display_value = matsukasa_platform_core_format_meta_value_for_edit($value, $type);
+    $placeholder = matsukasa_platform_core_meta_field_placeholder($field_name, $type);
 
     echo '<div class="matsukasa-meta-field">';
-    echo '<label for="matsukasa_meta_' . esc_attr($field_name) . '">' . esc_html($field_config['label']) . '</label>';
+    echo '<label for="' . $input_id . '">' . esc_html($field_config['label']) . '</label>';
 
     if ($type === 'textarea' || $type === 'string_array' || $type === 'source_links' || $type === 'labeled_text_blocks' || $type === 'json') {
-        echo '<textarea id="matsukasa_meta_' . esc_attr($field_name) . '" name="' . $input_name . '">' . esc_textarea($display_value) . '</textarea>';
+        echo '<textarea id="' . $input_id . '" name="' . $input_name . '" placeholder="' . esc_attr($placeholder) . '">' . esc_textarea($display_value) . '</textarea>';
     } else {
         $input_type = in_array($type, ['url', 'email'], true) ? $type : 'text';
-        echo '<input id="matsukasa_meta_' . esc_attr($field_name) . '" type="' . esc_attr($input_type) . '" name="' . $input_name . '" value="' . esc_attr($display_value) . '" />';
+        echo '<div class="matsukasa-meta-control-row">';
+        echo '<input id="' . $input_id . '" type="' . esc_attr($input_type) . '" name="' . $input_name . '" value="' . esc_attr($display_value) . '" placeholder="' . esc_attr($placeholder) . '" />';
+        if (in_array($field_name, ['pdfUrl', 'fileUrl'], true)) {
+            echo '<button type="button" class="button matsukasa-meta-media-button" data-target="' . $input_id . '">Select Media</button>';
+        }
+        echo '</div>';
     }
 
     $hint = matsukasa_platform_core_meta_field_hint($type);
@@ -293,6 +357,50 @@ function matsukasa_platform_core_meta_field_hint(string $type): string
 
     if ($type === 'json') {
         return 'Enter valid JSON. Blank removes the value; invalid JSON keeps the previous value.';
+    }
+
+    return '';
+}
+
+function matsukasa_platform_core_meta_field_placeholder(string $field_name, string $type): string
+{
+    $placeholders = [
+        'description' => 'Short public summary.',
+        'category' => 'Example: 研究ノート',
+        'format' => 'Example: report, article, short-read',
+        'region' => 'Example: 日本',
+        'reportType' => 'Example: 調査報告',
+        'chartType' => 'Example: bar, line, pie',
+        'fiscalYear' => 'Example: 2026',
+        'readingTime' => 'Example: 5分',
+        'effectiveDate' => 'Example: 2026-06-01',
+        'pdfUrl' => 'Select Media, or paste a PDF URL.',
+        'fileUrl' => 'Select Media, or paste a dataset/media URL.',
+        'fileFormat' => 'Example: CSV, PDF, JSON',
+        'sourceBasis' => 'Example: 松笠研究所調査',
+        'reviewer' => 'Example: 松笠研究所',
+        'targetType' => 'Example: report',
+        'targetSlug' => 'Example: education-survey-2026',
+    ];
+
+    if (isset($placeholders[$field_name])) {
+        return $placeholders[$field_name];
+    }
+
+    if ($type === 'string_array') {
+        return "one-slug-per-line\nanother-slug";
+    }
+
+    if ($type === 'source_links') {
+        return "調査票 | https://example.com/questionnaire.pdf\n集計表 | https://example.com/data.csv";
+    }
+
+    if ($type === 'labeled_text_blocks') {
+        return "01 | 見出し | 本文";
+    }
+
+    if ($type === 'json') {
+        return '{ "data": [] }';
     }
 
     return '';
