@@ -2,9 +2,10 @@
 
 WordPress plugin scaffold for the future Matsukasa Research Center CMS.
 
-This plugin is intentionally not connected to the current Next.js runtime yet.
-It is a staging area for the WordPress CMS that will eventually feed
-`src/lib/content-source/wordpress-adapter.ts`.
+This plugin is not the default production content source yet. It is the staging
+area for the WordPress CMS that can feed
+`src/lib/content-source/wordpress-adapter.ts` when `CONTENT_SOURCE=wordpress`
+and `WORDPRESS_API_BASE_URL` are configured.
 
 ## Purpose
 
@@ -100,10 +101,16 @@ Array fields are registered with the `matsukasa_` prefix:
 - `/wp-json/matsukasa/v1/reports`
 - `/wp-json/matsukasa/v1/reports/{slug}`
 - `/wp-json/matsukasa/v1/methodologies`
+- `/wp-json/matsukasa/v1/methodologies/{slug}`
 - `/wp-json/matsukasa/v1/researchers`
+- `/wp-json/matsukasa/v1/researchers/{slug}`
 - `/wp-json/matsukasa/v1/topics`
 - `/wp-json/matsukasa/v1/charts`
+- `/wp-json/matsukasa/v1/charts/{slug}`
 - `/wp-json/matsukasa/v1/datasets`
+- `/wp-json/matsukasa/v1/datasets/{slug}`
+- `/wp-json/matsukasa/v1/short-readings`
+- `/wp-json/matsukasa/v1/short-readings/{slug}`
 - `/wp-json/matsukasa/v1/finance`
 - `/wp-json/matsukasa/v1/director`
 - `/wp-json/matsukasa/v1/financial-statements`
@@ -136,6 +143,9 @@ Implemented:
 - Basic public read REST responses for posts, reports, methodologies,
   researchers, charts, datasets, short readings, financial statements, topics,
   corrections, finance, director, editorial policy, and funding.
+- Next.js `wordpressContentSource` fetch and normalization path.
+- `CONTENT_SOURCE=wordpress` selection path in Next.js, while `microcms`
+  remains the default source.
 
 Not implemented yet:
 
@@ -143,4 +153,4 @@ Not implemented yet:
 - Media Library attachment policy.
 - Admin UI refinements.
 - Role and capability mapping.
-- Next.js `wordpressContentSource` fetching.
+- Production WordPress instance connection and end-to-end publishing test.
