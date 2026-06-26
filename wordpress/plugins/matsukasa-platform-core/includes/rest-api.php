@@ -157,6 +157,14 @@ function matsukasa_platform_core_rest_collection_args(): array
             'required' => false,
             'sanitize_callback' => 'sanitize_text_field',
         ],
+        'researcher' => [
+            'required' => false,
+            'sanitize_callback' => 'sanitize_text_field',
+        ],
+        'methodology' => [
+            'required' => false,
+            'sanitize_callback' => 'sanitize_text_field',
+        ],
         'orderby' => [
             'default' => 'date',
             'sanitize_callback' => 'sanitize_key',
@@ -314,6 +322,11 @@ function matsukasa_platform_core_rest_content_query_args(
         $query_args['tax_query'] = array_merge(['relation' => 'AND'], $tax_query);
     }
 
+    $meta_query = matsukasa_platform_core_rest_meta_query($request);
+    if ($meta_query !== []) {
+        $query_args['meta_query'] = array_merge(['relation' => 'AND'], $meta_query);
+    }
+
     return $query_args;
 }
 
@@ -366,6 +379,55 @@ function matsukasa_platform_core_rest_tax_query(WP_REST_Request $request): array
     }
 
     return $tax_query;
+}
+
+function matsukasa_platform_core_rest_meta_query(WP_REST_Request $request): array
+{
+    $meta_query = [];
+    $researcher_slugs = matsukasa_platform_core_rest_slug_list($request, 'researcher');
+    if ($researcher_slugs !== []) {
+        $meta_query[] = matsukasa_platform_core_rest_serialized_array_meta_query(
+            'matsukasa_researcherSlugs',
+            $researcher_slugs
+        );
+    }
+
+    $methodology_slugs = matsukasa_platform_core_rest_slug_list($request, 'methodology');
+    if ($methodology_slugs !== []) {
+        $meta_query[] = [
+            'relation' => 'OR',
+            matsukasa_platform_core_rest_serialized_array_meta_query(
+                'matsukasa_methodologySlugs',
+                $methodology_slugs
+            ),
+            matsukasa_platform_core_rest_serialized_array_meta_query(
+                'matsukasa_relatedMethodology',
+                $methodology_slugs
+            ),
+        ];
+    }
+
+    return $meta_query;
+}
+
+function matsukasa_platform_core_rest_serialized_array_meta_query(string $key, array $slugs): array
+{
+    $clauses = array_map(
+        static function (string $slug) use ($key): array {
+            return [
+                'key' => $key,
+                'value' => '"' . $slug . '"',
+                'compare' => 'LIKE',
+            ];
+        },
+        $slugs
+    );
+
+    if (count($clauses) === 1) {
+        return $clauses[0];
+    }
+
+    return array_merge(['relation' => 'OR'], $clauses);
 }
 
 function matsukasa_platform_core_rest_slug_list(WP_REST_Request $request, string $param): array

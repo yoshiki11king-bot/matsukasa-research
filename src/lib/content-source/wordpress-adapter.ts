@@ -192,6 +192,8 @@ const DEFAULT_REVALIDATE_SECONDS = 60 * 60;
 const WORDPRESS_REST_NAMESPACE = "/wp-json/matsukasa/v1";
 const WORDPRESS_COLLECTION_PAGE_SIZE = 100;
 
+type WordPressRequestParams = Record<string, string | undefined>;
+
 function setSearchParamIfPresent(url: URL, key: string, value?: string) {
   const normalizedValue = value?.trim();
 
@@ -207,6 +209,12 @@ function toWordPressTopicParam(topics?: string[]) {
       .filter(Boolean) ?? [];
 
   return slugs.length > 0 ? slugs.join(",") : undefined;
+}
+
+function applyWordPressRequestParams(url: URL, params?: WordPressRequestParams) {
+  Object.entries(params ?? {}).forEach(([key, value]) => {
+    setSearchParamIfPresent(url, key, value);
+  });
 }
 
 function getWordPressApiBaseUrl() {
@@ -610,7 +618,11 @@ function toFundingPage(item: WordPressRawFundingPage): FundingPageContent {
   };
 }
 
-async function fetchWordPressJson<T>(path: string, options?: SourceOptions): Promise<T> {
+async function fetchWordPressJson<T>(
+  path: string,
+  options?: SourceOptions,
+  params?: WordPressRequestParams,
+): Promise<T> {
   const url = new URL(`${getWordPressApiBaseUrl()}${path}`);
 
   if (options?.limit !== undefined) {
@@ -623,6 +635,7 @@ async function fetchWordPressJson<T>(path: string, options?: SourceOptions): Pro
 
   setSearchParamIfPresent(url, "q", options?.query);
   setSearchParamIfPresent(url, "topic", toWordPressTopicParam(options?.topics));
+  applyWordPressRequestParams(url, params);
 
   const response = await fetch(url, {
     signal: options?.signal,
@@ -636,15 +649,15 @@ async function fetchWordPressJson<T>(path: string, options?: SourceOptions): Pro
   return response.json() as Promise<T>;
 }
 
-async function fetchCollection<T>(path: string, options?: SourceOptions) {
+async function fetchCollection<T>(path: string, options?: SourceOptions, params?: WordPressRequestParams) {
   return fetchWordPressJson<WordPressRawListResponse<T>>(path, {
     ...options,
     limit: options?.limit ?? WORDPRESS_COLLECTION_PAGE_SIZE,
     offset: options?.offset ?? 0,
-  });
+  }, params);
 }
 
-async function fetchAllCollection<T>(path: string, options?: SourceOptions) {
+async function fetchAllCollection<T>(path: string, options?: SourceOptions, params?: WordPressRequestParams) {
   const contents: T[] = [];
   let offset = 0;
   let totalCount = 0;
@@ -654,7 +667,7 @@ async function fetchAllCollection<T>(path: string, options?: SourceOptions) {
       ...options,
       limit: WORDPRESS_COLLECTION_PAGE_SIZE,
       offset,
-    });
+    }, params);
 
     contents.push(...response.contents);
     totalCount = response.totalCount;
@@ -680,6 +693,26 @@ async function getAllPosts(options?: SourceOptions) {
 
 async function getAllReports(options?: SourceOptions) {
   const contents = await fetchAllCollection<WordPressRawReport>("/reports", options);
+  return contents.map(toReport);
+}
+
+async function getAllPostsByResearcher(slug: string, options?: SourceOptions) {
+  const contents = await fetchAllCollection<WordPressRawPost>("/posts", options, { researcher: slug });
+  return contents.map(toPost);
+}
+
+async function getAllPostsByMethodology(slug: string, options?: SourceOptions) {
+  const contents = await fetchAllCollection<WordPressRawPost>("/posts", options, { methodology: slug });
+  return contents.map(toPost);
+}
+
+async function getAllReportsByResearcher(slug: string, options?: SourceOptions) {
+  const contents = await fetchAllCollection<WordPressRawReport>("/reports", options, { researcher: slug });
+  return contents.map(toReport);
+}
+
+async function getAllReportsByMethodology(slug: string, options?: SourceOptions) {
+  const contents = await fetchAllCollection<WordPressRawReport>("/reports", options, { methodology: slug });
   return contents.map(toReport);
 }
 
@@ -730,12 +763,10 @@ export const wordpressContentSource: ContentSource = {
     }
   },
   getPostsByResearcher: async (slug, options) => {
-    const posts = await getAllPosts(options);
-    return sortByPublishedDate(posts.filter((post) => post.researcherSlugs.includes(slug)));
+    return sortByPublishedDate(await getAllPostsByResearcher(slug, options));
   },
   getPostsByMethodology: async (slug, options) => {
-    const posts = await getAllPosts(options);
-    return sortByPublishedDate(posts.filter((post) => post.methodologySlugs.includes(slug)));
+    return sortByPublishedDate(await getAllPostsByMethodology(slug, options));
   },
 
   getReports: async (options) => sortByPublishedDate(await getAllReports(options)),
@@ -747,12 +778,10 @@ export const wordpressContentSource: ContentSource = {
     }
   },
   getReportsByResearcher: async (slug, options) => {
-    const reports = await getAllReports(options);
-    return sortByPublishedDate(reports.filter((report) => report.researcherSlugs.includes(slug)));
+    return sortByPublishedDate(await getAllReportsByResearcher(slug, options));
   },
   getReportsByMethodology: async (slug, options) => {
-    const reports = await getAllReports(options);
-    return sortByPublishedDate(reports.filter((report) => report.methodologySlugs.includes(slug)));
+    return sortByPublishedDate(await getAllReportsByMethodology(slug, options));
   },
 
   getResearchers: (options) => getAllResearchers(options),
