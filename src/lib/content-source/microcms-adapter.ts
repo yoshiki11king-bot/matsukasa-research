@@ -78,5 +78,7 @@ export const microcmsContentSource: ContentSource = {
   getHealth: () => ({
     name: "microcms",
     configured: cmsStatus.configured,
+    // src/lib/microcms.ts still merges legacy microCMS data with Local Press content.
+    fallbackEnabled: true,
   }),
 };
