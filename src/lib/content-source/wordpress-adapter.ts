@@ -61,6 +61,13 @@ export type WordPressRawCitation = {
   url?: string;
 };
 
+export type WordPressRawLabeledTextBlock = {
+  label?: string;
+  title?: string;
+  body?: string;
+  text?: string;
+};
+
 export type WordPressRawContentItem = {
   id: number | string;
   slug: string;
@@ -155,18 +162,18 @@ export type WordPressRawCorrection = WordPressRawContentItem & {
 
 export type WordPressRawDirectorPage = WordPressRawContentItem & {
   effectiveDate?: string;
-  roleCards?: LabeledTextBlock[];
+  roleCards?: WordPressRawLabeledTextBlock[];
   stanceTitle?: string;
   stanceDescription?: string;
-  stanceCards?: LabeledTextBlock[];
+  stanceCards?: WordPressRawLabeledTextBlock[];
   relatedSummary?: string;
 };
 
 export type WordPressRawFinancePage = WordPressRawContentItem & {
   effectiveDate?: string;
-  disclosureItems?: LabeledTextBlock[];
-  disclosureTable?: LabeledTextBlock[];
-  policyItems?: LabeledTextBlock[];
+  disclosureItems?: WordPressRawLabeledTextBlock[];
+  disclosureTable?: WordPressRawLabeledTextBlock[];
+  policyItems?: WordPressRawLabeledTextBlock[];
   contactText?: string;
 };
 
@@ -175,7 +182,7 @@ export type WordPressRawFinancialStatement = WordPressRawContentItem;
 export type WordPressRawEditorialPolicy = WordPressRawContentItem;
 
 export type WordPressRawFundingPage = WordPressRawContentItem & {
-  disclosureItems?: LabeledTextBlock[];
+  disclosureItems?: WordPressRawLabeledTextBlock[];
 };
 
 export type WordPressRawListResponse<T> = ListResponse<T>;
@@ -296,14 +303,20 @@ function toCitation(value: WordPressRawCitation | string | undefined): Citation 
   };
 }
 
-function toTextBlocks(items?: LabeledTextBlock[]) {
+function toTextBlocks(items?: WordPressRawLabeledTextBlock[]): LabeledTextBlock[] {
   return (
     items
-      ?.filter((item) => item.title || item.body)
-      .map((item) => ({
-        title: item.title,
-        body: item.body,
-      })) ?? []
+      ?.map((item): LabeledTextBlock | null => {
+        const title = item.title || item.label || "";
+        const body = item.body || item.text || "";
+
+        if (!title && !body) {
+          return null;
+        }
+
+        return { title, body };
+      })
+      .filter((item): item is LabeledTextBlock => Boolean(item)) ?? []
   );
 }
 
