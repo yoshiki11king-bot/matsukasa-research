@@ -24,6 +24,7 @@ It is a staging area for the WordPress CMS that will eventually feed
 - `dataset`
 - `financial_statement`
 - `short_read`
+- `correction`
 
 Article content may use the standard WordPress `post` type or a future
 Matsukasa-specific `article` type.
@@ -51,6 +52,21 @@ String fields are registered with the `matsukasa_` prefix:
 - `role`
 - `team`
 - `email`
+- `targetType`
+- `targetSlug`
+- `effectiveDate`
+- `stanceTitle`
+- `stanceDescription`
+- `relatedSummary`
+- `contactText`
+- `sourceBasis`
+- `reviewer`
+- `reportType`
+- `category`
+- `format`
+- `region`
+- `methodologySummary`
+- `chartType`
 
 Array fields are registered with the `matsukasa_` prefix:
 
@@ -62,6 +78,17 @@ Array fields are registered with the `matsukasa_` prefix:
 - `methodologySlugs`
 - `keyFindings`
 - `highlights`
+- `focusTopics`
+- `goodFor`
+- `limits`
+- `relatedReportSlugs`
+- `relatedChartSlugs`
+- `authors`
+- `roleCards`
+- `stanceCards`
+- `disclosureItems`
+- `disclosureTable`
+- `policyItems`
 - `sources`
 - `chartData`
 
@@ -80,6 +107,11 @@ Array fields are registered with the `matsukasa_` prefix:
 - `/wp-json/matsukasa/v1/finance`
 - `/wp-json/matsukasa/v1/director`
 - `/wp-json/matsukasa/v1/financial-statements`
+- `/wp-json/matsukasa/v1/financial-statements/{slug}`
+- `/wp-json/matsukasa/v1/corrections`
+- `/wp-json/matsukasa/v1/corrections/{slug}`
+- `/wp-json/matsukasa/v1/editorial-policy`
+- `/wp-json/matsukasa/v1/funding`
 
 Collection endpoints return a microCMS-like shape:
 
@@ -103,7 +135,7 @@ Implemented:
 - REST namespace health endpoint.
 - Basic public read REST responses for posts, reports, methodologies,
   researchers, charts, datasets, short readings, financial statements, topics,
-  finance, and director.
+  corrections, finance, director, editorial policy, and funding.
 
 Not implemented yet:
 

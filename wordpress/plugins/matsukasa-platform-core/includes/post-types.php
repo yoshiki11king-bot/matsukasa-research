@@ -54,6 +54,12 @@ function matsukasa_platform_core_register_post_types(): void
             'menu_icon' => 'dashicons-text-page',
             'supports' => ['title', 'editor', 'excerpt', 'thumbnail', 'revisions', 'author'],
         ],
+        'correction' => [
+            'singular' => 'Correction',
+            'plural' => 'Corrections',
+            'menu_icon' => 'dashicons-editor-help',
+            'supports' => ['title', 'editor', 'excerpt', 'revisions', 'author'],
+        ],
     ];
 
     foreach ($post_types as $post_type => $config) {

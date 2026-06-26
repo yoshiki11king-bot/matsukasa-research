@@ -20,6 +20,7 @@ function matsukasa_platform_core_register_taxonomies(): void
         'dataset',
         'financial_statement',
         'short_read',
+        'correction',
     ];
 
     register_taxonomy(
@@ -41,7 +42,7 @@ function matsukasa_platform_core_register_taxonomies(): void
 
     register_taxonomy(
         'research_region',
-        ['post', 'report', 'dataset', 'short_read'],
+        ['post', 'report', 'dataset', 'short_read', 'correction'],
         [
             'labels' => [
                 'name' => 'Research Regions',
@@ -58,7 +59,7 @@ function matsukasa_platform_core_register_taxonomies(): void
 
     register_taxonomy(
         'content_format',
-        ['post', 'report', 'methodology', 'dataset', 'short_read'],
+        ['post', 'report', 'methodology', 'dataset', 'short_read', 'correction'],
         [
             'labels' => [
                 'name' => 'Content Formats',

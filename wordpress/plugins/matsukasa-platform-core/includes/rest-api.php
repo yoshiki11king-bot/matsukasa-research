@@ -30,6 +30,7 @@ function matsukasa_platform_core_register_rest_routes(): void
         'datasets' => 'dataset',
         'short-readings' => 'short_read',
         'financial-statements' => 'financial_statement',
+        'corrections' => 'correction',
     ];
 
     foreach ($content_routes as $route => $post_type) {
@@ -99,6 +100,30 @@ function matsukasa_platform_core_register_rest_routes(): void
             'permission_callback' => '__return_true',
         ]
     );
+
+    register_rest_route(
+        'matsukasa/v1',
+        '/editorial-policy',
+        [
+            'methods' => WP_REST_Server::READABLE,
+            'callback' => static function (WP_REST_Request $request): WP_REST_Response {
+                return matsukasa_platform_core_rest_get_named_page($request, 'editorial-policy');
+            },
+            'permission_callback' => '__return_true',
+        ]
+    );
+
+    register_rest_route(
+        'matsukasa/v1',
+        '/funding',
+        [
+            'methods' => WP_REST_Server::READABLE,
+            'callback' => static function (WP_REST_Request $request): WP_REST_Response {
+                return matsukasa_platform_core_rest_get_named_page($request, 'funding');
+            },
+            'permission_callback' => '__return_true',
+        ]
+    );
 }
 
 function matsukasa_platform_core_rest_collection_args(): array
@@ -141,9 +166,13 @@ function matsukasa_platform_core_rest_health(): WP_REST_Response
                 '/short-readings/{slug}',
                 '/financial-statements',
                 '/financial-statements/{slug}',
+                '/corrections',
+                '/corrections/{slug}',
                 '/topics',
                 '/finance',
                 '/director',
+                '/editorial-policy',
+                '/funding',
             ],
         ],
         200
@@ -304,6 +333,21 @@ function matsukasa_platform_core_rest_serialize_post(WP_Post $post): array
         'role' => matsukasa_platform_core_rest_meta_string($post->ID, 'role'),
         'team' => matsukasa_platform_core_rest_meta_string($post->ID, 'team'),
         'email' => matsukasa_platform_core_rest_meta_string($post->ID, 'email'),
+        'targetType' => matsukasa_platform_core_rest_meta_string($post->ID, 'targetType'),
+        'targetSlug' => matsukasa_platform_core_rest_meta_string($post->ID, 'targetSlug'),
+        'effectiveDate' => matsukasa_platform_core_rest_meta_string($post->ID, 'effectiveDate'),
+        'stanceTitle' => matsukasa_platform_core_rest_meta_string($post->ID, 'stanceTitle'),
+        'stanceDescription' => matsukasa_platform_core_rest_meta_string($post->ID, 'stanceDescription'),
+        'relatedSummary' => matsukasa_platform_core_rest_meta_string($post->ID, 'relatedSummary'),
+        'contactText' => matsukasa_platform_core_rest_meta_string($post->ID, 'contactText'),
+        'sourceBasis' => matsukasa_platform_core_rest_meta_string($post->ID, 'sourceBasis'),
+        'reviewer' => matsukasa_platform_core_rest_meta_string($post->ID, 'reviewer'),
+        'reportType' => matsukasa_platform_core_rest_meta_string($post->ID, 'reportType'),
+        'category' => matsukasa_platform_core_rest_meta_string($post->ID, 'category'),
+        'format' => matsukasa_platform_core_rest_meta_string($post->ID, 'format'),
+        'region' => matsukasa_platform_core_rest_meta_string($post->ID, 'region'),
+        'methodologySummary' => matsukasa_platform_core_rest_meta_string($post->ID, 'methodologySummary'),
+        'chartType' => matsukasa_platform_core_rest_meta_string($post->ID, 'chartType'),
         'relatedMethodology' => matsukasa_platform_core_rest_meta_string_array($post->ID, 'relatedMethodology'),
         'relatedDataset' => matsukasa_platform_core_rest_meta_string_array($post->ID, 'relatedDataset'),
         'relatedCharts' => matsukasa_platform_core_rest_meta_string_array($post->ID, 'relatedCharts'),
@@ -312,6 +356,17 @@ function matsukasa_platform_core_rest_serialize_post(WP_Post $post): array
         'methodologySlugs' => matsukasa_platform_core_rest_meta_string_array($post->ID, 'methodologySlugs'),
         'keyFindings' => matsukasa_platform_core_rest_meta_string_array($post->ID, 'keyFindings'),
         'highlights' => matsukasa_platform_core_rest_meta_string_array($post->ID, 'highlights'),
+        'focusTopics' => matsukasa_platform_core_rest_meta_string_array($post->ID, 'focusTopics'),
+        'goodFor' => matsukasa_platform_core_rest_meta_string_array($post->ID, 'goodFor'),
+        'limits' => matsukasa_platform_core_rest_meta_string_array($post->ID, 'limits'),
+        'relatedReportSlugs' => matsukasa_platform_core_rest_meta_string_array($post->ID, 'relatedReportSlugs'),
+        'relatedChartSlugs' => matsukasa_platform_core_rest_meta_string_array($post->ID, 'relatedChartSlugs'),
+        'authors' => matsukasa_platform_core_rest_meta_string_array($post->ID, 'authors'),
+        'roleCards' => matsukasa_platform_core_rest_meta_array($post->ID, 'roleCards'),
+        'stanceCards' => matsukasa_platform_core_rest_meta_array($post->ID, 'stanceCards'),
+        'disclosureItems' => matsukasa_platform_core_rest_meta_array($post->ID, 'disclosureItems'),
+        'disclosureTable' => matsukasa_platform_core_rest_meta_array($post->ID, 'disclosureTable'),
+        'policyItems' => matsukasa_platform_core_rest_meta_array($post->ID, 'policyItems'),
         'sources' => matsukasa_platform_core_rest_meta_array($post->ID, 'sources'),
         'chartData' => matsukasa_platform_core_rest_meta_array($post->ID, 'chartData'),
     ];

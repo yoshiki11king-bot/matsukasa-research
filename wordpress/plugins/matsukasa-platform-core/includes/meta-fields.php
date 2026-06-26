@@ -25,6 +25,21 @@ function matsukasa_platform_core_register_meta_fields(): void
         'role',
         'team',
         'email',
+        'targetType',
+        'targetSlug',
+        'effectiveDate',
+        'stanceTitle',
+        'stanceDescription',
+        'relatedSummary',
+        'contactText',
+        'sourceBasis',
+        'reviewer',
+        'reportType',
+        'category',
+        'format',
+        'region',
+        'methodologySummary',
+        'chartType',
     ];
 
     $string_array_fields = [
@@ -36,6 +51,20 @@ function matsukasa_platform_core_register_meta_fields(): void
         'methodologySlugs',
         'keyFindings',
         'highlights',
+        'focusTopics',
+        'goodFor',
+        'limits',
+        'relatedReportSlugs',
+        'relatedChartSlugs',
+        'authors',
+    ];
+
+    $labeled_text_block_fields = [
+        'roleCards',
+        'stanceCards',
+        'disclosureItems',
+        'disclosureTable',
+        'policyItems',
     ];
 
     $post_types = [
@@ -47,6 +76,7 @@ function matsukasa_platform_core_register_meta_fields(): void
         'dataset',
         'financial_statement',
         'short_read',
+        'correction',
         'page',
     ];
 
@@ -81,6 +111,38 @@ function matsukasa_platform_core_register_meta_fields(): void
                         ],
                     ],
                     'sanitize_callback' => 'matsukasa_platform_core_sanitize_string_array',
+                    'auth_callback' => 'matsukasa_platform_core_can_edit_meta',
+                ]
+            );
+        }
+
+        foreach ($labeled_text_block_fields as $field_name) {
+            register_post_meta(
+                $post_type,
+                'matsukasa_' . $field_name,
+                [
+                    'type' => 'array',
+                    'single' => true,
+                    'show_in_rest' => [
+                        'schema' => [
+                            'type' => 'array',
+                            'items' => [
+                                'type' => 'object',
+                                'properties' => [
+                                    'label' => [
+                                        'type' => 'string',
+                                    ],
+                                    'title' => [
+                                        'type' => 'string',
+                                    ],
+                                    'text' => [
+                                        'type' => 'string',
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                    'sanitize_callback' => 'matsukasa_platform_core_sanitize_labeled_text_blocks',
                     'auth_callback' => 'matsukasa_platform_core_can_edit_meta',
                 ]
             );
@@ -171,6 +233,37 @@ function matsukasa_platform_core_sanitize_source_links($value): array
         $items[] = [
             'label' => $label,
             'url' => $url,
+        ];
+    }
+
+    return $items;
+}
+
+function matsukasa_platform_core_sanitize_labeled_text_blocks($value): array
+{
+    if (!is_array($value)) {
+        return [];
+    }
+
+    $items = [];
+
+    foreach ($value as $item) {
+        if (!is_array($item)) {
+            continue;
+        }
+
+        $label = isset($item['label']) ? sanitize_text_field($item['label']) : '';
+        $title = isset($item['title']) ? sanitize_text_field($item['title']) : '';
+        $text = isset($item['text']) ? sanitize_textarea_field($item['text']) : '';
+
+        if ($label === '' && $title === '' && $text === '') {
+            continue;
+        }
+
+        $items[] = [
+            'label' => $label,
+            'title' => $title,
+            'text' => $text,
         ];
     }
 
