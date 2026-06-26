@@ -83,9 +83,9 @@ export default async function TopicPage({ params }: TopicPageProps) {
       limit: 24,
       topics: [topic.name],
     }),
-    contentSource.getReports(),
-    contentSource.getMethodologies(),
-    contentSource.getResearchers(),
+    contentSource.getReports({ topics: [topic.name] }),
+    contentSource.getMethodologies({ topics: [topic.name] }),
+    contentSource.getResearchers({ topics: [topic.name] }),
     contentSource.getSidebarSnapshot(),
   ]);
 

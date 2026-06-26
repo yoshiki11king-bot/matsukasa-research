@@ -57,7 +57,7 @@ import {
   sortByPublishedDate,
   sortFinancialStatements,
 } from "@/lib/content-source/normalize";
-import type { ContentSource, PostsPageParams } from "@/lib/content-source/types";
+import type { ContentSource, PostsPageParams, SourceOptions } from "@/lib/content-source/types";
 
 async function getLocalPostsPage(params: PostsPageParams = {}) {
   const page = Math.max(1, params.page ?? 1);
@@ -66,6 +66,10 @@ async function getLocalPostsPage(params: PostsPageParams = {}) {
   const filtered = posts.filter((post) => matchesPostQuery(post, params.q) && matchesTopics(post, params.topics));
 
   return paginateItems(filtered, page, limit);
+}
+
+function matchesTopicOption(itemTopics: string[], options?: SourceOptions) {
+  return matchesTopics({ topics: itemTopics }, options?.topics);
 }
 
 export const localPressContentSource: ContentSource = {
@@ -89,7 +93,10 @@ export const localPressContentSource: ContentSource = {
     return sortByPublishedDate(posts.filter((post) => post.methodologySlugs.includes(slug)));
   },
 
-  getReports: async () => sortByPublishedDate(await getPublishedLocalResearchReports()),
+  getReports: async (options) => {
+    const reports = await getPublishedLocalResearchReports();
+    return sortByPublishedDate(reports.filter((report) => matchesTopicOption(report.topicNames, options)));
+  },
   getReportBySlug: async (slug) => {
     const document = await getPublishedReportBySlug(slug);
     return document ? localReportToResearchReport(document) : null;
@@ -103,13 +110,19 @@ export const localPressContentSource: ContentSource = {
     return sortByPublishedDate(reports.filter((report) => report.methodologySlugs.includes(slug)));
   },
 
-  getResearchers: () => getPublishedLocalResearchers(),
+  getResearchers: async (options) => {
+    const researchers = await getPublishedLocalResearchers();
+    return researchers.filter((researcher) => matchesTopicOption(researcher.focusTopics, options));
+  },
   getResearcherBySlug: async (slug) => {
     const researcher = await getLocalResearcherBySlug(slug);
     return researcher ? localResearcherToProfile(researcher) : null;
   },
 
-  getMethodologies: () => getPublishedLocalMethodologies(),
+  getMethodologies: async (options) => {
+    const methodologies = await getPublishedLocalMethodologies();
+    return methodologies.filter((entry) => matchesTopicOption(entry.focusTopics, options));
+  },
   getMethodologyBySlug: async (slug) => {
     const document = await getPublishedMethodologyBySlug(slug);
     return document ? localMethodologyToEntry(document) : null;
