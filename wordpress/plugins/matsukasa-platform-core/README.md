@@ -143,6 +143,10 @@ Implemented:
 - Basic public read REST responses for posts, reports, methodologies,
   researchers, charts, datasets, short readings, financial statements, topics,
   corrections, finance, director, editorial policy, and funding.
+- Media Library upload support for CSV, TSV, JSON, and GeoJSON research assets.
+- Admin list columns for slug, research topics, and update time.
+- A `matsukasa_editor` role for editorial users who need to draft, publish, and
+  upload research content.
 - Next.js `wordpressContentSource` fetch and normalization path.
 - `CONTENT_SOURCE=wordpress` selection path in Next.js, while `microcms`
   remains the default source.
@@ -150,7 +154,6 @@ Implemented:
 Not implemented yet:
 
 - Matsukasa-specific rich REST response normalization.
-- Media Library attachment policy.
-- Admin UI refinements.
-- Role and capability mapping.
+- Field-level admin editing UI for Matsukasa meta fields.
+- Fine-grained workflow permissions, review states, and approval routing.
 - Production WordPress instance connection and end-to-end publishing test.
