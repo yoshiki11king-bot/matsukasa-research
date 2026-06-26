@@ -187,6 +187,8 @@ export type WordPressContentSourceHealth = ContentSourceHealth & {
 };
 
 const DEFAULT_REVALIDATE_SECONDS = 60 * 60;
+const WORDPRESS_REST_NAMESPACE = "/wp-json/matsukasa/v1";
+const WORDPRESS_COLLECTION_PAGE_SIZE = 100;
 
 function getWordPressApiBaseUrl() {
   const value = process.env.WORDPRESS_API_BASE_URL?.trim();
@@ -195,7 +197,13 @@ function getWordPressApiBaseUrl() {
     throw new Error("WORDPRESS_API_BASE_URL is required when CONTENT_SOURCE=wordpress.");
   }
 
-  return value.replace(/\/$/, "");
+  const baseUrl = value.replace(/\/+$/, "");
+
+  if (baseUrl.endsWith(WORDPRESS_REST_NAMESPACE)) {
+    return baseUrl;
+  }
+
+  return `${baseUrl}${WORDPRESS_REST_NAMESPACE}`;
 }
 
 function getPublishedAt(item: WordPressRawContentItem) {
@@ -603,9 +611,34 @@ async function fetchWordPressJson<T>(path: string, options?: SourceOptions): Pro
 async function fetchCollection<T>(path: string, options?: SourceOptions) {
   return fetchWordPressJson<WordPressRawListResponse<T>>(path, {
     ...options,
-    limit: options?.limit ?? 100,
+    limit: options?.limit ?? WORDPRESS_COLLECTION_PAGE_SIZE,
     offset: options?.offset ?? 0,
   });
+}
+
+async function fetchAllCollection<T>(path: string, options?: SourceOptions) {
+  const contents: T[] = [];
+  let offset = 0;
+  let totalCount = 0;
+
+  do {
+    const response = await fetchCollection<T>(path, {
+      ...options,
+      limit: WORDPRESS_COLLECTION_PAGE_SIZE,
+      offset,
+    });
+
+    contents.push(...response.contents);
+    totalCount = response.totalCount;
+
+    if (response.contents.length === 0) {
+      break;
+    }
+
+    offset += response.contents.length;
+  } while (contents.length < totalCount);
+
+  return contents;
 }
 
 async function fetchItem<T>(path: string, options?: SourceOptions) {
@@ -613,23 +646,23 @@ async function fetchItem<T>(path: string, options?: SourceOptions) {
 }
 
 async function getAllPosts(options?: SourceOptions) {
-  const response = await fetchCollection<WordPressRawPost>("/posts", options);
-  return response.contents.map(toPost);
+  const contents = await fetchAllCollection<WordPressRawPost>("/posts", options);
+  return contents.map(toPost);
 }
 
 async function getAllReports(options?: SourceOptions) {
-  const response = await fetchCollection<WordPressRawReport>("/reports", options);
-  return response.contents.map(toReport);
+  const contents = await fetchAllCollection<WordPressRawReport>("/reports", options);
+  return contents.map(toReport);
 }
 
 async function getAllResearchers(options?: SourceOptions) {
-  const response = await fetchCollection<WordPressRawResearcher>("/researchers", options);
-  return response.contents.map(toResearcher);
+  const contents = await fetchAllCollection<WordPressRawResearcher>("/researchers", options);
+  return contents.map(toResearcher);
 }
 
 async function getAllMethodologies(options?: SourceOptions) {
-  const response = await fetchCollection<WordPressRawMethodology>("/methodologies", options);
-  return response.contents.map(toMethodology);
+  const contents = await fetchAllCollection<WordPressRawMethodology>("/methodologies", options);
+  return contents.map(toMethodology);
 }
 
 export const wordpressContentSource: ContentSource = {
@@ -638,7 +671,7 @@ export const wordpressContentSource: ContentSource = {
   getPostsPage: async (params: PostsPageParams = {}, options?: SourceOptions) => {
     const page = Math.max(1, params.page ?? 1);
     const limit = Math.max(1, params.limit ?? 8);
-    const posts = sortByPublishedDate(await getAllPosts({ ...options, limit: 100, offset: 0 }));
+    const posts = sortByPublishedDate(await getAllPosts(options));
     const filtered = posts.filter((post) => matchesPostQuery(post, params.q) && matchesTopics(post, params.topics));
 
     return paginateItems(filtered, page, limit);
@@ -699,8 +732,8 @@ export const wordpressContentSource: ContentSource = {
   },
 
   getTopics: async (options) => {
-    const response = await fetchCollection<WordPressRawTopic>("/topics", options);
-    return response.contents.map(toTopic);
+    const contents = await fetchAllCollection<WordPressRawTopic>("/topics", options);
+    return contents.map(toTopic);
   },
 
   getCurrentDirectorPage: async (options) => {
@@ -712,8 +745,8 @@ export const wordpressContentSource: ContentSource = {
   },
 
   getFinancialStatements: async (options) => {
-    const response = await fetchCollection<WordPressRawFinancialStatement>("/financial-statements", options);
-    return sortFinancialStatements(response.contents.map(toFinancialStatement));
+    const contents = await fetchAllCollection<WordPressRawFinancialStatement>("/financial-statements", options);
+    return sortFinancialStatements(contents.map(toFinancialStatement));
   },
   getFinancialStatementByYear: async (year, options) => {
     try {
@@ -732,8 +765,8 @@ export const wordpressContentSource: ContentSource = {
   },
 
   getCharts: async (options) => {
-    const response = await fetchCollection<WordPressRawChart>("/charts", options);
-    return response.contents.map(toChart);
+    const contents = await fetchAllCollection<WordPressRawChart>("/charts", options);
+    return contents.map(toChart);
   },
   getChartBySlug: async (slug, options) => {
     try {
@@ -743,13 +776,13 @@ export const wordpressContentSource: ContentSource = {
     }
   },
   getChartsBySlug: async (options) => {
-    const response = await fetchCollection<WordPressRawChart>("/charts", options);
-    return Object.fromEntries(response.contents.map((chart) => [chart.slug, toChart(chart)])) as LocalChartsBySlug;
+    const contents = await fetchAllCollection<WordPressRawChart>("/charts", options);
+    return Object.fromEntries(contents.map((chart) => [chart.slug, toChart(chart)])) as LocalChartsBySlug;
   },
 
   getDatasets: async (options) => {
-    const response = await fetchCollection<WordPressRawDataset>("/datasets", options);
-    return response.contents.map(toDataset);
+    const contents = await fetchAllCollection<WordPressRawDataset>("/datasets", options);
+    return contents.map(toDataset);
   },
   getDatasetBySlug: async (slug, options) => {
     try {
@@ -760,8 +793,8 @@ export const wordpressContentSource: ContentSource = {
   },
 
   getShortReadings: async (options) => {
-    const response = await fetchCollection<WordPressRawShortReading>("/short-readings", options);
-    return response.contents.map(toShortReading);
+    const contents = await fetchAllCollection<WordPressRawShortReading>("/short-readings", options);
+    return contents.map(toShortReading);
   },
   getShortReadingBySlug: async (slug, options) => {
     try {
@@ -773,8 +806,8 @@ export const wordpressContentSource: ContentSource = {
 
   getCorrections: async (options) => {
     try {
-      const response = await fetchCollection<WordPressRawCorrection>("/corrections", options);
-      return response.contents.map(toCorrection);
+      const contents = await fetchAllCollection<WordPressRawCorrection>("/corrections", options);
+      return contents.map(toCorrection);
     } catch {
       return [];
     }
