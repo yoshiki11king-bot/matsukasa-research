@@ -131,6 +131,18 @@ Collection endpoints return a microCMS-like shape:
 }
 ```
 
+Content collection endpoints accept these query parameters:
+
+- `limit`, `offset`
+- `q` for keyword search
+- `slug` for one or more comma-separated slugs
+- `topic`, `region`, `format` for taxonomy slug filters
+- `orderby` as `date`, `modified`, `title`, or `menu_order`
+- `order` as `DESC` or `ASC`
+
+The `/topics` collection supports `limit`, `offset`, `q`, `slug`, `orderby`,
+and `order`.
+
 ## Current Status
 
 Implemented:
@@ -143,6 +155,8 @@ Implemented:
 - Basic public read REST responses for posts, reports, methodologies,
   researchers, charts, datasets, short readings, financial statements, topics,
   corrections, finance, director, editorial policy, and funding.
+- Collection filtering for keyword search, slugs, research topics, regions,
+  content formats, and safe ordering.
 - Media Library upload support for CSV, TSV, JSON, and GeoJSON research assets.
 - Admin list columns for slug, research topics, and update time.
 - Field-level WordPress edit screen meta boxes for Matsukasa REST fields,

@@ -137,6 +137,34 @@ function matsukasa_platform_core_rest_collection_args(): array
             'default' => 0,
             'sanitize_callback' => 'absint',
         ],
+        'q' => [
+            'required' => false,
+            'sanitize_callback' => 'sanitize_text_field',
+        ],
+        'slug' => [
+            'required' => false,
+            'sanitize_callback' => 'sanitize_text_field',
+        ],
+        'topic' => [
+            'required' => false,
+            'sanitize_callback' => 'sanitize_text_field',
+        ],
+        'region' => [
+            'required' => false,
+            'sanitize_callback' => 'sanitize_text_field',
+        ],
+        'format' => [
+            'required' => false,
+            'sanitize_callback' => 'sanitize_text_field',
+        ],
+        'orderby' => [
+            'default' => 'date',
+            'sanitize_callback' => 'sanitize_key',
+        ],
+        'order' => [
+            'default' => 'DESC',
+            'sanitize_callback' => 'sanitize_key',
+        ],
     ];
 }
 
@@ -184,17 +212,7 @@ function matsukasa_platform_core_rest_list_content(WP_REST_Request $request, str
     $limit = matsukasa_platform_core_rest_limit($request);
     $offset = matsukasa_platform_core_rest_offset($request);
 
-    $query = new WP_Query(
-        [
-            'post_type' => $post_type,
-            'post_status' => 'publish',
-            'posts_per_page' => $limit,
-            'offset' => $offset,
-            'orderby' => 'date',
-            'order' => 'DESC',
-            'no_found_rows' => false,
-        ]
-    );
+    $query = new WP_Query(matsukasa_platform_core_rest_content_query_args($request, $post_type, $limit, $offset));
 
     $contents = array_map(
         'matsukasa_platform_core_rest_serialize_post',
@@ -231,26 +249,17 @@ function matsukasa_platform_core_rest_list_topics(WP_REST_Request $request): WP_
 {
     $limit = matsukasa_platform_core_rest_limit($request);
     $offset = matsukasa_platform_core_rest_offset($request);
-    $terms = get_terms(
-        [
-            'taxonomy' => 'research_topic',
-            'hide_empty' => false,
-            'number' => $limit,
-            'offset' => $offset,
-        ]
-    );
+    $term_args = matsukasa_platform_core_rest_topic_query_args($request, $limit, $offset);
+    $terms = get_terms($term_args);
 
     if (is_wp_error($terms)) {
         return new WP_REST_Response(['contents' => [], 'totalCount' => 0, 'limit' => $limit, 'offset' => $offset], 200);
     }
 
-    $all_terms = get_terms(
-        [
-            'taxonomy' => 'research_topic',
-            'hide_empty' => false,
-            'fields' => 'ids',
-        ]
-    );
+    $count_args = $term_args;
+    unset($count_args['number'], $count_args['offset']);
+    $count_args['fields'] = 'ids';
+    $all_terms = get_terms($count_args);
     $total_count = is_wp_error($all_terms) ? count($terms) : count($all_terms);
     $contents = array_map(
         static function (WP_Term $term): array {
@@ -272,6 +281,145 @@ function matsukasa_platform_core_rest_list_topics(WP_REST_Request $request): WP_
         ],
         200
     );
+}
+
+function matsukasa_platform_core_rest_content_query_args(
+    WP_REST_Request $request,
+    string $post_type,
+    int $limit,
+    int $offset
+): array {
+    $query_args = [
+        'post_type' => $post_type,
+        'post_status' => 'publish',
+        'posts_per_page' => $limit,
+        'offset' => $offset,
+        'orderby' => matsukasa_platform_core_rest_orderby($request),
+        'order' => matsukasa_platform_core_rest_order($request),
+        'no_found_rows' => false,
+    ];
+
+    $search = matsukasa_platform_core_rest_trimmed_param($request, 'q');
+    if ($search !== '') {
+        $query_args['s'] = $search;
+    }
+
+    $slugs = matsukasa_platform_core_rest_slug_list($request, 'slug');
+    if ($slugs !== []) {
+        $query_args['post_name__in'] = $slugs;
+    }
+
+    $tax_query = matsukasa_platform_core_rest_tax_query($request);
+    if ($tax_query !== []) {
+        $query_args['tax_query'] = array_merge(['relation' => 'AND'], $tax_query);
+    }
+
+    return $query_args;
+}
+
+function matsukasa_platform_core_rest_topic_query_args(WP_REST_Request $request, int $limit, int $offset): array
+{
+    $term_args = [
+        'taxonomy' => 'research_topic',
+        'hide_empty' => false,
+        'number' => $limit,
+        'offset' => $offset,
+        'orderby' => matsukasa_platform_core_rest_term_orderby($request),
+        'order' => matsukasa_platform_core_rest_term_order($request),
+    ];
+
+    $search = matsukasa_platform_core_rest_trimmed_param($request, 'q');
+    if ($search !== '') {
+        $term_args['search'] = $search;
+    }
+
+    $slugs = matsukasa_platform_core_rest_slug_list($request, 'slug');
+    if ($slugs !== []) {
+        $term_args['slug'] = $slugs;
+    }
+
+    return $term_args;
+}
+
+function matsukasa_platform_core_rest_tax_query(WP_REST_Request $request): array
+{
+    $taxonomies = [
+        'topic' => 'research_topic',
+        'region' => 'research_region',
+        'format' => 'content_format',
+    ];
+    $tax_query = [];
+
+    foreach ($taxonomies as $param => $taxonomy) {
+        $slugs = matsukasa_platform_core_rest_slug_list($request, $param);
+
+        if ($slugs === []) {
+            continue;
+        }
+
+        $tax_query[] = [
+            'taxonomy' => $taxonomy,
+            'field' => 'slug',
+            'terms' => $slugs,
+        ];
+    }
+
+    return $tax_query;
+}
+
+function matsukasa_platform_core_rest_slug_list(WP_REST_Request $request, string $param): array
+{
+    $value = $request->get_param($param);
+
+    if (is_array($value)) {
+        $parts = $value;
+    } else {
+        $parts = explode(',', (string) $value);
+    }
+
+    $slugs = array_map(
+        static function ($part): string {
+            return sanitize_title((string) $part);
+        },
+        $parts
+    );
+
+    return array_values(array_unique(array_filter($slugs)));
+}
+
+function matsukasa_platform_core_rest_trimmed_param(WP_REST_Request $request, string $param): string
+{
+    return trim((string) $request->get_param($param));
+}
+
+function matsukasa_platform_core_rest_orderby(WP_REST_Request $request): string
+{
+    $allowed = ['date', 'modified', 'title', 'menu_order'];
+    $value = (string) $request->get_param('orderby');
+
+    return in_array($value, $allowed, true) ? $value : 'date';
+}
+
+function matsukasa_platform_core_rest_term_orderby(WP_REST_Request $request): string
+{
+    $allowed = ['name', 'slug', 'count', 'term_id'];
+    $value = (string) $request->get_param('orderby');
+
+    return in_array($value, $allowed, true) ? $value : 'name';
+}
+
+function matsukasa_platform_core_rest_order(WP_REST_Request $request): string
+{
+    return strtoupper((string) $request->get_param('order')) === 'ASC' ? 'ASC' : 'DESC';
+}
+
+function matsukasa_platform_core_rest_term_order(WP_REST_Request $request): string
+{
+    if (!$request->has_param('order')) {
+        return 'ASC';
+    }
+
+    return matsukasa_platform_core_rest_order($request);
 }
 
 function matsukasa_platform_core_rest_get_named_page(WP_REST_Request $request, string $slug): WP_REST_Response
