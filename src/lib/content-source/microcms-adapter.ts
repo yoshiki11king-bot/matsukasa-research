@@ -26,6 +26,11 @@ import {
   getChartBySlug as getLocalChartBySlug,
   getChartsBySlug as getLocalChartsBySlug,
 } from "@/lib/content/charts";
+import {
+  getPublishedDatasetBySlug,
+  getPublishedLocalDatasets,
+  localDatasetToEntry,
+} from "@/lib/content/datasets";
 import type { ContentSource, SourceOptions } from "@/lib/content-source/types";
 
 function toMicroCMSOptions(options?: SourceOptions) {
@@ -72,6 +77,12 @@ export const microcmsContentSource: ContentSource = {
   getCharts: () => getLocalCharts(),
   getChartBySlug: (slug) => getLocalChartBySlug(slug),
   getChartsBySlug: () => getLocalChartsBySlug(),
+
+  getDatasets: () => getPublishedLocalDatasets(),
+  getDatasetBySlug: async (slug) => {
+    const document = await getPublishedDatasetBySlug(slug);
+    return document ? localDatasetToEntry(document) : null;
+  },
 
   getSidebarSnapshot: () => getSidebarSnapshot(),
 

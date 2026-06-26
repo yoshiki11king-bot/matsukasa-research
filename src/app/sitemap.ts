@@ -5,18 +5,30 @@ import { getTopicHref } from "@/lib/topic-pages";
 
 export const revalidate = 86400;
 
+function toSitemapDate(value?: string) {
+  if (!value) {
+    return new Date();
+  }
+
+  const date = new Date(value);
+  return Number.isFinite(date.getTime()) ? date : new Date();
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = getSiteUrl();
   const cacheOptions = { revalidateSeconds: revalidate };
-  const [postsPage, postSlugs, researchers, methodologies, reports, financialStatements, topics] = await Promise.all([
-    contentSource.getPostsPage({ page: 1, limit: 100 }, cacheOptions),
-    contentSource.getAllPostSlugs(cacheOptions),
-    contentSource.getResearchers(cacheOptions),
-    contentSource.getMethodologies(cacheOptions),
-    contentSource.getReports(cacheOptions),
-    contentSource.getFinancialStatements(cacheOptions),
-    contentSource.getTopics ? contentSource.getTopics(cacheOptions) : [],
-  ]);
+  const [postsPage, postSlugs, researchers, methodologies, reports, financialStatements, topics, charts, datasets] =
+    await Promise.all([
+      contentSource.getPostsPage({ page: 1, limit: 100 }, cacheOptions),
+      contentSource.getAllPostSlugs(cacheOptions),
+      contentSource.getResearchers(cacheOptions),
+      contentSource.getMethodologies(cacheOptions),
+      contentSource.getReports(cacheOptions),
+      contentSource.getFinancialStatements(cacheOptions),
+      contentSource.getTopics ? contentSource.getTopics(cacheOptions) : [],
+      contentSource.getCharts ? contentSource.getCharts(cacheOptions) : [],
+      contentSource.getDatasets ? contentSource.getDatasets(cacheOptions) : [],
+    ]);
 
   const latestPostDate = postsPage.contents
     .map((post) => post.updatedAt ?? post.publishedDate)
@@ -95,9 +107,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })),
     ...financialStatements.map((statement) => ({
       url: `${siteUrl}/financial-statements/${statement.slug}`,
-      lastModified: new Date(statement.updatedDate),
+      lastModified: toSitemapDate(statement.updatedDate),
       changeFrequency: "monthly" as const,
       priority: 0.75,
+    })),
+    ...charts.map((chart) => ({
+      url: `${siteUrl}/charts/${chart.slug}`,
+      lastModified: toSitemapDate(chart.updatedAt || chart.createdAt),
+      changeFrequency: "monthly" as const,
+      priority: 0.65,
+    })),
+    ...datasets.map((dataset) => ({
+      url: `${siteUrl}/datasets/${dataset.slug}`,
+      lastModified: toSitemapDate(dataset.updatedDate || dataset.publishedDate),
+      changeFrequency: "monthly" as const,
+      priority: 0.65,
     })),
     ...topics.map((topic) => ({
       url: `${siteUrl}${getTopicHref(topic.name)}`,

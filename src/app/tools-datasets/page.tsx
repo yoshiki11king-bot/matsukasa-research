@@ -5,7 +5,10 @@ import { SectionHeading } from "@/components/section-heading";
 import { StructuredData } from "@/components/structured-data";
 import { TypologyQuizDeck } from "@/components/typology-quiz-deck";
 import { contentSource } from "@/lib/content-source";
+import type { LocalChart } from "@/lib/content/types";
+import { formatDate } from "@/lib/formatters";
 import { buildBreadcrumbJsonLd, buildCollectionPageJsonLd, buildItemListJsonLd, buildPageMetadata } from "@/lib/seo";
+import type { DatasetEntry } from "@/lib/types";
 
 export const revalidate = 3600;
 
@@ -51,8 +54,40 @@ const publicationRules = [
   ["利用範囲", "再配布、加工、商用利用などの扱いを明記します。"],
 ];
 
+function getChartUpdatedAt(chart: LocalChart) {
+  return chart.updatedAt || chart.createdAt;
+}
+
+function getFormattedDate(dateString?: string) {
+  if (!dateString || !Number.isFinite(new Date(dateString).getTime())) {
+    return null;
+  }
+
+  return formatDate(dateString);
+}
+
+function getResourceListItems(charts: LocalChart[], datasets: DatasetEntry[]) {
+  return [
+    ...charts.map((chart) => ({
+      name: chart.title,
+      path: `/charts/${chart.slug}`,
+      description: chart.description,
+    })),
+    ...datasets.map((dataset) => ({
+      name: dataset.title,
+      path: `/datasets/${dataset.slug}`,
+      description: dataset.description,
+    })),
+  ];
+}
+
 export default async function ToolsDatasetsPage() {
-  const sidebar = await contentSource.getSidebarSnapshot();
+  const [sidebar, charts, datasets] = await Promise.all([
+    contentSource.getSidebarSnapshot(),
+    contentSource.getCharts ? contentSource.getCharts() : Promise.resolve([]),
+    contentSource.getDatasets ? contentSource.getDatasets() : Promise.resolve([]),
+  ]);
+  const resourceListItems = getResourceListItems(charts, datasets);
   const structuredData = [
     buildCollectionPageJsonLd({
       name: "ツールとデータセット",
@@ -61,12 +96,14 @@ export default async function ToolsDatasetsPage() {
     }),
     buildBreadcrumbJsonLd([{ name: "ツールとデータセット", path: "/tools-datasets" }]),
     buildItemListJsonLd(
-      "公開予定のツールとデータセット",
-      plannedResources.map((resource) => ({
-        name: resource.title,
-        path: "/tools-datasets",
-        description: resource.body,
-      })),
+      resourceListItems.length > 0 ? "公開中のツールとデータセット" : "公開予定のツールとデータセット",
+      resourceListItems.length > 0
+        ? resourceListItems
+        : plannedResources.map((resource) => ({
+            name: resource.title,
+            path: "/tools-datasets",
+            description: resource.body,
+          })),
     ),
   ];
 
@@ -86,6 +123,69 @@ export default async function ToolsDatasetsPage() {
           <p className="max-w-3xl text-lg leading-9 text-[color:var(--color-text)]">
             調査票、集計ノート、図表サンプル、公開データセットをここにまとめます。公開時には更新日、出典表記、利用条件を添えて掲載します。
           </p>
+        </section>
+
+        <section className="rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-6 py-7 shadow-[var(--shadow-soft)]">
+          <div className="space-y-6">
+            <SectionHeading
+              eyebrow="PUBLISHED"
+              title="公開中の資料"
+              description={
+                resourceListItems.length > 0
+                  ? "Local Press と content source から読める図表・データセットです。"
+                  : "公開できる図表とデータセットが入り次第、ここに表示されます。"
+              }
+            />
+            {resourceListItems.length > 0 ? (
+              <div className="grid gap-4 md:grid-cols-2">
+                {charts.map((chart) => (
+                  <Link
+                    key={`chart-${chart.slug}`}
+                    href={`/charts/${chart.slug}`}
+                    className="group rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface-subtle)] px-5 py-5 transition hover:border-[color:var(--color-accent)] hover:bg-white"
+                  >
+                    <p className="text-xs font-semibold tracking-[0.14em] text-[color:var(--color-muted)]">CHART</p>
+                    <h2 className="mt-3 text-xl font-semibold text-[color:var(--color-primary)] group-hover:text-[color:var(--color-primary)]">
+                      {chart.title}
+                    </h2>
+                    {chart.description ? (
+                      <p className="mt-3 text-sm leading-7 text-[color:var(--color-text)]">{chart.description}</p>
+                    ) : null}
+                    {getFormattedDate(getChartUpdatedAt(chart)) ? (
+                      <p className="mt-4 text-xs font-medium text-[color:var(--color-muted)]">
+                        更新日 {getFormattedDate(getChartUpdatedAt(chart))}
+                      </p>
+                    ) : null}
+                  </Link>
+                ))}
+                {datasets.map((dataset) => (
+                  <Link
+                    key={`dataset-${dataset.slug}`}
+                    href={`/datasets/${dataset.slug}`}
+                    className="group rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface-subtle)] px-5 py-5 transition hover:border-[color:var(--color-accent)] hover:bg-white"
+                  >
+                    <p className="text-xs font-semibold tracking-[0.14em] text-[color:var(--color-muted)]">DATASET</p>
+                    <h2 className="mt-3 text-xl font-semibold text-[color:var(--color-primary)] group-hover:text-[color:var(--color-primary)]">
+                      {dataset.title}
+                    </h2>
+                    {dataset.description ? (
+                      <p className="mt-3 text-sm leading-7 text-[color:var(--color-text)]">{dataset.description}</p>
+                    ) : null}
+                    <div className="mt-4 flex flex-wrap gap-2 text-xs font-medium text-[color:var(--color-muted)]">
+                      <span>{dataset.fileFormat.toUpperCase()}</span>
+                      {getFormattedDate(dataset.updatedDate) ? (
+                        <span>更新日 {getFormattedDate(dataset.updatedDate)}</span>
+                      ) : null}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-lg border border-dashed border-[color:var(--color-border-stronger)] bg-[color:var(--color-surface-subtle)] px-5 py-5 text-sm leading-7 text-[color:var(--color-text)]">
+                まだ公開中の図表・データセットはありません。
+              </div>
+            )}
+          </div>
         </section>
 
         <section className="rounded-lg border border-[color:var(--color-border)] bg-[color:var(--color-surface)] px-6 py-7 shadow-[var(--shadow-soft)]">
