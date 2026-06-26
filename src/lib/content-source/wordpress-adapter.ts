@@ -1,13 +1,8 @@
 import "server-only";
 
 import type { LocalChart, LocalChartsBySlug } from "@/lib/content/types";
-import {
-  matchesPostQuery,
-  matchesTopics,
-  paginateItems,
-  sortByPublishedDate,
-  sortFinancialStatements,
-} from "@/lib/content-source/normalize";
+import { sortByPublishedDate, sortFinancialStatements } from "@/lib/content-source/normalize";
+import { getTopicSlug } from "@/lib/topic-pages";
 import type {
   BlogImage,
   BlogPost,
@@ -196,6 +191,23 @@ export type WordPressContentSourceHealth = ContentSourceHealth & {
 const DEFAULT_REVALIDATE_SECONDS = 60 * 60;
 const WORDPRESS_REST_NAMESPACE = "/wp-json/matsukasa/v1";
 const WORDPRESS_COLLECTION_PAGE_SIZE = 100;
+
+function setSearchParamIfPresent(url: URL, key: string, value?: string) {
+  const normalizedValue = value?.trim();
+
+  if (normalizedValue) {
+    url.searchParams.set(key, normalizedValue);
+  }
+}
+
+function toWordPressTopicParam(topics?: string[]) {
+  const slugs =
+    topics
+      ?.map((topic) => getTopicSlug(topic).trim())
+      .filter(Boolean) ?? [];
+
+  return slugs.length > 0 ? slugs.join(",") : undefined;
+}
 
 function getWordPressApiBaseUrl() {
   const value = process.env.WORDPRESS_API_BASE_URL?.trim();
@@ -609,6 +621,9 @@ async function fetchWordPressJson<T>(path: string, options?: SourceOptions): Pro
     url.searchParams.set("offset", String(options.offset));
   }
 
+  setSearchParamIfPresent(url, "q", options?.query);
+  setSearchParamIfPresent(url, "topic", toWordPressTopicParam(options?.topics));
+
   const response = await fetch(url, {
     signal: options?.signal,
     next: { revalidate: options?.revalidateSeconds ?? DEFAULT_REVALIDATE_SECONDS },
@@ -684,10 +699,24 @@ export const wordpressContentSource: ContentSource = {
   getPostsPage: async (params: PostsPageParams = {}, options?: SourceOptions) => {
     const page = Math.max(1, params.page ?? 1);
     const limit = Math.max(1, params.limit ?? 8);
-    const posts = sortByPublishedDate(await getAllPosts(options));
-    const filtered = posts.filter((post) => matchesPostQuery(post, params.q) && matchesTopics(post, params.topics));
+    const offset = (page - 1) * limit;
+    const response = await fetchCollection<WordPressRawPost>("/posts", {
+      ...options,
+      limit,
+      offset,
+      query: params.q ?? options?.query,
+      topics: params.topics ?? options?.topics,
+    });
+    const contents = response.contents.map(toPost);
 
-    return paginateItems(filtered, page, limit);
+    return {
+      contents,
+      totalCount: response.totalCount,
+      totalPages: Math.max(1, Math.ceil(response.totalCount / limit)),
+      currentPage: page,
+      limit,
+      offset,
+    };
   },
   getAllPostSlugs: async (options) => {
     const posts = await getAllPosts(options);

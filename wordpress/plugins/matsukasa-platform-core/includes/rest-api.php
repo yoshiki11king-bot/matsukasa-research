@@ -361,6 +361,7 @@ function matsukasa_platform_core_rest_tax_query(WP_REST_Request $request): array
             'taxonomy' => $taxonomy,
             'field' => 'slug',
             'terms' => $slugs,
+            'operator' => 'AND',
         ];
     }
 
