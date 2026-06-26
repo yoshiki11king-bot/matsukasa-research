@@ -145,6 +145,9 @@ Implemented:
   corrections, finance, director, editorial policy, and funding.
 - Media Library upload support for CSV, TSV, JSON, and GeoJSON research assets.
 - Admin list columns for slug, research topics, and update time.
+- Field-level WordPress edit screen meta boxes for Matsukasa REST fields,
+  including simple line-based editors for lists, sources, and labeled text
+  blocks.
 - A `matsukasa_editor` role for editorial users who need to draft, publish, and
   upload research content.
 - Next.js `wordpressContentSource` fetch and normalization path.
@@ -153,7 +156,9 @@ Implemented:
 
 Not implemented yet:
 
-- Matsukasa-specific rich REST response normalization.
-- Field-level admin editing UI for Matsukasa meta fields.
+- Advanced Matsukasa-specific REST response normalization beyond the current
+  adapter-level mapping.
+- Rich repeatable-field controls for Matsukasa meta fields. Current edit screen
+  support is intentionally plain text / line-based.
 - Fine-grained workflow permissions, review states, and approval routing.
 - Production WordPress instance connection and end-to-end publishing test.
