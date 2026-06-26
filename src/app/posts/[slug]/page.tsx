@@ -9,7 +9,6 @@ import { StatusBanner } from "@/components/status-banner";
 import { StructuredData } from "@/components/structured-data";
 import { contentSource } from "@/lib/content-source";
 import { estimateReadingTime, formatDate } from "@/lib/formatters";
-import { cmsStatus } from "@/lib/microcms";
 import { buildBreadcrumbJsonLd, buildPageMetadata, getAbsoluteUrl } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
 import type { BlogPost } from "@/lib/types";
@@ -166,6 +165,8 @@ export default async function PostPage({ params }: PostPageProps) {
     post.isLocalPress && contentSource.getChartsBySlug
       ? await contentSource.getChartsBySlug()
       : {};
+  const sourceHealth = contentSource.getHealth?.();
+  const showDemoStatus = sourceHealth ? !sourceHealth.configured : false;
   const articleJsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -212,7 +213,7 @@ export default async function PostPage({ params }: PostPageProps) {
     >
       <StructuredData data={structuredData} />
       <div className="article-reading-surface">
-        {!cmsStatus.configured ? <StatusBanner kind="demo" /> : null}
+        {showDemoStatus ? <StatusBanner kind="demo" /> : null}
         <nav className="article-reading-breadcrumb" aria-label="パンくずリスト">
           <Link href="/">家</Link>
           <span>›</span>

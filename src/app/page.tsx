@@ -8,7 +8,6 @@ import { StatusBanner } from "@/components/status-banner";
 import { StructuredData } from "@/components/structured-data";
 import { buildLegacyArticlesSearch, pickFeaturedPosts } from "@/lib/home-page";
 import { contentSource } from "@/lib/content-source";
-import { cmsStatus } from "@/lib/microcms";
 import { buildItemListJsonLd, buildPageMetadata, buildWebPageJsonLd } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
 
@@ -47,6 +46,8 @@ export default async function HomePage({ searchParams }: RootPageProps) {
   const latestArticle = postsPage.contents[0] ?? null;
   const latestReport = reports[0] ?? null;
   const latestMethodology = methodologies[0] ?? null;
+  const sourceHealth = contentSource.getHealth?.();
+  const showDemoStatus = sourceHealth ? !sourceHealth.configured : false;
   const structuredData = [
     buildWebPageJsonLd({
       name: siteConfig.name,
@@ -77,7 +78,7 @@ export default async function HomePage({ searchParams }: RootPageProps) {
         <div className="space-y-10 lg:space-y-12">
           <LatestPostsStrip posts={featuredPosts} />
 
-          {!cmsStatus.configured ? <StatusBanner kind="demo" /> : null}
+          {showDemoStatus ? <StatusBanner kind="demo" /> : null}
 
           <HomeLatestResources
             latestArticle={latestArticle}

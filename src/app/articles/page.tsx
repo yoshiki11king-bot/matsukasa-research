@@ -7,7 +7,6 @@ import { StatusBanner } from "@/components/status-banner";
 import { StructuredData } from "@/components/structured-data";
 import { buildArticlesHref, getPopularityScore, parseSelectedTopics } from "@/lib/articles-page";
 import { contentSource } from "@/lib/content-source";
-import { cmsStatus } from "@/lib/microcms";
 import {
   buildBreadcrumbJsonLd,
   buildCollectionPageJsonLd,
@@ -75,6 +74,8 @@ export default async function ArticlesPage({ searchParams }: HomePageProps) {
   const popularPosts = [...rankingSource.contents]
     .sort((left, right) => getPopularityScore(right) - getPopularityScore(left))
     .slice(0, 5);
+  const sourceHealth = contentSource.getHealth?.();
+  const showDemoStatus = sourceHealth ? !sourceHealth.configured : false;
 
   const leadGridClassName =
     secondarySideStories.length > 0
@@ -109,7 +110,7 @@ export default async function ArticlesPage({ searchParams }: HomePageProps) {
     >
       <StructuredData data={structuredData} />
       <div className="space-y-10 lg:space-y-12">
-        {!cmsStatus.configured ? <StatusBanner kind="demo" /> : null}
+        {showDemoStatus ? <StatusBanner kind="demo" /> : null}
 
         <ArticleSearchPanel query={query} selectedTopics={selectedTopics} allTopics={allTopics} />
 
