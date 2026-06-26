@@ -3,7 +3,7 @@ import Link from "next/link";
 import { PublicShell } from "@/components/public-shell";
 import { SectionHeading } from "@/components/section-heading";
 import { StructuredData } from "@/components/structured-data";
-import { getSidebarSnapshot } from "@/lib/microcms";
+import { contentSource } from "@/lib/content-source";
 import { buildBreadcrumbJsonLd, buildPageMetadata, buildWebPageJsonLd } from "@/lib/seo";
 
 export const revalidate = 3600;
@@ -16,7 +16,7 @@ export const metadata: Metadata = buildPageMetadata({
 });
 
 export default async function CharterPage() {
-  const sidebar = await getSidebarSnapshot();
+  const sidebar = await contentSource.getSidebarSnapshot();
   const structuredData = [
     buildWebPageJsonLd({
       name: "松笠研究所憲章",

@@ -7,7 +7,7 @@ import { StatusBanner } from "@/components/status-banner";
 import { StructuredData } from "@/components/structured-data";
 import { buildArticlesHref, getPopularityScore, parseSelectedTopics } from "@/lib/articles-page";
 import { contentSource } from "@/lib/content-source";
-import { cmsStatus, getSidebarSnapshot } from "@/lib/microcms";
+import { cmsStatus } from "@/lib/microcms";
 import {
   buildBreadcrumbJsonLd,
   buildCollectionPageJsonLd,
@@ -63,7 +63,7 @@ export default async function ArticlesPage({ searchParams }: HomePageProps) {
       limit: 30,
     }),
     getArticleTopics(),
-    getSidebarSnapshot(),
+    contentSource.getSidebarSnapshot(),
   ]);
 
   const featuredPost = page.contents[0];

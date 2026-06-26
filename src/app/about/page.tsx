@@ -3,13 +3,7 @@ import Link from "next/link";
 import { PublicShell } from "@/components/public-shell";
 import { SectionHeading } from "@/components/section-heading";
 import { StructuredData } from "@/components/structured-data";
-import {
-  getMethodologies,
-  getPostsPage,
-  getReports,
-  getResearchers,
-  getSidebarSnapshot,
-} from "@/lib/microcms";
+import { contentSource } from "@/lib/content-source";
 import { buildBreadcrumbJsonLd, buildPageMetadata, buildWebPageJsonLd } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
 
@@ -25,11 +19,11 @@ export const metadata: Metadata = buildPageMetadata({
 
 export default async function AboutPage() {
   const [sidebar, postsPage, reports, methodologies, researchers] = await Promise.all([
-    getSidebarSnapshot(),
-    getPostsPage({ page: 1, limit: 1 }),
-    getReports(),
-    getMethodologies(),
-    getResearchers(),
+    contentSource.getSidebarSnapshot(),
+    contentSource.getPostsPage({ page: 1, limit: 1 }),
+    contentSource.getReports(),
+    contentSource.getMethodologies(),
+    contentSource.getResearchers(),
   ]);
   const structuredData = [
     buildWebPageJsonLd({

@@ -5,7 +5,6 @@ import { FinancialStatementRenderer } from "@/components/content/FinancialStatem
 import { PublicShell } from "@/components/public-shell";
 import { StructuredData } from "@/components/structured-data";
 import { contentSource } from "@/lib/content-source";
-import { getSidebarSnapshot } from "@/lib/microcms";
 import { buildBreadcrumbJsonLd, buildPageMetadata, buildWebPageJsonLd } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
 
@@ -40,7 +39,7 @@ export default async function FinancialStatementPage({ params }: PageProps) {
     contentSource.getFinancialStatementByYear
       ? contentSource.getFinancialStatementByYear(year)
       : null,
-    getSidebarSnapshot(),
+    contentSource.getSidebarSnapshot(),
     contentSource.getChartsBySlug ? contentSource.getChartsBySlug() : {},
   ]);
 

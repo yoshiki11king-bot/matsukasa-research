@@ -4,14 +4,8 @@ import { SectionHeading } from "@/components/section-heading";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { StructuredData } from "@/components/structured-data";
+import { contentSource } from "@/lib/content-source";
 import { formatDate } from "@/lib/formatters";
-import {
-  getMethodologies,
-  getPostsPage,
-  getReports,
-  getResearchers,
-  getTopics,
-} from "@/lib/microcms";
 import { buildBreadcrumbJsonLd, buildPageMetadata, buildWebPageJsonLd } from "@/lib/seo";
 
 export const revalidate = 3600;
@@ -25,12 +19,13 @@ export const metadata: Metadata = buildPageMetadata({
 });
 
 export default async function DonatePage() {
+  const topicsPromise = contentSource.getTopics ? contentSource.getTopics() : Promise.resolve([]);
   const [postsPage, reports, topics, researchers, methodologies] = await Promise.all([
-    getPostsPage({ page: 1, limit: 1 }),
-    getReports(),
-    getTopics(),
-    getResearchers(),
-    getMethodologies(),
+    contentSource.getPostsPage({ page: 1, limit: 1 }),
+    contentSource.getReports(),
+    topicsPromise,
+    contentSource.getResearchers(),
+    contentSource.getMethodologies(),
   ]);
 
   const lastUpdated = [

@@ -9,7 +9,7 @@ import { StatusBanner } from "@/components/status-banner";
 import { StructuredData } from "@/components/structured-data";
 import { contentSource } from "@/lib/content-source";
 import { estimateReadingTime, formatDate } from "@/lib/formatters";
-import { cmsStatus, getSidebarSnapshot } from "@/lib/microcms";
+import { cmsStatus } from "@/lib/microcms";
 import { buildBreadcrumbJsonLd, buildPageMetadata, getAbsoluteUrl } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
 import type { BlogPost } from "@/lib/types";
@@ -153,7 +153,7 @@ export default async function PostPage({ params }: PostPageProps) {
   const { slug } = await params;
   const [post, sidebar] = await Promise.all([
     contentSource.getPostBySlug(slug),
-    getSidebarSnapshot(),
+    contentSource.getSidebarSnapshot(),
   ]);
 
   if (!post) {

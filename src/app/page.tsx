@@ -7,13 +7,8 @@ import { PublicShell } from "@/components/public-shell";
 import { StatusBanner } from "@/components/status-banner";
 import { StructuredData } from "@/components/structured-data";
 import { buildLegacyArticlesSearch, pickFeaturedPosts } from "@/lib/home-page";
-import {
-  cmsStatus,
-  getMethodologies,
-  getPostsPage,
-  getReports,
-  getSidebarSnapshot,
-} from "@/lib/microcms";
+import { contentSource } from "@/lib/content-source";
+import { cmsStatus } from "@/lib/microcms";
 import { buildItemListJsonLd, buildPageMetadata, buildWebPageJsonLd } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
 
@@ -42,10 +37,10 @@ export default async function HomePage({ searchParams }: RootPageProps) {
   }
 
   const [sidebar, postsPage, reports, methodologies] = await Promise.all([
-    getSidebarSnapshot(),
-    getPostsPage({ page: 1, limit: 12 }),
-    getReports(),
-    getMethodologies(),
+    contentSource.getSidebarSnapshot(),
+    contentSource.getPostsPage({ page: 1, limit: 12 }),
+    contentSource.getReports(),
+    contentSource.getMethodologies(),
   ]);
 
   const featuredPosts = pickFeaturedPosts(postsPage.contents, 5);
